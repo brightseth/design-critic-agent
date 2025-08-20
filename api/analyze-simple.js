@@ -436,17 +436,23 @@ function generateVariedCritiques() {
 async function generateSimpleCritique(imageBase64, imageUrl, mode = 'design') {
   console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
   console.log('Critique mode:', mode);
+  console.log('Image data length:', imageBase64 ? imageBase64.length : 0);
   
   // Try to use real AI vision if we have image data
   if (process.env.ANTHROPIC_API_KEY && imageBase64 && imageBase64.length > 100) {
+    console.log('Attempting real AI vision analysis...');
     try {
       const realCritique = await getRealAICritique(imageBase64, mode);
       if (realCritique) {
+        console.log('Real AI critique generated successfully');
         return realCritique;
       }
     } catch (error) {
       console.error('AI Vision failed, using fallback:', error.message);
+      console.error('Error details:', error);
     }
+  } else {
+    console.log('Skipping AI vision - no API key or image data');
   }
   
   // Continue with fallback

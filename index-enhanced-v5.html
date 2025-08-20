@@ -642,19 +642,34 @@
                     const result = await response.json();
                     console.log('API Response:', result);
                     
+                    // Check if we got real AI analysis or demo
+                    const isRealAnalysis = result.imageAnalysis && 
+                                         result.imageAnalysis.description && 
+                                         !result.imageAnalysis.description.includes('user interface design');
+                    
                     // Display what the AI sees
-                    if (result.imageAnalysis) {
+                    if (result.imageAnalysis && result.imageAnalysis.description) {
                         document.getElementById('imageDescription').style.display = 'block';
-                        document.getElementById('descriptionText').innerHTML = result.imageAnalysis.description || 
-                            'I see an image that contains various visual elements requiring analysis.';
+                        const descText = document.getElementById('descriptionText');
+                        
+                        if (isRealAnalysis) {
+                            descText.innerHTML = result.imageAnalysis.description;
+                        } else {
+                            // We got demo content, show warning
+                            descText.innerHTML = `<strong style="color: #ff6b6b;">⚠️ Demo Mode</strong><br>
+                                The AI vision API is not analyzing your actual image. Using demo content instead.<br><br>
+                                ${result.imageAnalysis.description}`;
+                        }
                     }
                     
-                    // Display real AI observations
+                    // Display observations
                     if (result.observations && result.observations.length > 0) {
                         displayObservations(result.observations);
                         displayCritiques(result.critique || result.critiques);
                         return;
                     }
+                } else {
+                    console.error('API Error:', response.status, await response.text());
                 }
             } catch (error) {
                 console.error('API Error:', error);

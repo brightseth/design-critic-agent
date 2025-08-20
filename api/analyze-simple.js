@@ -681,7 +681,13 @@ async function getRealAICritique(imageBase64, mode = 'design') {
   });
 
   try {
+    // Ensure we have clean base64 data
+    if (imageBase64.includes(',')) {
+      imageBase64 = imageBase64.split(',')[1];
+    }
+    
     console.log('Calling Claude Vision API...');
+    console.log('Base64 data length:', imageBase64.length);
     
     // Create mode-specific prompts
     let systemPrompt = '';
@@ -729,7 +735,7 @@ Format as JSON with: description (detailed description of what's visible), obser
             type: "image",
             source: {
               type: "base64",
-              media_type: "image/jpeg",
+              media_type: "image/jpeg", // Claude accepts JPEG, PNG, GIF, WebP
               data: imageBase64
             }
           },
@@ -824,6 +830,11 @@ Format as JSON with: description (detailed description of what's visible), obser
 
   } catch (error) {
     console.error('Claude API error:', error.message);
+    console.error('Error type:', error.name);
+    console.error('Error status:', error.status);
+    if (error.response) {
+      console.error('Error response:', error.response.data);
+    }
     throw error;
   }
 }

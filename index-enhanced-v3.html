@@ -2015,6 +2015,10 @@
                     if (result.critique) {
                         window.apiCritiques = result.critique;
                     }
+                    // Store recommendations for improvements
+                    if (result.recommendations) {
+                        window.apiRecommendations = result.recommendations;
+                    }
                 } else {
                     console.error('Analysis failed:', result.error);
                     // Still show mock data for demo
@@ -2599,32 +2603,24 @@
             const panel = document.getElementById('improvementsPanel');
             panel.style.display = 'block';
             
-            const improvements = {
-                visual: [
-                    { text: 'Increase contrast between headline and body text by 30%', priority: 'high' },
-                    { text: 'Add visual hierarchy markers (size, weight, color) to guide eye movement', priority: 'high' },
-                    { text: 'Reduce visual noise by consolidating similar elements', priority: 'medium' }
-                ],
-                typography: [
-                    { text: 'Limit to 2-3 typefaces maximum (currently using 5)', priority: 'high' },
-                    { text: 'Increase line height to 1.5-1.7 for better readability', priority: 'medium' },
-                    { text: 'Use consistent type scale (1.618 golden ratio recommended)', priority: 'medium' }
-                ],
-                color: [
-                    { text: 'Primary CTA fails WCAG AA contrast standards - needs adjustment', priority: 'high' },
-                    { text: 'Reduce color palette from 8 to 4-5 colors maximum', priority: 'medium' },
-                    { text: 'Add subtle color coding for different content types', priority: 'low' }
-                ],
-                layout: [
-                    { text: 'Implement consistent 8px grid system throughout', priority: 'high' },
-                    { text: 'Increase whitespace between sections by 40%', priority: 'medium' },
-                    { text: 'Align all elements to consistent columns (suggest 12-column grid)', priority: 'high' }
-                ]
-            };
+            // Generate mode-specific improvements based on critique data
+            let improvements = {};
+            
+            if (currentCritiqueMode === 'photo') {
+                improvements = generatePhotoImprovements();
+            } else if (currentCritiqueMode === 'art') {
+                improvements = generateArtImprovements();
+            } else {
+                improvements = generateDesignImprovements();
+            }
+            
+            // Update category labels based on mode
+            updateImprovementCategories();
             
             Object.entries(improvements).forEach(([category, items]) => {
                 const container = document.getElementById(`${category}-items`);
-                container.innerHTML = items.map((item, index) => `
+                if (container) {
+                    container.innerHTML = items.map((item, index) => `
                     <div class="improvement-item">
                         <div class="improvement-checkbox" onclick="toggleImprovement(this)"></div>
                         <div style="flex: 1;">
@@ -2634,8 +2630,163 @@
                             </div>
                         </div>
                     </div>
-                `).join('');
+                    `).join('');
+                }
             });
+        }
+        
+        function generateDesignImprovements() {
+            // Use API recommendations if available
+            if (window.apiRecommendations && window.apiRecommendations.length > 0) {
+                const improvements = {
+                    visual: [],
+                    typography: [],
+                    color: [],
+                    layout: []
+                };
+                
+                // Distribute recommendations across categories
+                window.apiRecommendations.forEach((rec, index) => {
+                    const item = {
+                        text: rec.description || rec.title,
+                        priority: rec.priority || 'medium'
+                    };
+                    
+                    if (index % 4 === 0) improvements.visual.push(item);
+                    else if (index % 4 === 1) improvements.typography.push(item);
+                    else if (index % 4 === 2) improvements.color.push(item);
+                    else improvements.layout.push(item);
+                });
+                
+                // Fill in with suggestions from critiques if needed
+                if (window.apiCritiques && window.apiCritiques.length > 0) {
+                    window.apiCritiques.forEach(critic => {
+                        if (critic.points) {
+                            critic.points.forEach(point => {
+                                if (point.type === 'suggestion' && improvements.visual.length < 3) {
+                                    improvements.visual.push({
+                                        text: point.text,
+                                        priority: 'medium'
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                return improvements;
+            }
+            
+            // Extract suggestions from critique data if available
+            const suggestions = [];
+            if (window.apiCritiques && window.apiCritiques.length > 0) {
+                window.apiCritiques.forEach(critic => {
+                    if (critic.points) {
+                        critic.points.forEach(point => {
+                            if (point.type === 'suggestion' || point.type === 'weakness') {
+                                suggestions.push(point.text);
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Generate improvements based on suggestions or use defaults
+            return {
+                visual: suggestions.slice(0, 3).map(s => ({ 
+                    text: s, 
+                    priority: Math.random() > 0.5 ? 'high' : 'medium' 
+                })) || [
+                    { text: 'Strengthen visual hierarchy through size and contrast', priority: 'high' },
+                    { text: 'Reduce competing elements for clearer focus', priority: 'high' },
+                    { text: 'Improve alignment and consistency', priority: 'medium' }
+                ],
+                typography: [
+                    { text: 'Limit typeface variations for better unity', priority: 'high' },
+                    { text: 'Improve readability through better spacing', priority: 'medium' },
+                    { text: 'Establish clear typographic hierarchy', priority: 'medium' }
+                ],
+                color: [
+                    { text: 'Simplify color palette for stronger impact', priority: 'medium' },
+                    { text: 'Ensure accessibility compliance', priority: 'high' },
+                    { text: 'Use color more strategically', priority: 'low' }
+                ],
+                layout: [
+                    { text: 'Implement consistent grid system', priority: 'high' },
+                    { text: 'Increase breathing room between elements', priority: 'medium' },
+                    { text: 'Improve responsive behavior', priority: 'medium' }
+                ]
+            };
+        }
+        
+        function generatePhotoImprovements() {
+            return {
+                visual: [
+                    { text: 'Adjust exposure to reveal more detail in shadows', priority: 'high' },
+                    { text: 'Crop tighter to strengthen composition', priority: 'medium' },
+                    { text: 'Consider rule of thirds for better balance', priority: 'medium' }
+                ],
+                typography: [ // renamed to 'technical' in updateImprovementCategories
+                    { text: 'Increase sharpness in key focal areas', priority: 'high' },
+                    { text: 'Reduce noise in darker regions', priority: 'medium' },
+                    { text: 'Adjust white balance for more natural tones', priority: 'low' }
+                ],
+                color: [ // renamed to 'narrative'
+                    { text: 'Wait for decisive moment to capture peak action', priority: 'high' },
+                    { text: 'Include more environmental context', priority: 'medium' },
+                    { text: 'Focus on emotional connection with subject', priority: 'high' }
+                ],
+                layout: [ // renamed to 'artistic'
+                    { text: 'Experiment with different angles and perspectives', priority: 'medium' },
+                    { text: 'Use leading lines to guide viewer\'s eye', priority: 'high' },
+                    { text: 'Create depth through foreground elements', priority: 'low' }
+                ]
+            };
+        }
+        
+        function generateArtImprovements() {
+            return {
+                visual: [
+                    { text: 'Strengthen conceptual clarity and intent', priority: 'high' },
+                    { text: 'Push boundaries of medium and material', priority: 'medium' },
+                    { text: 'Consider scale and installation context', priority: 'medium' }
+                ],
+                typography: [ // renamed to 'execution'
+                    { text: 'Refine craftsmanship and finish quality', priority: 'high' },
+                    { text: 'Ensure material choices support concept', priority: 'high' },
+                    { text: 'Address technical inconsistencies', priority: 'medium' }
+                ],
+                color: [ // renamed to 'context'
+                    { text: 'Deepen engagement with contemporary discourse', priority: 'high' },
+                    { text: 'Consider political and social implications', priority: 'medium' },
+                    { text: 'Reference art historical precedents more clearly', priority: 'low' }
+                ],
+                layout: [ // renamed to 'impact'
+                    { text: 'Increase emotional and visceral impact', priority: 'high' },
+                    { text: 'Create more memorable visual experience', priority: 'medium' },
+                    { text: 'Consider audience interaction and participation', priority: 'medium' }
+                ]
+            };
+        }
+        
+        function updateImprovementCategories() {
+            const headers = document.querySelectorAll('.improvement-header h3');
+            if (currentCritiqueMode === 'photo') {
+                if (headers[0]) headers[0].textContent = 'Composition';
+                if (headers[1]) headers[1].textContent = 'Technical';
+                if (headers[2]) headers[2].textContent = 'Narrative';
+                if (headers[3]) headers[3].textContent = 'Artistic Vision';
+            } else if (currentCritiqueMode === 'art') {
+                if (headers[0]) headers[0].textContent = 'Concept';
+                if (headers[1]) headers[1].textContent = 'Execution';
+                if (headers[2]) headers[2].textContent = 'Context';
+                if (headers[3]) headers[3].textContent = 'Impact';
+            } else {
+                if (headers[0]) headers[0].textContent = 'Visual Hierarchy';
+                if (headers[1]) headers[1].textContent = 'Typography';
+                if (headers[2]) headers[2].textContent = 'Color & Contrast';
+                if (headers[3]) headers[3].textContent = 'Layout & Spacing';
+            }
         }
 
         function toggleImprovement(checkbox) {

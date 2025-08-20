@@ -627,9 +627,8 @@ async function generateSimpleCritique(imageBase64, imageUrl, mode = 'design') {
     critique: [jobsCritique, vignelliCritique, paulaCritique, maedaCritique, iveCritique],
     scores: {
       simplicity: 72,
-      usability: 68,
-      emotion: 65,
-      craft: 70
+      impact: 68,
+      usability: 75
     },
     recommendations: [
       {
@@ -810,9 +809,28 @@ module.exports = async (req, res) => {
         scores: {
           composition: Math.floor(Math.random() * 20) + 70,
           narrative: Math.floor(Math.random() * 20) + 65,
-          technical: Math.floor(Math.random() * 20) + 70,
-          impact: Math.floor(Math.random() * 20) + 68
-        }
+          technical: Math.floor(Math.random() * 20) + 70
+        },
+        recommendations: [
+          {
+            category: 'Composition',
+            priority: 'high',
+            title: 'Strengthen Visual Balance',
+            description: 'Consider rule of thirds and leading lines to guide the viewer\'s eye'
+          },
+          {
+            category: 'Technical',
+            priority: 'medium',
+            title: 'Improve Sharpness',
+            description: 'Focus on critical areas needs refinement for professional quality'
+          },
+          {
+            category: 'Narrative',
+            priority: 'high',
+            title: 'Clarify Story',
+            description: 'The emotional core needs stronger visual expression'
+          }
+        ]
       };
     } else if (mode === 'art') {
       // Art mode
@@ -833,9 +851,28 @@ module.exports = async (req, res) => {
         scores: {
           concept: Math.floor(Math.random() * 20) + 65,
           execution: Math.floor(Math.random() * 20) + 70,
-          relevance: Math.floor(Math.random() * 20) + 68,
-          innovation: Math.floor(Math.random() * 20) + 60
-        }
+          relevance: Math.floor(Math.random() * 20) + 68
+        },
+        recommendations: [
+          {
+            category: 'Concept',
+            priority: 'high',
+            title: 'Deepen Conceptual Framework',
+            description: 'Push beyond surface interpretation to engage with deeper meaning'
+          },
+          {
+            category: 'Execution',
+            priority: 'medium',
+            title: 'Refine Material Choices',
+            description: 'Consider how materials can better support your conceptual intent'
+          },
+          {
+            category: 'Context',
+            priority: 'high',
+            title: 'Engage Contemporary Discourse',
+            description: 'Connect more explicitly with current cultural conversations'
+          }
+        ]
       };
     } else {
       // Default design mode - use existing function

@@ -574,7 +574,7 @@
             }
         });
 
-        function analyzeImage() {
+        async function analyzeImage() {
             // Hide upload zone
             uploadZone.style.display = 'none';
             
@@ -584,7 +584,48 @@
             // Display image
             previewImage.src = uploadedImage;
             
-            // Generate dynamic observations
+            // Show loading state
+            observations.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Analyzing your image with AI vision...</div>';
+            critiquesGrid.innerHTML = '';
+            
+            try {
+                // Prepare image data
+                let payload = {
+                    mode: currentMode,
+                    personality: currentPersonality,
+                    experienceLevel: currentExperience
+                };
+                
+                // Check if it's a data URL or regular URL
+                if (uploadedImage.startsWith('data:')) {
+                    payload.imageData = uploadedImage;
+                } else {
+                    payload.imageUrl = uploadedImage;
+                }
+                
+                // Call the API
+                const response = await fetch('/api/analyze-simple', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('API Response:', result);
+                    
+                    // Display real AI observations
+                    if (result.observations && result.observations.length > 0) {
+                        displayObservations(result.observations);
+                        displayCritiques(result.critique || result.critiques);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+            }
+            
+            // Fallback to demo observations
             const observationSets = {
                 design: [
                     ['Visual hierarchy creates clear information flow', 'Typography demonstrates sophisticated restraint', 'Color palette balanced between energy and sophistication', 'Whitespace used strategically to guide attention', 'Component consistency shows system thinking'],
@@ -606,17 +647,86 @@
             const modeObservations = observationSets[currentMode] || observationSets.design;
             const selectedSet = modeObservations[Math.floor(Math.random() * modeObservations.length)];
             
-            // Display observations
+            // Display demo observations
+            displayObservations(selectedSet);
+            
+            // Generate demo critiques
+            generateCritiques();
+        }
+        
+        function displayObservations(observationList) {
             observations.innerHTML = '';
-            selectedSet.forEach((obs, i) => {
+            observationList.forEach((obs, i) => {
                 const item = document.createElement('div');
                 item.className = 'observation-item';
                 item.innerHTML = `<strong>${i + 1}.</strong> ${obs}`;
                 observations.appendChild(item);
             });
-
-            // Generate critiques
-            generateCritiques();
+        }
+        
+        function displayCritiques(critiquesList) {
+            if (!critiquesList || critiquesList.length === 0) {
+                generateCritiques(); // Fallback to demo
+                return;
+            }
+            
+            critiquesGrid.innerHTML = '';
+            
+            critiquesList.forEach((critique, index) => {
+                const card = document.createElement('div');
+                card.className = 'critique-card';
+                
+                // Get icon based on critic name
+                const criticIcons = {
+                    'Steve Jobs': '🍎',
+                    'Paula Scher': '🎯',
+                    'Jony Ive': '📱',
+                    'Ansel Adams': '🏔️',
+                    'Annie Leibovitz': '📸',
+                    'Henri Cartier-Bresson': '🎭',
+                    'Marina Abramović': '🔥',
+                    'Andy Warhol': '🥫',
+                    'Frida Kahlo': '🌺'
+                };
+                
+                const icon = criticIcons[critique.name || critique.critic] || '🎨';
+                const score = critique.score || Math.floor(Math.random() * 30) + 60;
+                
+                card.innerHTML = `
+                    <div class="critic-header">
+                        <div class="critic-avatar">${icon}</div>
+                        <div class="critic-info">
+                            <h3>${critique.name || critique.critic}</h3>
+                            <span class="critic-score">${score}/100</span>
+                        </div>
+                    </div>
+                    <div class="critique-content">
+                        ${critique.hotTake ? `<div class="hot-take">"${critique.hotTake}"</div>` : ''}
+                        ${critique.content ? `<div class="hot-take">"${critique.content}"</div>` : ''}
+                        <ul class="critique-points">
+                            ${critique.points ? critique.points.map(point => `
+                                <li class="critique-point">
+                                    <span class="point-icon ${point.type}">${
+                                        point.type === 'strength' ? '✓' : 
+                                        point.type === 'weakness' ? '×' : '→'
+                                    }</span>
+                                    <span>${point.text}</span>
+                                </li>
+                            `).join('') : ''}
+                            ${critique.keyPoints ? critique.keyPoints.map(point => `
+                                <li class="critique-point">
+                                    <span class="point-icon suggestion">→</span>
+                                    <span>${point}</span>
+                                </li>
+                            `).join('') : ''}
+                        </ul>
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    critiquesGrid.appendChild(card);
+                }, index * 200);
+            });
         }
 
         function generateCritiques() {

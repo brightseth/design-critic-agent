@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Critic Agent - Enhanced</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 0%, #666 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #666;
+            font-weight: 300;
+        }
+
+        .api-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #f44336;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .upload-section {
+            background: #111;
+            border-radius: 20px;
+            padding: 60px;
+            text-align: center;
+            margin-bottom: 40px;
+            border: 1px solid #222;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.2s forwards;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #333;
+            transform: translateY(-2px);
+        }
+
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 60px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #555;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .upload-area.dragover {
+            border-color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-text {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: #444;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #666;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .control-select {
+            padding: 8px 16px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .analyze-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        }
+
+        .analyze-btn:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .preview-section {
+            display: none;
+            background: #111;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid #222;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .preview-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .critique-section {
+            display: none;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .critique-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .critique-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            border-color: #666;
+        }
+
+        .critic-card {
+            background: #111;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid #222;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.5s ease-out forwards;
+            position: relative;
+        }
+
+        .critic-card:nth-child(2) { animation-delay: 0.1s; }
+        .critic-card:nth-child(3) { animation-delay: 0.2s; }
+        .critic-card:nth-child(4) { animation-delay: 0.3s; }
+        .critic-card:nth-child(5) { animation-delay: 0.4s; }
+        .critic-card:nth-child(6) { animation-delay: 0.5s; }
+
+        .critic-score {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            font-size: 24px;
+            font-weight: 200;
+            color: #666;
+        }
+
+        .critic-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .critic-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #333 0%, #111 100%);
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 300;
+        }
+
+        .critic-name {
+            font-size: 18px;
+            font-weight: 400;
+            color: #fff;
+        }
+
+        .critic-title {
+            font-size: 14px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .critique-content {
+            line-height: 1.8;
+            color: #ccc;
+        }
+
+        .critique-point {
+            margin-bottom: 16px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .critique-point::before {
+            content: "—";
+            position: absolute;
+            left: 0;
+            color: #666;
+        }
+
+        .critique-point.positive::before {
+            content: "+";
+            color: #4CAF50;
+        }
+
+        .critique-point.negative::before {
+            content: "−";
+            color: #f44336;
+        }
+
+        .summary-section {
+            background: #111;
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            border: 1px solid #222;
+            display: none;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .summary-card {
+            text-align: center;
+        }
+
+        .summary-score {
+            font-size: 48px;
+            font-weight: 200;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff 0%, #666 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .recommendations-section {
+            background: #111;
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            border: 1px solid #222;
+            display: none;
+        }
+
+        .recommendation-list {
+            margin-top: 20px;
+        }
+
+        .recommendation-item {
+            padding: 20px;
+            background: #000;
+            border: 1px solid #222;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+
+        .recommendation-priority {
+            padding: 4px 8px;
+            background: #222;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .recommendation-priority.high {
+            background: #f44336;
+        }
+
+        .recommendation-priority.medium {
+            background: #FF9800;
+        }
+
+        .recommendation-priority.low {
+            background: #4CAF50;
+        }
+
+        .recommendation-content {
+            flex: 1;
+        }
+
+        .recommendation-title {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .recommendation-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #222;
+            border-top-color: #666;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            border-color: #f44336;
+            color: #f44336;
+        }
+
+        .toast.success {
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="api-status">
+        <div class="status-dot"></div>
+        <span>API Connected</span>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Design Critique Agent</h1>
+            <p class="subtitle">AI-powered design analysis channeling legendary design wisdom</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="fileInput" accept="image/*">
+                <div class="upload-text">Drop your design here</div>
+                <div class="upload-subtext">or click to browse (JPG, PNG, GIF, WebP - Max 10MB)</div>
+            </div>
+            <input type="text" class="url-input" id="urlInput" placeholder="Or paste a URL to your design">
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label class="control-label">Depth:</label>
+                    <select class="control-select" id="depthSelect">
+                        <option value="quick">Quick Review</option>
+                        <option value="standard" selected>Standard Analysis</option>
+                        <option value="deep">Deep Critique</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Focus:</label>
+                    <select class="control-select" id="focusSelect">
+                        <option value="all" selected>All Aspects</option>
+                        <option value="visual">Visual Design</option>
+                        <option value="ux">User Experience</option>
+                        <option value="emotion">Emotional Impact</option>
+                        <option value="technical">Technical Quality</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="analyze-btn" id="analyzeBtn">Analyze Design</button>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <div class="preview-header">
+                <h3 style="font-weight: 300;">Your Design</h3>
+                <div class="preview-info" id="previewInfo"></div>
+            </div>
+            <img id="previewImage" class="preview-image" alt="Design preview">
+        </div>
+
+        <div class="loading" id="loadingSection">
+            <div class="loading-spinner"></div>
+            <p>Analyzing your design through multiple expert lenses...</p>
+            <p style="font-size: 12px; color: #444; margin-top: 10px;">This may take 10-30 seconds</p>
+        </div>
+
+        <div class="critique-section" id="critiqueSection">
+            <div class="critique-header">
+                <h2 style="font-size: 28px; font-weight: 300;">Expert Critiques</h2>
+                <div class="critique-actions">
+                    <button class="action-btn" onclick="exportCritique()">Export PDF</button>
+                    <button class="action-btn" onclick="shareCritique()">Share</button>
+                </div>
+            </div>
+            <div id="critiquesContainer">
+                <!-- Critiques will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <div class="summary-section" id="summarySection">
+            <h3 style="font-size: 24px; font-weight: 300; margin-bottom: 10px;">Overall Assessment</h3>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-score" id="simplicityScore">-</div>
+                    <div class="summary-label">Simplicity</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-score" id="usabilityScore">-</div>
+                    <div class="summary-label">Usability</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-score" id="emotionScore">-</div>
+                    <div class="summary-label">Emotional Impact</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-score" id="craftScore">-</div>
+                    <div class="summary-label">Craftsmanship</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="recommendations-section" id="recommendationsSection">
+            <h3 style="font-size: 24px; font-weight: 300;">Priority Recommendations</h3>
+            <div class="recommendation-list" id="recommendationsList">
+                <!-- Recommendations will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const urlInput = document.getElementById('urlInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const previewSection = document.getElementById('previewSection');
+        const previewImage = document.getElementById('previewImage');
+        const previewInfo = document.getElementById('previewInfo');
+        const loadingSection = document.getElementById('loadingSection');
+        const critiqueSection = document.getElementById('critiqueSection');
+        const critiquesContainer = document.getElementById('critiquesContainer');
+        const summarySection = document.getElementById('summarySection');
+        const recommendationsSection = document.getElementById('recommendationsSection');
+        const recommendationsList = document.getElementById('recommendationsList');
+        const depthSelect = document.getElementById('depthSelect');
+        const focusSelect = document.getElementById('focusSelect');
+
+        let currentFile = null;
+        let currentImageUrl = '';
+
+        // File upload handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleFile(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        function handleFile(file) {
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('File size must be less than 10MB', 'error');
+                return;
+            }
+
+            currentFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImageUrl = e.target.result;
+                previewImage.src = currentImageUrl;
+                previewSection.style.display = 'block';
+                previewInfo.textContent = `${file.name} (${(file.size / 1024).toFixed(0)}KB)`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        urlInput.addEventListener('input', (e) => {
+            if (e.target.value) {
+                currentImageUrl = e.target.value;
+                previewImage.src = currentImageUrl;
+                previewSection.style.display = 'block';
+                previewInfo.textContent = 'External URL';
+                currentFile = null;
+            }
+        });
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (currentImageUrl || currentFile) {
+                await analyzeDesign();
+            } else {
+                showToast('Please upload a design or provide a URL', 'error');
+            }
+        });
+
+        async function analyzeDesign() {
+            loadingSection.style.display = 'block';
+            critiqueSection.style.display = 'none';
+            summarySection.style.display = 'none';
+            recommendationsSection.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                
+                if (currentFile) {
+                    formData.append('design', currentFile);
+                } else if (currentImageUrl && !currentImageUrl.startsWith('data:')) {
+                    formData.append('url', currentImageUrl);
+                }
+                
+                formData.append('depth', depthSelect.value);
+                formData.append('focus', focusSelect.value);
+
+                // Simulate API call - replace with actual endpoint
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Analysis failed');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                // Fall back to demo mode
+                simulateAnalysis();
+            }
+        }
+
+        function simulateAnalysis() {
+            setTimeout(() => {
+                const mockData = {
+                    critique: generateMockCritiques(),
+                    scores: {
+                        simplicity: Math.floor(Math.random() * 30) + 70,
+                        usability: Math.floor(Math.random() * 30) + 70,
+                        emotion: Math.floor(Math.random() * 30) + 70,
+                        craft: Math.floor(Math.random() * 30) + 70
+                    },
+                    recommendations: generateMockRecommendations()
+                };
+                displayResults(mockData);
+            }, 2000);
+        }
+
+        function generateMockCritiques() {
+            return [
+                {
+                    name: 'Steve Jobs',
+                    avatar: 'SJ',
+                    title: 'Simplicity & Focus',
+                    focus: 'Examining the soul and essence of your design...',
+                    score: Math.floor(Math.random() * 30) + 70,
+                    points: [
+                        { type: 'negative', text: 'The hierarchy needs work. Users should instantly know where to focus.' },
+                        { type: 'negative', text: 'Too many competing elements. What\'s the ONE thing to remember?' },
+                        { type: 'positive', text: 'The core concept is strong, but it\'s buried in complexity.' },
+                        { type: 'negative', text: 'Typography lacks confidence. Be bold in your declarations.' },
+                        { type: 'negative', text: 'This feels designed. It should feel inevitable.' }
+                    ]
+                },
+                {
+                    name: 'John Maeda',
+                    avatar: 'JM',
+                    title: 'Simplicity Laws',
+                    focus: 'Applying the Laws of Simplicity systematically...',
+                    score: Math.floor(Math.random() * 30) + 70,
+                    points: [
+                        { type: 'negative', text: 'REDUCE: Several elements serve the same purpose.' },
+                        { type: 'negative', text: 'ORGANIZE: Related elements need stronger grouping.' },
+                        { type: 'positive', text: 'TIME: Interactions appear quick and responsive.' },
+                        { type: 'negative', text: 'LEARN: Some interactions are not intuitive.' },
+                        { type: 'positive', text: 'EMOTION: There are moments of delight, but they could be stronger.' }
+                    ]
+                },
+                {
+                    name: 'Airbnb Design',
+                    avatar: 'AB',
+                    title: 'Human Connection',
+                    focus: 'Evaluating trust, belonging, and warmth...',
+                    score: Math.floor(Math.random() * 30) + 70,
+                    points: [
+                        { type: 'negative', text: 'Missing human element. Add warmth through storytelling.' },
+                        { type: 'positive', text: 'Color palette creates a welcoming atmosphere.' },
+                        { type: 'negative', text: 'Trust signals need strengthening through consistency.' },
+                        { type: 'negative', text: 'Tone feels corporate. Make it conversational.' },
+                        { type: 'positive', text: 'Good use of space creates comfort.' }
+                    ]
+                }
+            ];
+        }
+
+        function generateMockRecommendations() {
+            return [
+                {
+                    priority: 'high',
+                    title: 'Simplify the Visual Hierarchy',
+                    description: 'Establish a clear focal point and reduce competing elements. Users should know where to look within 50ms.'
+                },
+                {
+                    priority: 'high',
+                    title: 'Strengthen Typography',
+                    description: 'Increase contrast and weight of headings. Typography should confidently guide the user through the experience.'
+                },
+                {
+                    priority: 'medium',
+                    title: 'Add Human Elements',
+                    description: 'Include testimonials, faces, or stories to create emotional connection and build trust.'
+                },
+                {
+                    priority: 'low',
+                    title: 'Refine Micro-interactions',
+                    description: 'Add subtle animations and feedback to create moments of delight without overwhelming the design.'
+                }
+            ];
+        }
+
+        function displayResults(data) {
+            loadingSection.style.display = 'none';
+            critiqueSection.style.display = 'block';
+            summarySection.style.display = 'block';
+            recommendationsSection.style.display = 'block';
+
+            // Display critiques
+            critiquesContainer.innerHTML = data.critique.map(c => 
+                generateCritiqueCard(c)
+            ).join('');
+
+            // Display scores
+            if (data.scores) {
+                document.getElementById('simplicityScore').textContent = data.scores.simplicity + '%';
+                document.getElementById('usabilityScore').textContent = data.scores.usability + '%';
+                document.getElementById('emotionScore').textContent = data.scores.emotion + '%';
+                document.getElementById('craftScore').textContent = data.scores.craft + '%';
+            }
+
+            // Display recommendations
+            if (data.recommendations) {
+                recommendationsList.innerHTML = data.recommendations.map(r =>
+                    generateRecommendationCard(r)
+                ).join('');
+            }
+        }
+
+        function generateCritiqueCard(critic) {
+            return `
+                <div class="critic-card">
+                    ${critic.score ? `<div class="critic-score">${critic.score}%</div>` : ''}
+                    <div class="critic-header">
+                        <div class="critic-avatar">${critic.avatar}</div>
+                        <div>
+                            <div class="critic-name">${critic.name}</div>
+                            <div class="critic-title">${critic.title}</div>
+                        </div>
+                    </div>
+                    <div class="critique-content">
+                        <p style="margin-bottom: 20px; color: #888;">${critic.focus}</p>
+                        ${critic.points.map(point => 
+                            typeof point === 'string' 
+                                ? `<div class="critique-point">${point}</div>`
+                                : `<div class="critique-point ${point.type}">${point.text}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateRecommendationCard(rec) {
+            return `
+                <div class="recommendation-item">
+                    <div class="recommendation-priority ${rec.priority}">${rec.priority.toUpperCase()}</div>
+                    <div class="recommendation-content">
+                        <div class="recommendation-title">${rec.title}</div>
+                        <div class="recommendation-desc">${rec.description}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function exportCritique() {
+            showToast('Export feature coming soon!', 'info');
+        }
+
+        function shareCritique() {
+            showToast('Share feature coming soon!', 'info');
+        }
+
+        // Check API status
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const statusDot = document.querySelector('.status-dot');
+                const statusText = document.querySelector('.api-status span');
+                
+                if (response.ok) {
+                    statusDot.classList.remove('offline');
+                    statusText.textContent = 'API Connected';
+                } else {
+                    statusDot.classList.add('offline');
+                    statusText.textContent = 'Demo Mode';
+                }
+            } catch (error) {
+                const statusDot = document.querySelector('.status-dot');
+                const statusText = document.querySelector('.api-status span');
+                statusDot.classList.add('offline');
+                statusText.textContent = 'Demo Mode';
+            }
+        }
+
+        // Check API status on load
+        checkAPIStatus();
+    </script>
+</body>
+</html>

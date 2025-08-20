@@ -10,6 +10,10 @@
       "dest": "/api/test-env.js"
     },
     {
+      "src": "/api/test-claude",
+      "dest": "/api/test-claude.js"
+    },
+    {
       "src": "/api/analyze",
       "dest": "/api/analyze-simple.js"
     },

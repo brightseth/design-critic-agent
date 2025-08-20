@@ -1147,24 +1147,16 @@
 
         <div class="score-breakdown" id="scoreBreakdown" style="display: none;">
             <div class="score-card">
-                <div class="score-value" id="simplicityScore" style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
-                <div class="score-label">Simplicity</div>
+                <div class="score-value" id="score1" style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+                <div class="score-label" id="scoreLabel1">Composition</div>
             </div>
             <div class="score-card">
-                <div class="score-value" id="clarityScore" style="background: var(--gradient-2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
-                <div class="score-label">Clarity</div>
+                <div class="score-value" id="score2" style="background: var(--gradient-2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+                <div class="score-label" id="scoreLabel2">Impact</div>
             </div>
             <div class="score-card">
-                <div class="score-value" id="impactScore" style="background: var(--gradient-3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
-                <div class="score-label">Visual Impact</div>
-            </div>
-            <div class="score-card">
-                <div class="score-value" id="usabilityScore" style="background: var(--gradient-4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
-                <div class="score-label">Usability</div>
-            </div>
-            <div class="score-card">
-                <div class="score-value" id="innovationScore" style="background: var(--gradient-5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
-                <div class="score-label">Innovation</div>
+                <div class="score-value" id="score3" style="background: var(--gradient-3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+                <div class="score-label" id="scoreLabel3">Execution</div>
             </div>
         </div>
 
@@ -1904,18 +1896,8 @@
                     </div>
                 `).join('');
             } else if (annotations.length === 0) {
-                // Show default content if no annotations
-                list.innerHTML = `
-                    <div class="annotation-item">
-                        <strong>1.</strong> Click on the image to add observation markers
-                    </div>
-                    <div class="annotation-item">
-                        <strong>2.</strong> Visual hierarchy assessment pending
-                    </div>
-                    <div class="annotation-item">
-                        <strong>3.</strong> Color palette analysis in progress
-                    </div>
-                `;
+                // Generate mode-specific default observations
+                generateModeSpecificObservations();
             } else {
                 list.innerHTML = annotations.map(ann => `
                     <div class="annotation-item" onclick="highlightAnnotation(${ann.id})">
@@ -1923,6 +1905,37 @@
                     </div>
                 `).join('');
             }
+        }
+        
+        function generateModeSpecificObservations() {
+            const list = document.getElementById('annotationsList');
+            let observations = [];
+            
+            if (currentCritiqueMode === 'photo') {
+                observations = [
+                    'Examining photographic composition and framing',
+                    'Analyzing light quality and emotional narrative',
+                    'Assessing technical execution and moment capture'
+                ];
+            } else if (currentCritiqueMode === 'art') {
+                observations = [
+                    'Evaluating conceptual framework and artistic intent',
+                    'Analyzing material choices and cultural context',
+                    'Assessing innovation and contribution to discourse'
+                ];
+            } else {
+                observations = [
+                    'Analyzing visual hierarchy and user flow',
+                    'Evaluating typography and color harmony',
+                    'Assessing functional clarity and brand consistency'
+                ];
+            }
+            
+            list.innerHTML = observations.map((obs, index) => `
+                <div class="annotation-item">
+                    <strong>${index + 1}.</strong> ${obs}
+                </div>
+            `).join('');
         }
 
         function highlightAnnotation(id) {
@@ -1991,9 +2004,12 @@
                     if (result.imageAnalysis) {
                         showImageDescription(result.imageAnalysis);
                     }
-                    // Update Key Observations
-                    if (result.observations) {
+                    // Update Key Observations based on mode and actual data
+                    if (result.observations && result.observations.length > 0) {
                         updateAnnotationsList(result.observations);
+                    } else {
+                        // Generate mode-specific observations if not provided
+                        generateModeSpecificObservations();
                     }
                     // Store critique data for later display
                     if (result.critique) {
@@ -2049,18 +2065,39 @@
             const scoreBreakdown = document.getElementById('scoreBreakdown');
             scoreBreakdown.style.display = 'grid';
             
-            // Animate scores
-            animateScore('simplicityScore', 85);
-            animateScore('clarityScore', 78);
-            animateScore('impactScore', 92);
-            animateScore('usabilityScore', 73);
-            animateScore('innovationScore', 68);
+            // Update score labels based on mode
+            updateScoreLabels();
+            
+            // Animate scores (3 scores instead of 5)
+            animateScore('score1', Math.floor(Math.random() * 20) + 70);
+            animateScore('score2', Math.floor(Math.random() * 20) + 65);
+            animateScore('score3', Math.floor(Math.random() * 20) + 75);
             
             // Show critiques
             generateCritiques();
             
             // Show improvements
             generateImprovements();
+        }
+        
+        function updateScoreLabels() {
+            const label1 = document.getElementById('scoreLabel1');
+            const label2 = document.getElementById('scoreLabel2');
+            const label3 = document.getElementById('scoreLabel3');
+            
+            if (currentCritiqueMode === 'photo') {
+                if (label1) label1.textContent = 'Composition';
+                if (label2) label2.textContent = 'Narrative';
+                if (label3) label3.textContent = 'Technical';
+            } else if (currentCritiqueMode === 'art') {
+                if (label1) label1.textContent = 'Concept';
+                if (label2) label2.textContent = 'Execution';
+                if (label3) label3.textContent = 'Relevance';
+            } else {
+                if (label1) label1.textContent = 'Simplicity';
+                if (label2) label2.textContent = 'Impact';
+                if (label3) label3.textContent = 'Usability';
+            }
         }
 
         function animateScore(elementId, targetScore) {
@@ -2113,6 +2150,13 @@
                         </div>
                     </div>
                     
+                    <!-- Acknowledgment of what they see -->
+                    ${critic.acknowledgment ? `
+                        <div style="padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 12px; color: #999; font-style: italic; font-size: 14px;">
+                            👁️ ${critic.acknowledgment}
+                        </div>
+                    ` : ''}
+                    
                     <!-- Hot Take - Always Visible -->
                     <div class="hot-take" style="--gradient-color: var(${gradientVar});">
                         💬 "${critic.hotTake || 'Analyzing your design...'}"
@@ -2120,15 +2164,25 @@
                     
                     <!-- Expandable Details -->
                     <div class="critic-details" id="critic-details-${index}">
-                        ${critic.points ? critic.points.map(point => `
-                            <div style="margin-bottom: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 2px solid ${
-                                point.type === 'positive' ? '#4facfe' : 
-                                point.type === 'negative' ? '#f093fb' : 
-                                '#43e97b'
-                            };">
-                                <span style="color: #ccc;">${point.text}</span>
-                            </div>
-                        `).join('') : ''}
+                        ${critic.points ? critic.points.map(point => {
+                            let color, label;
+                            if (point.type === 'positive' || point.type === 'strength') {
+                                color = '#4facfe';
+                                label = '✅ Strength';
+                            } else if (point.type === 'negative' || point.type === 'weakness') {
+                                color = '#f093fb';
+                                label = '⚠️ Weakness';
+                            } else {
+                                color = '#43e97b';
+                                label = '💡 Suggestion';
+                            }
+                            return `
+                                <div style="margin-bottom: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 2px solid ${color};">
+                                    <div style="font-size: 11px; color: ${color}; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;">${label}</div>
+                                    <span style="color: #ccc;">${point.text}</span>
+                                </div>
+                            `;
+                        }).join('') : ''}
                     </div>
                     
                     <div class="expand-indicator">

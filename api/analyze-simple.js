@@ -9,10 +9,11 @@ function getPhotographyCritics(imageBase64) {
       title: 'Cultural Criticism',
       focus: 'Photography as cultural artifact and moral document',
       score: Math.floor(Math.random() * 20) + 70,
+      acknowledgment: 'I see a photograph that attempts to capture more than surface - there\'s an ethical dimension here.',
       hotTake: 'The image participates in the ethics of seeing. What violence does this frame commit?',
       points: [
-        { type: 'positive', text: 'The frame acknowledges its own construction - honest about its artifice.' },
-        { type: 'negative', text: 'Too comfortable with surface beauty, not enough interrogation of power.' },
+        { type: 'strength', text: 'The frame acknowledges its own construction - honest about its artifice.' },
+        { type: 'weakness', text: 'Too comfortable with surface beauty, not enough interrogation of power.' },
         { type: 'suggestion', text: 'Photography is not about capturing reality but about creating new ways of seeing.' }
       ]
     },
@@ -22,10 +23,11 @@ function getPhotographyCritics(imageBase64) {
       title: 'Portrait Master',
       focus: 'Intimate storytelling through environmental context',
       score: Math.floor(Math.random() * 20) + 75,
+      acknowledgment: 'Looking at your image, I see an attempt to capture human essence within a meaningful context.',
       hotTake: 'The environment tells half the story, but where\'s the soul in the eyes?',
       points: [
-        { type: 'positive', text: 'Good use of natural light creates authentic mood.' },
-        { type: 'negative', text: 'The subject feels posed rather than revealed. Let them breathe.' },
+        { type: 'strength', text: 'Good use of natural light creates authentic mood.' },
+        { type: 'weakness', text: 'The subject feels posed rather than revealed. Let them breathe.' },
         { type: 'suggestion', text: 'Spend more time with your subject before shooting. Trust emerges in the waiting.' }
       ]
     },
@@ -148,10 +150,11 @@ function getArtCritics(imageBase64) {
       title: 'Populist Provocateur',
       focus: 'Art should punch you in the gut',
       score: Math.floor(Math.random() * 20) + 65,
+      acknowledgment: 'OK, I\'m looking at your work - I see ambition, I see effort, I see an attempt at meaning.',
       hotTake: 'This is art school clever, not art world smart. Where\'s the FEELING?',
       points: [
-        { type: 'negative', text: 'Too much concept, not enough visual power. Art isn\'t a thesis.' },
-        { type: 'positive', text: 'At least you\'re trying something. That\'s more than most.' },
+        { type: 'weakness', text: 'Too much concept, not enough visual power. Art isn\'t a thesis.' },
+        { type: 'strength', text: 'At least you\'re trying something. That\'s more than most.' },
         { type: 'suggestion', text: 'Stop thinking and start feeling. Your brain is killing your art.' }
       ]
     },
@@ -800,10 +803,8 @@ module.exports = async (req, res) => {
         },
         observations: [
           'Examining photographic composition and framing',
-          'Analyzing light quality and direction',
-          'Evaluating emotional impact and narrative',
-          'Assessing technical execution and craft',
-          'Considering cultural and historical context'
+          'Analyzing light quality and emotional narrative',
+          'Assessing technical execution and moment capture'
         ],
         critique: critics,
         scores: {
@@ -825,10 +826,8 @@ module.exports = async (req, res) => {
         },
         observations: [
           'Evaluating conceptual framework and artistic intent',
-          'Analyzing material choices and execution',
-          'Considering cultural and political context',
-          'Assessing innovation and contribution to discourse',
-          'Examining relationship to art history and contemporary practice'
+          'Analyzing material choices and cultural context',
+          'Assessing innovation and contribution to discourse'
         ],
         critique: critics,
         scores: {

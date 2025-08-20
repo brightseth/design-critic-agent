@@ -682,28 +682,34 @@ async function getRealAICritique(imageBase64, mode = 'design') {
     let experts = [];
     
     if (mode === 'photo') {
-      systemPrompt = `You are a panel of master photographers analyzing an image. Provide:
+      systemPrompt = `You are a panel of master photographers analyzing an image. 
+FIRST, describe exactly what you see in the image - the subject matter, objects, people, setting, colors, composition.
+THEN provide:
 1. Technical analysis (composition, light, color, focus)
 2. Emotional/narrative assessment
 3. Strengths and weaknesses
 4. Specific improvement suggestions
-Format as JSON with: description, observations (array of 3), strengths (array), weaknesses (array), suggestions (array)`;
+Format as JSON with: description (detailed description of what's visible in the image), observations (array of 3 specific things about THIS image), strengths (array), weaknesses (array), suggestions (array)`;
       experts = ['Henri Cartier-Bresson', 'Annie Leibovitz', 'Sebastião Salgado'];
     } else if (mode === 'art') {
-      systemPrompt = `You are a panel of art critics analyzing an artwork. Provide:
+      systemPrompt = `You are a panel of art critics analyzing an artwork.
+FIRST, describe exactly what you see - the medium, subject matter, visual elements, colors, style, technique.
+THEN provide:
 1. Conceptual analysis
 2. Technical execution assessment
 3. Cultural/historical context
 4. Strengths and weaknesses
-Format as JSON with: description, observations (array of 3), strengths (array), weaknesses (array), suggestions (array)`;
+Format as JSON with: description (detailed description of what's visible), observations (array of 3 specific things about THIS artwork), strengths (array), weaknesses (array), suggestions (array)`;
       experts = ['Jerry Saltz', 'Roberta Smith', 'Hans Ulrich Obrist'];
     } else {
-      systemPrompt = `You are a panel of design experts analyzing a design. Provide:
+      systemPrompt = `You are a panel of design experts analyzing a design.
+FIRST, describe exactly what you see - the type of design (web, app, poster, etc), layout, colors, typography, images, UI elements.
+THEN provide:
 1. Visual hierarchy and composition analysis
 2. Typography and color assessment
 3. Usability observations
 4. Strengths and weaknesses
-Format as JSON with: description, observations (array of 3), strengths (array), weaknesses (array), suggestions (array)`;
+Format as JSON with: description (detailed description of what's visible), observations (array of 3 specific things about THIS design), strengths (array), weaknesses (array), suggestions (array)`;
       experts = ['Steve Jobs', 'Massimo Vignelli', 'Paula Scher'];
     }
     

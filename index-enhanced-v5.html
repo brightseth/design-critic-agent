@@ -226,6 +226,28 @@
             display: block;
         }
 
+        .image-description {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .image-description h2 {
+            font-size: var(--type-xl);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .image-description p {
+            font-size: var(--type-base);
+            line-height: 1.8;
+            opacity: 0.95;
+        }
+
         .results-grid {
             display: grid;
             grid-template-columns: 200px 1fr;
@@ -438,6 +460,12 @@
 
         <!-- Analysis Results -->
         <div class="analysis-container" id="analysisContainer">
+            <!-- What I See Section -->
+            <div class="image-description" id="imageDescription" style="display: none;">
+                <h2><span>👁️</span> What I See</h2>
+                <p id="descriptionText">Analyzing visual content...</p>
+            </div>
+            
             <div class="results-grid">
                 <!-- Image Preview -->
                 <div>
@@ -614,6 +642,13 @@
                     const result = await response.json();
                     console.log('API Response:', result);
                     
+                    // Display what the AI sees
+                    if (result.imageAnalysis) {
+                        document.getElementById('imageDescription').style.display = 'block';
+                        document.getElementById('descriptionText').innerHTML = result.imageAnalysis.description || 
+                            'I see an image that contains various visual elements requiring analysis.';
+                    }
+                    
                     // Display real AI observations
                     if (result.observations && result.observations.length > 0) {
                         displayObservations(result.observations);
@@ -625,7 +660,9 @@
                 console.error('API Error:', error);
             }
             
-            // Fallback to demo observations
+            // Fallback to demo mode
+            displayDemoDescription();
+            
             const observationSets = {
                 design: [
                     ['Visual hierarchy creates clear information flow', 'Typography demonstrates sophisticated restraint', 'Color palette balanced between energy and sophistication', 'Whitespace used strategically to guide attention', 'Component consistency shows system thinking'],
@@ -652,6 +689,32 @@
             
             // Generate demo critiques
             generateCritiques();
+        }
+        
+        function displayDemoDescription() {
+            const descriptions = {
+                design: [
+                    'I see a digital interface with multiple interactive elements arranged in a structured layout. The composition features a primary navigation system, content areas with varied visual hierarchy, and actionable components. Color choices suggest a modern aesthetic with deliberate contrast ratios for accessibility.',
+                    'Looking at this design, I observe a web-based interface utilizing card-based layouts with subtle shadows and rounded corners. Typography appears to follow a clear scale system, with sans-serif fonts dominating the visual language. Interactive elements show consistent styling patterns.',
+                    'The image shows a user interface design with a sophisticated grid system. Visual elements include buttons, form inputs, and content sections arranged with purposeful spacing. The color palette combines neutral backgrounds with accent colors for key actions.'
+                ],
+                photography: [
+                    'I see a photograph capturing a specific moment in time. The composition includes foreground and background elements with varying depths of field. Natural or artificial lighting creates shadows and highlights that define the subject matter. The frame captures both primary subjects and environmental context.',
+                    'This image presents a photographic composition with clear subject matter positioned within the frame. Light quality suggests either golden hour natural light or controlled studio lighting. The depth and perspective create visual layers that guide the eye through the composition.',
+                    'Looking at this photograph, I observe careful attention to framing and timing. The subject occupies a deliberate position within the frame, with supporting elements providing context. Tonal range spans from deep shadows to bright highlights, creating dimensional depth.'
+                ],
+                art: [
+                    'I see an artistic work that explores visual concepts through form, color, and composition. The piece demonstrates intentional choices in medium and technique, with evidence of the artist\'s hand or process. Elements within the work create dialogue between representation and abstraction.',
+                    'This artwork presents a visual investigation of themes through material and method. The composition suggests conceptual frameworks beyond pure aesthetics, with symbolic or metaphorical elements integrated throughout. The execution shows deliberate artistic decisions.',
+                    'Looking at this artistic piece, I observe an interplay between traditional and contemporary approaches. The work engages with cultural or personal narratives through visual language. Technical execution and conceptual framework appear to be in conscious dialogue.'
+                ]
+            };
+            
+            const modeDescriptions = descriptions[currentMode] || descriptions.design;
+            const selectedDescription = modeDescriptions[Math.floor(Math.random() * modeDescriptions.length)];
+            
+            document.getElementById('imageDescription').style.display = 'block';
+            document.getElementById('descriptionText').innerHTML = selectedDescription;
         }
         
         function displayObservations(observationList) {

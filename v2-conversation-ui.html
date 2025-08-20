@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Critic Agents - V2 Conversation Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+        }
+
+        .header .subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+        
+        .version-switcher {
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 4px;
+            gap: 4px;
+        }
+        
+        .version-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .version-btn.active {
+            background: white;
+            color: #667eea;
+        }
+        
+        .version-btn:not(.active):hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .left-panel {
+            flex: 0 0 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .upload-zone {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .upload-zone:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .upload-zone.active {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, #667eea20 0%, #764ba240 100%);
+        }
+
+        .agent-selection {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .agent-selection h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .mode-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .agent-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .agent-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+        }
+
+        .agent-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 auto 10px;
+        }
+
+        .agent-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .agent-title {
+            font-size: 10px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .conversation-panel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conversation-header {
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .conversation-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .phase-indicator {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .phase-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .phase-dot.active {
+            background: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .phase-dot.complete {
+            background: #4caf50;
+        }
+
+        .heat-meter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .heat-bar {
+            width: 100px;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .heat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #ffeb3b 50%, #f44336 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .conversation-timeline {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .message-info {
+            flex: 1;
+        }
+
+        .message-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .message-type {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .message-intensity {
+            display: flex;
+            gap: 2px;
+        }
+
+        .intensity-bar {
+            width: 4px;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+
+        .intensity-bar.filled {
+            background: linear-gradient(180deg, #f44336 0%, #ffeb3b 100%);
+        }
+
+        .message-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message.interruption .message-content {
+            border-left-color: #f44336;
+            background: #fff5f5;
+        }
+
+        .message.consensus .message-content {
+            border-left-color: #4caf50;
+            background: #f1f8e9;
+        }
+
+        .message.moderator .message-content {
+            border-left-color: #ff9800;
+            background: #fff8e1;
+        }
+
+        .control-buttons {
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 2px solid #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .selected-count {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .phase-labels {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .phase-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <a href="index-hub.html" style="font-size: 20px; text-decoration: none;">🎨</a>
+            <div>
+                <h1>Design Critic Studio</h1>
+                <div class="subtitle">Multi-Agent Conversation System</div>
+            </div>
+        </div>
+        <div class="version-switcher">
+            <a href="index-enhanced-v4.html" class="version-btn">V1 Classic</a>
+            <a href="v2-conversation-ui.html" class="version-btn active">V2 Conversations</a>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-panel">
+            <div class="upload-section">
+                <div class="upload-zone" id="uploadZone">
+                    <div style="font-size: 48px; margin-bottom: 10px;">🎨</div>
+                    <div style="font-weight: 600; margin-bottom: 5px;">Drop Your Work</div>
+                    <div style="font-size: 12px; color: #999;">or click to upload</div>
+                </div>
+                <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml" style="display: none;">
+            </div>
+
+            <div class="agent-selection">
+                <h3>Select Critics <span class="selected-count" id="selectedCount">0</span></h3>
+                
+                <div class="mode-tabs">
+                    <div class="mode-tab active" data-mode="design">Design</div>
+                    <div class="mode-tab" data-mode="photo">Photo</div>
+                    <div class="mode-tab" data-mode="art">Art</div>
+                </div>
+
+                <div class="agent-grid" id="agentGrid">
+                    <!-- Agents will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="conversation-panel">
+            <div class="conversation-header">
+                <div class="conversation-status">
+                    <div>
+                        <h2 style="font-size: 20px; margin-bottom: 10px;">Critique Conversation</h2>
+                        <div class="phase-indicator">
+                            <div class="phase-dot active" data-phase="initial"></div>
+                            <div class="phase-dot" data-phase="cross"></div>
+                            <div class="phase-dot" data-phase="debate"></div>
+                            <div class="phase-dot" data-phase="consensus"></div>
+                        </div>
+                        <div class="phase-labels">
+                            <div class="phase-label">Initial</div>
+                            <div class="phase-label">Cross-Exam</div>
+                            <div class="phase-label">Debate</div>
+                            <div class="phase-label">Consensus</div>
+                        </div>
+                    </div>
+                    <div class="heat-meter">
+                        <span style="font-size: 12px; color: #666;">Heat Level</span>
+                        <div class="heat-bar">
+                            <div class="heat-fill" id="heatFill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="conversation-timeline" id="timeline">
+                <div style="text-align: center; color: #999; padding: 60px 20px;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">💬</div>
+                    <div>Upload your work and select critics to begin the conversation</div>
+                </div>
+            </div>
+
+            <div class="control-buttons">
+                <button class="btn btn-secondary" id="resetBtn">Reset</button>
+                <button class="btn btn-primary" id="startBtn">Start Conversation</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div>Critics are discussing your work...</div>
+        </div>
+    </div>
+
+    <script>
+        // Agent data
+        const agents = {
+            design: [
+                { id: 'paula-scher', name: 'Paula Scher', title: 'Typography Power', avatar: 'PS' },
+                { id: 'massimo-vignelli', name: 'Massimo Vignelli', title: 'Grid Master', avatar: 'MV' },
+                { id: 'steve-jobs', name: 'Steve Jobs', title: 'Simplicity', avatar: 'SJ' }
+            ],
+            photo: [
+                { id: 'ansel-adams', name: 'Ansel Adams', title: 'Light & Shadow', avatar: 'AA' },
+                { id: 'annie-leibovitz', name: 'Annie Leibovitz', title: 'Narrative', avatar: 'AL' },
+                { id: 'henri-cartier-bresson', name: 'Henri Cartier-Bresson', title: 'Decisive Moment', avatar: 'HCB' }
+            ],
+            art: [
+                { id: 'marina-abramovic', name: 'Marina Abramović', title: 'Presence', avatar: 'MA' },
+                { id: 'andy-warhol', name: 'Andy Warhol', title: 'Pop Culture', avatar: 'AW' },
+                { id: 'frida-kahlo', name: 'Frida Kahlo', title: 'Raw Truth', avatar: 'FK' }
+            ]
+        };
+
+        let selectedAgents = new Set();
+        let currentMode = 'design';
+        let uploadedImage = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('V2 Conversation UI Initializing...');
+            setupEventListeners();
+            renderAgents('design');
+        });
+
+        function setupEventListeners() {
+            // Upload zone
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+            
+            if (!uploadZone || !fileInput) {
+                console.error('Upload elements not found!');
+                return;
+            }
+            
+            // Click to upload
+            uploadZone.addEventListener('click', (e) => {
+                // Allow clicking anywhere in the upload zone
+                fileInput.click();
+            });
+            
+            // Drag and drop
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadZone.classList.add('active');
+            });
+            
+            uploadZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadZone.classList.remove('active');
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadZone.classList.remove('active');
+                
+                const files = e.dataTransfer.files;
+                console.log('Files dropped:', files.length);
+                handleFiles(files);
+            });
+            
+            fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+            // Mode tabs
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentMode = tab.dataset.mode;
+                    renderAgents(currentMode);
+                });
+            });
+
+            // Control buttons
+            document.getElementById('startBtn').addEventListener('click', startConversation);
+            document.getElementById('resetBtn').addEventListener('click', resetConversation);
+        }
+
+        function handleFiles(files) {
+            console.log('handleFiles called with', files.length, 'files');
+            if (files.length > 0) {
+                const file = files[0];
+                console.log('File type:', file.type, 'Size:', file.size);
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        console.log('Image loaded successfully');
+                        uploadedImage = e.target.result;
+                        
+                        // Update upload zone with preview
+                        const uploadZone = document.getElementById('uploadZone');
+                        uploadZone.innerHTML = `
+                            <img src="${uploadedImage}" style="max-width: 100%; max-height: 150px; border-radius: 10px; object-fit: contain;">
+                            <div style="margin-top: 10px; font-size: 12px; color: #666;">✓ Image uploaded - Click to change</div>
+                        `;
+                        
+                        // Visual feedback
+                        uploadZone.style.borderColor = '#4caf50';
+                        uploadZone.style.borderWidth = '3px';
+                        uploadZone.style.background = 'linear-gradient(135deg, #f1f8e9 0%, #e8f5e9 100%)';
+                        
+                        // Update button state
+                        const startBtn = document.getElementById('startBtn');
+                        if (selectedAgents.size >= 2) {
+                            startBtn.style.opacity = '1';
+                            startBtn.style.cursor = 'pointer';
+                            startBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                        } else {
+                            // Prompt user to select critics
+                            if (selectedAgents.size === 0) {
+                                alert('Great! Now select at least 2 critics to start the conversation.');
+                            } else if (selectedAgents.size === 1) {
+                                alert('Nice! Select one more critic to start the conversation.');
+                            }
+                        }
+                    };
+                    
+                    reader.onerror = (e) => {
+                        console.error('Error reading file:', e);
+                        alert('Error reading the image file. Please try again.');
+                    };
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Please upload an image file (JPG, PNG, GIF, etc.)');
+                }
+            }
+        }
+
+        function renderAgents(mode) {
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+            
+            agents[mode].forEach(agent => {
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                if (selectedAgents.has(agent.id)) {
+                    card.classList.add('selected');
+                }
+                
+                card.innerHTML = `
+                    <div class="agent-avatar">${agent.avatar}</div>
+                    <div class="agent-name">${agent.name}</div>
+                    <div class="agent-title">${agent.title}</div>
+                `;
+                
+                card.addEventListener('click', () => toggleAgent(agent, card));
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleAgent(agent, card) {
+            if (selectedAgents.has(agent.id)) {
+                selectedAgents.delete(agent.id);
+                card.classList.remove('selected');
+            } else {
+                if (selectedAgents.size < 4) {
+                    selectedAgents.add(agent.id);
+                    card.classList.add('selected');
+                }
+            }
+            
+            document.getElementById('selectedCount').textContent = selectedAgents.size;
+            
+            // Enable/disable start button based on selection
+            const startBtn = document.getElementById('startBtn');
+            if (selectedAgents.size >= 2 && uploadedImage) {
+                startBtn.style.opacity = '1';
+                startBtn.style.cursor = 'pointer';
+            } else {
+                startBtn.style.opacity = '0.5';
+                startBtn.style.cursor = 'not-allowed';
+            }
+        }
+
+        function startConversation() {
+            if (!uploadedImage) {
+                alert('Please upload an image first');
+                return;
+            }
+            
+            if (selectedAgents.size < 2) {
+                alert('Please select at least 2 critics');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loadingOverlay').classList.add('active');
+            
+            // Clear previous conversation
+            document.getElementById('timeline').innerHTML = '';
+            
+            // Generate conversation after a delay
+            setTimeout(() => {
+                generateConversation();
+                document.getElementById('loadingOverlay').classList.remove('active');
+            }, 2000);
+        }
+
+        function generateConversation() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+            
+            // Get selected agent details
+            const selectedAgentDetails = [];
+            ['design', 'photo', 'art'].forEach(mode => {
+                agents[mode].forEach(agent => {
+                    if (selectedAgents.has(agent.id)) {
+                        selectedAgentDetails.push(agent);
+                    }
+                });
+            });
+            
+            // Simulate conversation phases
+            const conversations = [
+                // Phase 1: Initial observations
+                {
+                    phase: 'initial',
+                    messages: selectedAgentDetails.map(agent => ({
+                        speaker: agent.name,
+                        avatar: agent.avatar,
+                        type: 'initial',
+                        intensity: 0.3,
+                        content: getInitialObservation(agent.id)
+                    }))
+                },
+                // Phase 2: Cross-examination
+                {
+                    phase: 'cross',
+                    messages: [
+                        {
+                            speaker: selectedAgentDetails[0].name,
+                            avatar: selectedAgentDetails[0].avatar,
+                            type: 'response',
+                            intensity: 0.6,
+                            content: getCrossExamination(selectedAgentDetails[0].id, selectedAgentDetails[1].id)
+                        },
+                        {
+                            speaker: selectedAgentDetails[1].name,
+                            avatar: selectedAgentDetails[1].avatar,
+                            type: 'response',
+                            intensity: 0.7,
+                            content: getCrossExamination(selectedAgentDetails[1].id, selectedAgentDetails[0].id)
+                        }
+                    ]
+                },
+                // Phase 3: Debate
+                {
+                    phase: 'debate',
+                    messages: [
+                        {
+                            speaker: selectedAgentDetails[0].name,
+                            avatar: selectedAgentDetails[0].avatar,
+                            type: 'debate',
+                            intensity: 0.8,
+                            content: getDebatePoint(selectedAgentDetails[0].id)
+                        },
+                        {
+                            speaker: selectedAgentDetails[1].name,
+                            avatar: selectedAgentDetails[1].avatar,
+                            type: 'interruption',
+                            intensity: 0.9,
+                            content: getInterruption(selectedAgentDetails[1].id)
+                        }
+                    ]
+                },
+                // Phase 4: Consensus
+                {
+                    phase: 'consensus',
+                    messages: [
+                        {
+                            speaker: selectedAgentDetails[0].name,
+                            avatar: selectedAgentDetails[0].avatar,
+                            type: 'consensus',
+                            intensity: 0.4,
+                            content: getConsensus(selectedAgentDetails[0].id)
+                        }
+                    ]
+                }
+            ];
+            
+            // Animate conversation
+            let messageIndex = 0;
+            let phaseIndex = 0;
+            
+            const addNextMessage = () => {
+                if (phaseIndex < conversations.length) {
+                    const phase = conversations[phaseIndex];
+                    
+                    // Update phase indicators
+                    updatePhase(phase.phase);
+                    
+                    if (messageIndex < phase.messages.length) {
+                        const message = phase.messages[messageIndex];
+                        addMessage(message);
+                        updateHeatLevel(message.intensity);
+                        messageIndex++;
+                        
+                        setTimeout(addNextMessage, 1500);
+                    } else {
+                        messageIndex = 0;
+                        phaseIndex++;
+                        setTimeout(addNextMessage, 1000);
+                    }
+                }
+            };
+            
+            addNextMessage();
+        }
+
+        function addMessage(message) {
+            const timeline = document.getElementById('timeline');
+            
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${message.type}`;
+            
+            const intensityBars = Array(5).fill(0).map((_, i) => 
+                `<div class="intensity-bar ${i < Math.floor(message.intensity * 5) ? 'filled' : ''}"></div>`
+            ).join('');
+            
+            messageEl.innerHTML = `
+                <div class="message-header">
+                    <div class="message-avatar">${message.avatar}</div>
+                    <div class="message-info">
+                        <div class="message-name">${message.speaker}</div>
+                        <div class="message-type">${message.type}</div>
+                    </div>
+                    <div class="message-intensity">${intensityBars}</div>
+                </div>
+                <div class="message-content">${message.content}</div>
+            `;
+            
+            timeline.appendChild(messageEl);
+            timeline.scrollTop = timeline.scrollHeight;
+        }
+
+        function updatePhase(phase) {
+            document.querySelectorAll('.phase-dot').forEach(dot => {
+                const dotPhase = dot.dataset.phase;
+                if (dotPhase === phase) {
+                    dot.classList.add('active');
+                } else if (getPhaseOrder(dotPhase) < getPhaseOrder(phase)) {
+                    dot.classList.add('complete');
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        function getPhaseOrder(phase) {
+            const order = { initial: 0, cross: 1, debate: 2, consensus: 3 };
+            return order[phase] || 0;
+        }
+
+        function updateHeatLevel(intensity) {
+            document.getElementById('heatFill').style.width = `${intensity * 100}%`;
+        }
+
+        function resetConversation() {
+            document.getElementById('timeline').innerHTML = `
+                <div style="text-align: center; color: #999; padding: 60px 20px;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">💬</div>
+                    <div>Upload your work and select critics to begin the conversation</div>
+                </div>
+            `;
+            
+            document.querySelectorAll('.phase-dot').forEach(dot => {
+                dot.classList.remove('active', 'complete');
+            });
+            document.querySelector('.phase-dot[data-phase="initial"]').classList.add('active');
+            
+            document.getElementById('heatFill').style.width = '0%';
+        }
+
+        // Sample conversation content generators
+        function getInitialObservation(agentId) {
+            const observations = {
+                'paula-scher': "Alright, let's see what we've got here... The typography is whispering when it should be SHOUTING! This needs more confidence, more presence. Make it 300% bigger!",
+                'massimo-vignelli': "Let us examine this systematically... The grid is suggestions, not law. This alignment is chaos. We need discipline, structure, proper hierarchy.",
+                'steve-jobs': "OK, let's see what you've got... It's... fine. But fine is the enemy of great. What problem does this solve? Can we remove half of this?",
+                'ansel-adams': "Let's examine the light in this image... The tonal range is weak. Your shadows are muddy, highlights blown. Where's the Zone System thinking?",
+                'annie-leibovitz': "Tell me the story you're trying to capture... This is technically competent, but where's the NARRATIVE? The soul? Make it a production!",
+                'henri-cartier-bresson': "Let me observe what moment you've captured... You were close, but not quite there. The decisive moment was missed by half a second.",
+                'marina-abramovic': "I need to feel the energy of this work... This is safe, comfortable. Where is the RISK? The presence? You are not here in this work.",
+                'andy-warhol': "Oh wow. That's great. Really great... But is it famous enough? Can you repeat it 50 times? Make it in pink. Pink sells.",
+                'frida-kahlo': "Show me your blood, not your tears... This is pretty, but where are your WOUNDS? Your TRUTH? Paint with your scars, not your brushes."
+            };
+            
+            return observations[agentId] || "Interesting approach...";
+        }
+
+        function getCrossExamination(speakerId, targetId) {
+            const responses = {
+                'paula-scher': "I respect the technical approach, but where's the IMPACT? This needs to grab people by the throat!",
+                'massimo-vignelli': "Paula, your energy is admirable, but must it shout? Discipline creates more power than volume.",
+                'steve-jobs': "The grid is great, but what about the magic? Where's the soul in all this structure?"
+            };
+            
+            return responses[speakerId] || "I have to push back on that point...";
+        }
+
+        function getDebatePoint(agentId) {
+            const debates = {
+                'paula-scher': "Typography IS the image here! Stop treating it like an afterthought!",
+                'massimo-vignelli': "No, no, no. This lacks the necessary rigor. The grid is the underwear of design!",
+                'steve-jobs': "This is shit. Complete shit. Start over. Simplify, simplify, simplify."
+            };
+            
+            return debates[agentId] || "Let me make my position clear...";
+        }
+
+        function getInterruption(agentId) {
+            const interruptions = {
+                'paula-scher': "Wait, wait, wait... BIGGER! It needs to be BIGGER!",
+                'massimo-vignelli': "Hold on a second... Four typefaces! We only need four!",
+                'steve-jobs': "No, that's not right... Design is how it works!"
+            };
+            
+            return interruptions[agentId] || "I have to jump in here...";
+        }
+
+        function getConsensus(agentId) {
+            const consensus = {
+                'paula-scher': "I think we can all agree that the typography needs more presence and confidence.",
+                'massimo-vignelli': "We all see the need for better structure and discipline in the composition.",
+                'steve-jobs': "The consensus is clear: simplify and focus on what truly matters."
+            };
+            
+            return consensus[agentId] || "We can agree on the fundamental issues here...";
+        }
+    </script>
+</body>
+</html>

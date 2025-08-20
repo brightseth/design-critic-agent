@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Critic Studio - AI Design Analysis</title>
+    <title>Critic Studio V1 - AI Design Analysis</title>
     <style>
         :root {
             /* Vignelli-inspired strict grid system */
@@ -41,6 +41,64 @@
             color: var(--color-primary);
             line-height: 1.6;
             overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+
+        .nav-bar a:hover {
+            opacity: 1;
+        }
+
+        .nav-title {
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .version-switcher {
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 4px;
+            gap: 4px;
+        }
+        
+        .version-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .version-btn.active {
+            background: white;
+            color: #667eea;
+        }
+        
+        .version-btn:not(.active):hover {
+            background: rgba(255,255,255,0.1);
         }
 
         /* Progressive Disclosure Container */
@@ -190,6 +248,8 @@
             text-align: center;
             opacity: 0;
             transition: opacity 0.6s ease;
+            position: relative;
+            z-index: 10;
         }
 
         .personality-selector.visible {
@@ -197,19 +257,27 @@
         }
 
         .personality-btn {
-            background: none;
-            border: none;
-            padding: 8px 16px;
+            background: var(--color-surface);
+            border: 2px solid transparent;
+            padding: 10px 20px;
             margin: 0 8px;
             cursor: pointer;
             font-size: var(--type-sm);
             color: var(--color-secondary);
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            border-radius: 20px;
+        }
+
+        .personality-btn:hover {
+            border-color: var(--color-secondary);
+            transform: translateY(-2px);
         }
 
         .personality-btn.active {
-            color: var(--color-primary);
+            color: var(--color-background);
+            background: var(--color-primary);
             font-weight: 500;
+            border-color: var(--color-primary);
         }
 
         /* Analysis Results - Progressive Reveal */
@@ -382,6 +450,16 @@
     </style>
 </head>
 <body>
+    <div class="nav-bar">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="index-hub.html" style="font-size: 20px;">🎨</a>
+            <span class="nav-title">Design Critic Studio</span>
+        </div>
+        <div class="version-switcher">
+            <a href="index-enhanced-v4.html" class="version-btn active">V1 Classic</a>
+            <a href="v2-conversation-ui.html" class="version-btn">V2 Conversations</a>
+        </div>
+    </div>
     <div class="app-container" id="appContainer">
         <!-- Experience Level Selector (Hidden Initially) -->
         <div class="experience-selector" id="experienceSelector">
@@ -564,9 +642,18 @@
 
         function setMode(mode) {
             currentMode = mode;
+            console.log('Setting mode to:', mode);
+            
+            // Update button states
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.mode === mode);
             });
+            
+            // Re-analyze with new mode if we have an image
+            if (uploadedImage && appContainer.classList.contains('analysis-active')) {
+                console.log('Re-analyzing with new mode:', mode);
+                analyzeImage();
+            }
         }
 
         function setExperience(level) {
@@ -578,9 +665,19 @@
 
         function setPersonality(personality) {
             currentPersonality = personality;
+            console.log('Setting personality to:', personality);
+            
+            // Update button states
             document.querySelectorAll('.personality-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent.toLowerCase().replace(' ', '-') === personality);
+                const btnPersonality = btn.textContent.toLowerCase().replace(' ', '-');
+                btn.classList.toggle('active', btnPersonality === personality);
             });
+            
+            // If we already have results, update them with new personality
+            if (uploadedImage && appContainer.classList.contains('analysis-active')) {
+                console.log('Re-analyzing with new personality:', personality);
+                analyzeImage();
+            }
         }
 
         function toggleExperience() {
@@ -589,34 +686,56 @@
 
         async function analyzeImage() {
             // Show loading state
-            uploadZone.innerHTML = '<p>Analyzing...</p>';
+            uploadZone.innerHTML = '<p style="color: var(--color-secondary);">🔍 Analyzing your design...</p>';
+            
+            // Show loading in results area too
+            const observationsEl = document.getElementById('observations');
+            const critiqueGrid = document.getElementById('critiqueGrid');
+            observationsEl.innerHTML = '<p style="color: var(--color-tertiary);">Generating observations...</p>';
+            critiqueGrid.innerHTML = '';
 
             try {
                 // Compress image if needed
                 let imageData = uploadedImage;
-                if (uploadedImage.startsWith('data:image')) {
+                if (uploadedImage && uploadedImage.startsWith('data:image')) {
                     imageData = await compressImage(uploadedImage);
                 }
 
-                const response = await fetch('/api/analyze', {
+                // Try the simple API first (more reliable)
+                const response = await fetch('/api/analyze-simple', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         mode: currentMode,
-                        imageData: imageData.startsWith('data:') ? imageData : null,
-                        imageUrl: !imageData.startsWith('data:') ? imageData : null,
+                        imageData: imageData && imageData.startsWith('data:') ? imageData : null,
+                        imageUrl: imageData && !imageData.startsWith('data:') ? imageData : null,
                         experience: currentExperience,
                         personality: currentPersonality
                     })
                 });
 
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
                 const result = await response.json();
+                console.log('API Response:', result);
+                
                 aiPowered = result.aiPowered || false;
                 displayResults(result);
+                
+                // Update upload zone to show success
+                uploadZone.innerHTML = '<p style="color: #4caf50;">✓ Analysis complete</p>';
+                
             } catch (error) {
                 console.error('Analysis failed:', error);
-                // Show demo results
+                console.log('Falling back to demo results...');
+                
+                // Show demo results as fallback
                 displayDemoResults();
+                
+                // Update upload zone
+                uploadZone.innerHTML = '<p style="color: var(--color-secondary);">Using demo mode (API unavailable)</p>';
             }
         }
 
@@ -729,25 +848,166 @@
         }
 
         function displayDemoResults() {
-            displayResults({
-                observations: [
-                    'Strong visual hierarchy detected',
-                    'Color palette shows good contrast',
-                    'Typography needs refinement'
-                ],
-                critique: [
-                    {
-                        name: 'Demo Critic',
-                        score: 75,
-                        hotTake: 'This is a demo critique. Connect API for real analysis.',
-                        points: [
-                            { type: 'strength', text: 'Good foundation' },
-                            { type: 'weakness', text: 'Needs API connection' },
-                            { type: 'suggestion', text: 'Add Claude API key' }
-                        ]
-                    }
-                ]
-            });
+            console.log('Displaying demo results for mode:', currentMode, 'personality:', currentPersonality);
+            
+            // Adjust critiques based on personality
+            const personalityModifiers = {
+                'balanced': {
+                    scoreAdjust: 0,
+                    toneAdjust: 'balanced'
+                },
+                'encouraging': {
+                    scoreAdjust: 10,
+                    toneAdjust: 'positive'
+                },
+                'tough-love': {
+                    scoreAdjust: -10,
+                    toneAdjust: 'harsh'
+                }
+            };
+            
+            const modifier = personalityModifiers[currentPersonality] || personalityModifiers['balanced'];
+            
+            const demoData = {
+                design: {
+                    observations: [
+                        'Strong visual hierarchy with clear focal points',
+                        'Typography shows confident scale but lacks systematic approach',
+                        'Color palette demonstrates understanding of contrast',
+                        'Grid structure present but not consistently applied',
+                        'White space effectively used in primary areas'
+                    ],
+                    critique: [
+                        {
+                            name: 'Paula Scher',
+                            score: Math.max(0, Math.min(100, 72 + modifier.scoreAdjust)),
+                            hotTake: currentPersonality === 'encouraging' 
+                                ? 'I see the energy here! Let\'s make it LOUDER and more confident!'
+                                : currentPersonality === 'tough-love'
+                                ? 'This is PATHETIC! It\'s whispering when it should be SCREAMING!'
+                                : 'This is WHISPERING when it should be SHOUTING! Where\'s the confidence?',
+                            points: [
+                                { type: 'strength', text: 'Bold headline treatment shows promise' },
+                                { type: 'weakness', text: 'Typography is too timid - needs 300% more presence' },
+                                { type: 'suggestion', text: 'Make the type THE image - let it dominate' }
+                            ]
+                        },
+                        {
+                            name: 'Massimo Vignelli',
+                            score: Math.max(0, Math.min(100, 65 + modifier.scoreAdjust)),
+                            hotTake: currentPersonality === 'encouraging'
+                                ? 'The foundation is there! Now let\'s add proper discipline and structure.'
+                                : currentPersonality === 'tough-love'
+                                ? 'This is CHAOS! Complete lack of discipline. Start over with a proper grid!'
+                                : 'The grid is suggestions, not law. This lacks discipline.',
+                            points: [
+                                { type: 'strength', text: 'Attempt at systematic layout is evident' },
+                                { type: 'weakness', text: 'Alignment is chaos - establish a proper 12-column grid' },
+                                { type: 'suggestion', text: 'Use only Helvetica. One typeface is sufficient.' }
+                            ]
+                        },
+                        {
+                            name: 'Steve Jobs',
+                            score: Math.max(0, Math.min(100, 68 + modifier.scoreAdjust)),
+                            hotTake: currentPersonality === 'encouraging'
+                                ? 'This shows promise! Keep simplifying and you\'ll find the magic.'
+                                : currentPersonality === 'tough-love'
+                                ? 'This is shit. Complete shit. Where\'s the soul? Start over!'
+                                : 'It\'s... fine. But fine is the enemy of great.',
+                            points: [
+                                { type: 'strength', text: 'Clean approach shows restraint' },
+                                { type: 'weakness', text: 'Lacks soul - what problem does this solve?' },
+                                { type: 'suggestion', text: 'Remove half of this. Then remove half again.' }
+                            ]
+                        }
+                    ]
+                },
+                photo: {
+                    observations: [
+                        'Composition follows basic rule of thirds',
+                        'Lighting creates mood but lacks intentional direction',
+                        'Focus and depth of field used effectively',
+                        'Color grading present but inconsistent',
+                        'Moment captured but not decisive'
+                    ],
+                    critique: [
+                        {
+                            name: 'Ansel Adams',
+                            score: 70,
+                            hotTake: 'The shadows are completely blocked! You\'ve lost all detail.',
+                            points: [
+                                { type: 'strength', text: 'Tonal range shows potential' },
+                                { type: 'weakness', text: 'No true blacks or whites - muddy middle tones' },
+                                { type: 'suggestion', text: 'Apply Zone System thinking - expose for shadows' }
+                            ]
+                        },
+                        {
+                            name: 'Annie Leibovitz',
+                            score: 74,
+                            hotTake: 'Where\'s the STORY? This is just a picture, not a photograph.',
+                            points: [
+                                { type: 'strength', text: 'Subject placement shows awareness' },
+                                { type: 'weakness', text: 'No narrative - what\'s the emotion here?' },
+                                { type: 'suggestion', text: 'Build a world around your subject' }
+                            ]
+                        },
+                        {
+                            name: 'Henri Cartier-Bresson',
+                            score: 66,
+                            hotTake: 'You missed the decisive moment by half a second.',
+                            points: [
+                                { type: 'strength', text: 'Geometric elements present' },
+                                { type: 'weakness', text: 'The moment feels forced, not discovered' },
+                                { type: 'suggestion', text: 'Be invisible - let the moment reveal itself' }
+                            ]
+                        }
+                    ]
+                },
+                art: {
+                    observations: [
+                        'Conceptual framework apparent but underdeveloped',
+                        'Technical execution shows competence',
+                        'Emotional resonance present but muted',
+                        'Cultural context acknowledged but not explored',
+                        'Personal voice emerging but not confident'
+                    ],
+                    critique: [
+                        {
+                            name: 'Marina Abramović',
+                            score: 62,
+                            hotTake: 'This is SAFE! Where is the RISK? You are not present here.',
+                            points: [
+                                { type: 'strength', text: 'Attempt at vulnerability detected' },
+                                { type: 'weakness', text: 'No real presence - playing it safe' },
+                                { type: 'suggestion', text: 'Remove all comfort - find the edge' }
+                            ]
+                        },
+                        {
+                            name: 'Andy Warhol',
+                            score: 71,
+                            hotTake: 'It\'s not famous enough. Can you repeat it 50 times?',
+                            points: [
+                                { type: 'strength', text: 'Surface quality is appealing' },
+                                { type: 'weakness', text: 'Too much depth - needs more surface' },
+                                { type: 'suggestion', text: 'Make it in pink. Pink sells.' }
+                            ]
+                        },
+                        {
+                            name: 'Frida Kahlo',
+                            score: 64,
+                            hotTake: 'Where are your WOUNDS? This is pretty but empty.',
+                            points: [
+                                { type: 'strength', text: 'Color shows life force' },
+                                { type: 'weakness', text: 'No personal truth - hiding behind technique' },
+                                { type: 'suggestion', text: 'Paint with your blood, not your brushes' }
+                            ]
+                        }
+                    ]
+                }
+            };
+            
+            const data = demoData[currentMode] || demoData.design;
+            displayResults(data);
         }
 
         // Add fadeInLeft animation

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Critic Studio - AI-Powered Design Critique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeIn 1s ease;
+        }
+
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 20px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .versions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .version-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            color: #333;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.8s ease;
+        }
+
+        .version-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .version-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .version-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .version-description {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .feature {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .feature::before {
+            content: '✓';
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .new-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .alpha-badge {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .extra-links {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .extra-links h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .link-grid {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .link-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .link-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .comparison {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .comparison h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .vs {
+            font-size: 24px;
+            font-weight: bold;
+            opacity: 0.5;
+        }
+
+        .comparison-item {
+            text-align: center;
+        }
+
+        .comparison-item h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .comparison-item p {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 36px;
+            }
+            
+            .versions {
+                grid-template-columns: 1fr;
+            }
+            
+            .comparison-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .vs {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎨</div>
+            <h1>Design Critic Studio</h1>
+            <p class="tagline">Get your design critiqued by legendary masters using AI</p>
+        </div>
+
+        <div class="versions">
+            <a href="index-enhanced-v4.html" class="version-card">
+                <span class="version-badge">V1 Enhanced</span>
+                <h2 class="version-title">Classic Studio <span class="new-badge">UPDATED</span></h2>
+                <p class="version-description">
+                    Get instant, contextual critiques from design legends. Now with real AI vision that actually sees and analyzes your work.
+                </p>
+                <ul class="features">
+                    <li class="feature">Paula Scher, Steve Jobs, Massimo Vignelli</li>
+                    <li class="feature">Real-time image analysis with Claude Vision</li>
+                    <li class="feature">Progressive disclosure interface</li>
+                    <li class="feature">Three modes: Design, Photo, Art</li>
+                    <li class="feature">Export critiques as PDF</li>
+                </ul>
+                <span class="btn">Launch V1 Studio →</span>
+            </a>
+
+            <a href="v2-conversation-ui.html" class="version-card">
+                <span class="version-badge">V2 Alpha</span>
+                <h2 class="version-title">Conversation Mode <span class="alpha-badge">ALPHA</span></h2>
+                <p class="version-description">
+                    Watch legendary critics debate your work in real-time. Multi-agent conversations with personality-driven interactions.
+                </p>
+                <ul class="features">
+                    <li class="feature">9 legendary critics with unique personalities</li>
+                    <li class="feature">Dynamic multi-phase conversations</li>
+                    <li class="feature">Critics debate and build on each other's ideas</li>
+                    <li class="feature">Tension, interruptions, and consensus</li>
+                    <li class="feature">Heat meter and phase tracking</li>
+                </ul>
+                <span class="btn">Try V2 Alpha →</span>
+            </a>
+        </div>
+
+        <div class="comparison">
+            <h3>Which Version Should I Use?</h3>
+            <div class="comparison-grid">
+                <div class="comparison-item">
+                    <h4>Use V1 Enhanced</h4>
+                    <p>For quick, focused critiques with detailed observations and actionable improvements. Best for iterative design work.</p>
+                </div>
+                <div class="vs">VS</div>
+                <div class="comparison-item">
+                    <h4>Use V2 Conversation</h4>
+                    <p>To see how different perspectives clash and converge. Great for understanding diverse viewpoints and deeper insights.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="extra-links">
+            <h3>Explore More Features</h3>
+            <div class="link-grid">
+                <a href="agent-manager.html" class="link-card">
+                    🎭 Agent Manager
+                </a>
+                <a href="V2-AGENT-SYSTEM.md" class="link-card">
+                    📚 Documentation
+                </a>
+                <a href="IMPLEMENTATION-ROADMAP.md" class="link-card">
+                    🗺️ Roadmap
+                </a>
+                <a href="https://github.com/yourusername/design-critic" class="link-card">
+                    💻 GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive effects
+        document.querySelectorAll('.version-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Add click tracking
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                console.log('Navigating to:', link.href);
+            });
+        });
+    </script>
+</body>
+</html>

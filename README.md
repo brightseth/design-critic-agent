@@ -1,141 +1,227 @@
 # Design Critic Agent 🎨
 
-An AI-powered design critique tool that channels the wisdom of legendary design masters including Steve Jobs, John Maeda, Jony Ive, and modern design teams from Airbnb and Instagram.
+An AI-powered design critique platform featuring world-renowned design masters providing contextual feedback on visual work.
+
+## Overview
+
+Design Critic Agent offers two distinct experiences:
+- **V1 Classic**: Individual critiques from 3 experts with personality modes (Balanced/Encouraging/Tough Love)
+- **V2 Conversations**: Multi-agent debates where critics discuss and debate your work
 
 ## Features
 
-- **Multi-perspective Critique**: Get design feedback from 5 different expert viewpoints
-- **Interactive Upload**: Drag & drop images or paste URLs
-- **Smart Analysis**: Configurable depth and focus areas
-- **Actionable Feedback**: Specific, prioritized recommendations
-- **Beautiful Interface**: Clean, dark design that puts your work first
+### V1 Classic Mode
+- **Three Critique Modes**: Design, Photography, Art
+- **Expert Critics**: Steve Jobs, John Maeda, Paula Scher (Design); Ansel Adams, Annie Leibovitz, Henri Cartier-Bresson (Photography); Marina Abramović, Andy Warhol, Frida Kahlo (Art)
+- **Personality Settings**: Balanced, Encouraging, Tough Love
+- **Experience Levels**: First-timer, Student, Professional
+- **Image Analysis**: Supports image upload and URL input
+- **Progressive Disclosure**: Steve Jobs-inspired UI that reveals complexity gradually
 
-## Design Philosophies
+### V2 Conversation Mode (Alpha)
+- **Multi-Agent Debates**: Critics engage in dynamic conversations about your work
+- **4-Phase Flow**: Initial Observations → Cross-examination → Debate → Consensus
+- **Agent Personalities**: Each critic has unique biases, relationships, and perspectives
+- **Custom Agent Creation**: Framework for adding new critics
 
-### Steve Jobs - Simplicity & Focus
-- "Simplicity is the ultimate sophistication"
-- Remove until it breaks, then add back only what's essential
-- Clear hierarchy and confident typography
+## Tech Stack
 
-### John Maeda - Laws of Simplicity
-- Reduce, organize, time, learn, differences, context, emotion, trust, failure, and the one
-- Systematic approach to achieving simplicity
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3
+- **Backend**: Node.js with Express (API routes)
+- **AI Integration**: Claude Vision API (Anthropic)
+- **Deployment**: Vercel serverless functions
+- **Image Processing**: Client-side compression using Canvas API
 
-### Airbnb Design - Human Connection
-- Design for trust, community, and belonging
-- Every pixel should make people feel welcome
-- Warm, conversational tone
-
-### Instagram Aesthetic - Visual Impact
-- Thumb-stopping power for mobile-first world
-- Content is king, minimize chrome
-- Speed and delight matter
-
-### Jony Ive - Craft & Detail
-- "It should feel inevitable, not designed"
-- Material honesty and refined edges
-- Purpose-driven details
-
-## Quick Start
-
-### Simple Version (Static HTML)
-```bash
-# Clone or download the project
-cd design-critic-agent
-
-# Open in browser
-open index.html
-```
-
-### Enhanced Version (With Server)
-```bash
-# Install dependencies
-npm install
-
-# Copy environment variables
-cp .env.example .env
-
-# Start the server
-npm start
-
-# Open browser
-open http://localhost:3000
-```
-
-## File Structure
+## Project Structure
 
 ```
 design-critic-agent/
-├── index.html              # Simple standalone version
-├── index-enhanced.html     # Advanced version with API features
-├── server.js              # Express server for file handling
-├── package.json           # Node.js dependencies
-├── .env.example          # Environment variables template
-└── README.md             # This file
+├── index-hub.html                 # Landing page
+├── index-enhanced-v4.html         # V1 Classic interface
+├── v2-conversation-ui.html        # V2 Conversation interface
+├── agent-manager.html             # Agent management UI
+├── navigation-test.html          # Navigation testing page
+├── test-all-features.html        # Feature testing page
+│
+├── api/
+│   ├── analyze-simple.js         # Main API endpoint
+│   └── analyze.js                 # Legacy endpoint
+│
+├── v2-agents/
+│   ├── conversation-engine.js    # Multi-agent orchestration
+│   ├── design-agents.js          # Design critic profiles
+│   ├── photo-agents.js           # Photography critic profiles
+│   └── art-agents.js             # Art critic profiles
+│
+├── public/
+│   ├── steve-jobs.jpg
+│   ├── john-maeda.jpg
+│   └── paula-scher.jpg
+│
+├── package.json                   # Dependencies
+├── vercel.json                    # Deployment config
+└── .gitignore                     # Git ignore rules
 ```
 
-## API Integration (Optional)
+## Installation
 
-To enable AI-powered critiques, add your API keys to `.env`:
-
+1. Clone the repository:
 ```bash
-# For Claude API
-ANTHROPIC_API_KEY=your_key_here
-
-# Or OpenAI API
-OPENAI_API_KEY=your_key_here
+git clone https://github.com/yourusername/design-critic-agent.git
+cd design-critic-agent
 ```
 
-## Usage
+2. Install dependencies:
+```bash
+npm install
+```
 
-1. **Upload Design**: Drag & drop an image or paste a URL
-2. **Configure Analysis**: Choose depth (quick/standard/deep) and focus area
-3. **Get Critiques**: Receive feedback from multiple expert perspectives
-4. **Review Scores**: See overall assessment across key dimensions
-5. **Follow Recommendations**: Get prioritized action items
+3. Set up environment variables:
+Create a `.env.local` file:
+```
+ANTHROPIC_API_KEY=your_api_key_here
+```
 
-## Supported Formats
+4. Run development server:
+```bash
+npm run dev
+```
 
-- **Images**: JPG, PNG, GIF, WebP (max 10MB)
-- **Sources**: Local files, URLs, drag & drop
+5. Open http://localhost:3000
 
-## Design Categories
+## API Documentation
 
-The tool evaluates designs across multiple dimensions:
+### POST /api/analyze-simple
 
-- **Simplicity**: Clarity, focus, visual hierarchy
-- **Usability**: Intuitive navigation, accessibility
-- **Emotional Impact**: Trust, delight, human connection
-- **Craftsmanship**: Polish, attention to detail, consistency
+Analyzes an uploaded image and returns critiques.
 
-## Development
+**Request Body:**
+```json
+{
+  "image": "base64_encoded_image",
+  "mode": "design|photography|art",
+  "personality": "balanced|encouraging|tough-love",
+  "experienceLevel": "first-timer|student|professional"
+}
+```
 
-### Adding New Critics
-1. Create critic profile in `generateCritique()` function
-2. Define their focus areas and evaluation criteria
-3. Add avatar and title
-4. Include specific feedback patterns
+**Response:**
+```json
+{
+  "success": true,
+  "critiques": [
+    {
+      "critic": "Steve Jobs",
+      "title": "Critique title",
+      "content": "Detailed critique...",
+      "keyPoints": ["Point 1", "Point 2"],
+      "improvements": ["Suggestion 1", "Suggestion 2"]
+    }
+  ],
+  "keyObservations": ["Observation 1", "Observation 2"]
+}
+```
 
-### Customizing Analysis
-- Modify critique generation in `server.js`
-- Adjust scoring algorithms
-- Add new evaluation categories
-- Integrate with vision APIs
+## Development Roadmap
+
+### Completed ✅
+- [x] V1 Classic mode with 3 critique modes
+- [x] 9 expert critics with unique personalities
+- [x] Personality selector (Balanced/Encouraging/Tough Love)
+- [x] Experience level adaptation
+- [x] Image upload and URL input
+- [x] Client-side image compression
+- [x] Progressive disclosure UI
+- [x] V2 conversation engine foundation
+- [x] Navigation between V1 and V2
+
+### In Progress 🚧
+- [ ] Real Claude Vision API integration
+- [ ] Multi-agent conversation refinement
+- [ ] Agent personality tuning
+
+### Planned 📋
+- [ ] Custom agent training
+- [ ] Stripe billing integration
+- [ ] Public API with rate limiting
+- [ ] Social sharing features
+- [ ] Export critique as PDF
+- [ ] Critique history
+- [ ] User accounts
+
+## Known Issues
+
+1. **API Integration**: Currently using demo mode. Real Claude API key needed for production.
+2. **Image Size**: Large images may cause API timeouts. Client-side compression helps but may need adjustment.
+3. **Agent Conversations**: V2 conversation flow needs refinement for more natural debates.
 
 ## Contributing
 
-Suggestions for improvement:
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-1. **Real AI Integration**: Connect with Claude, GPT-4V, or other vision models
-2. **More Critics**: Add perspectives from Dieter Rams, Paula Scher, etc.
-3. **Industry Specifics**: Mobile app, web, print-specific critiques
-4. **Collaboration**: Share critiques, team feedback
-5. **Historical Tracking**: Save and compare iterations
+## Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| ANTHROPIC_API_KEY | Claude API key for image analysis | Yes |
+| PORT | Server port (default: 3000) | No |
+| NODE_ENV | Environment (development/production) | No |
+
+## Deployment
+
+### Vercel Deployment
+
+1. Install Vercel CLI:
+```bash
+npm i -g vercel
+```
+
+2. Deploy:
+```bash
+vercel
+```
+
+3. Set environment variables in Vercel dashboard
+
+### Manual Deployment
+
+1. Build the project:
+```bash
+npm run build
+```
+
+2. Start production server:
+```bash
+npm start
+```
+
+## Testing
+
+Run the test suite:
+```bash
+npm test
+```
+
+Test specific features:
+- Navigation: Open `navigation-test.html`
+- All features: Open `test-all-features.html`
 
 ## License
 
-MIT License - Feel free to use and modify for your projects.
+MIT License - see LICENSE file for details
+
+## Support
+
+For issues and feature requests, please use the GitHub issue tracker.
+
+## Credits
+
+Created with passion for design critique and AI-powered creativity.
 
 ---
 
-*"Design is not just what it looks like and feels like. Design is how it works."* - Steve Jobs
+**Note**: This project is in active development. V2 features are in alpha stage.

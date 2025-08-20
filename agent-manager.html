@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Manager - Design Critic Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .version-switcher {
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 4px;
+            gap: 4px;
+        }
+        
+        .version-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .version-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .plan-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Featured Critics Section */
+        .featured-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .critic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .critic-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .critic-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .critic-card.added {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .critic-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .critic-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .critic-info {
+            flex: 1;
+        }
+
+        .critic-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .critic-specialty {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .critic-era {
+            font-size: 11px;
+            color: #bbb;
+        }
+
+        .critic-description {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .critic-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-btn.added {
+            background: #4caf50;
+            cursor: default;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-results {
+            display: grid;
+            gap: 15px;
+        }
+
+        .search-result {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .confidence-badge {
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .confidence-high {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .confidence-medium {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        /* Create Custom Section */
+        .create-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .wizard-progress {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .wizard-progress::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .wizard-step {
+            background: white;
+            border: 2px solid #e0e0e0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wizard-step.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .wizard-step.completed {
+            background: #4caf50;
+            color: white;
+            border-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .wizard-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .wizard-btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .wizard-btn-back {
+            background: white;
+            border: 2px solid #e0e0e0;
+            color: #666;
+        }
+
+        .wizard-btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* My Agents Section */
+        .my-agents-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .agent-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .agent-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .agent-details {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .agent-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn-edit {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .action-btn-train {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .action-btn-delete {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <a href="index-hub.html" style="font-size: 20px; text-decoration: none;">🎨</a>
+            <h1>Agent Manager</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="version-switcher">
+                <a href="index-enhanced-v4.html" class="version-btn">V1 Classic</a>
+                <a href="v2-conversation-ui.html" class="version-btn">V2 Conversations</a>
+            </div>
+            <div class="user-info" style="color: white; font-size: 14px;">
+                <span style="opacity: 0.9;">Available: <strong id="agentCount">3/10</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" data-tab="featured">Featured Critics</button>
+            <button class="tab" data-tab="search">Search Famous</button>
+            <button class="tab" data-tab="create">Create Custom</button>
+            <button class="tab" data-tab="myagents">My Agents</button>
+        </div>
+
+        <!-- Featured Critics Tab -->
+        <div class="tab-content active" id="featured">
+            <div class="featured-section">
+                <div class="section-header">
+                    <h2 class="section-title">Quick Add Critics</h2>
+                    <span style="color: #999; font-size: 14px;">One-click to add legendary critics</span>
+                </div>
+                
+                <div class="critic-grid" id="featuredGrid">
+                    <!-- Featured critics will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Tab -->
+        <div class="tab-content" id="search">
+            <div class="search-section">
+                <div class="section-header">
+                    <h2 class="section-title">Search Any Critic</h2>
+                </div>
+                
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="Enter any designer, photographer, or artist name..." id="searchInput">
+                    <button class="search-btn" onclick="searchCritic()">Search</button>
+                </div>
+                
+                <div class="search-results" id="searchResults">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div>Search for any critic, designer, or artist</div>
+                        <div style="font-size: 12px; margin-top: 10px;">We'll generate their profile automatically if they're well-known</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Custom Tab -->
+        <div class="tab-content" id="create">
+            <div class="create-section">
+                <div class="section-header">
+                    <h2 class="section-title">Create Custom Critic</h2>
+                </div>
+                
+                <div class="wizard-progress">
+                    <div class="wizard-step active">1</div>
+                    <div class="wizard-step">2</div>
+                    <div class="wizard-step">3</div>
+                    <div class="wizard-step">4</div>
+                    <div class="wizard-step">5</div>
+                </div>
+                
+                <div id="wizardContent">
+                    <!-- Step 1: Basic Info -->
+                    <div class="wizard-screen" id="step1">
+                        <h3 style="margin-bottom: 20px;">Basic Information</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Critic Name</label>
+                            <input type="text" class="form-input" placeholder="e.g., Nina Roehrs" id="criticName">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Time Period Active</label>
+                            <input type="text" class="form-input" placeholder="e.g., 1990s-present" id="criticEra">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Primary Field</label>
+                            <select class="form-input" id="criticField">
+                                <option>Design</option>
+                                <option>Photography</option>
+                                <option>Art</option>
+                                <option>Architecture</option>
+                                <option>Fashion</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Known For</label>
+                            <textarea class="form-textarea" placeholder="Notable works, projects, or contributions..." id="criticKnownFor"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="wizard-buttons">
+                    <button class="wizard-btn wizard-btn-back" onclick="previousStep()">Back</button>
+                    <button class="wizard-btn wizard-btn-next" onclick="nextStep()">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Agents Tab -->
+        <div class="tab-content" id="myagents">
+            <div class="my-agents-section">
+                <div class="section-header">
+                    <h2 class="section-title">My Agents</h2>
+                    <span style="color: #999; font-size: 14px;">Manage your critic collection</span>
+                </div>
+                
+                <div class="agent-list" id="agentList">
+                    <!-- User's agents will be listed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training Modal -->
+    <div class="modal" id="trainingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Training Agent</h2>
+            </div>
+            <div class="modal-body">
+                <p>To improve this agent, please provide examples of their criticism style:</p>
+                <div class="form-group" style="margin-top: 20px;">
+                    <label class="form-label">Example Quote or Writing</label>
+                    <textarea class="form-textarea" placeholder="Paste an example of their criticism or writing style..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Link to Their Work</label>
+                    <input type="url" class="form-input" placeholder="https://...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="wizard-btn wizard-btn-back" onclick="closeModal()">Cancel</button>
+                <button class="wizard-btn wizard-btn-next" onclick="saveTraining()">Save Training</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Featured Critics Data
+        const featuredCritics = [
+            {
+                id: 'dieter-rams',
+                name: 'Dieter Rams',
+                specialty: 'Industrial Design',
+                era: '1960s-present',
+                avatar: 'DR',
+                description: 'Less but better. Creator of the 10 principles of good design.',
+                tags: ['Minimalism', 'Functionality', 'Braun'],
+                confidence: 'high'
+            },
+            {
+                id: 'zaha-hadid',
+                name: 'Zaha Hadid',
+                specialty: 'Architecture',
+                era: '1980s-2016',
+                avatar: 'ZH',
+                description: 'Queen of the curve. Parametric design and fluid forms.',
+                tags: ['Parametric', 'Fluid Forms', 'Futuristic'],
+                confidence: 'high'
+            },
+            {
+                id: 'susan-sontag',
+                name: 'Susan Sontag',
+                specialty: 'Photography Theory',
+                era: '1960s-2004',
+                avatar: 'SS',
+                description: 'On Photography author. Deep critical analysis of visual culture.',
+                tags: ['Theory', 'Culture', 'Philosophy'],
+                confidence: 'high'
+            },
+            {
+                id: 'milton-glaser',
+                name: 'Milton Glaser',
+                specialty: 'Graphic Design',
+                era: '1960s-2020',
+                avatar: 'MG',
+                description: 'I ❤ NY creator. Master of visual communication.',
+                tags: ['Logo Design', 'Illustration', 'Typography'],
+                confidence: 'high'
+            },
+            {
+                id: 'vivian-maier',
+                name: 'Vivian Maier',
+                specialty: 'Street Photography',
+                era: '1950s-2009',
+                avatar: 'VM',
+                description: 'Mysterious street photographer with an incredible eye.',
+                tags: ['Street', 'Documentary', 'Candid'],
+                confidence: 'medium'
+            },
+            {
+                id: 'basquiat',
+                name: 'Jean-Michel Basquiat',
+                specialty: 'Neo-Expressionism',
+                era: '1980s',
+                avatar: 'JMB',
+                description: 'From street art to galleries. Raw, powerful expression.',
+                tags: ['Graffiti', 'Neo-Expressionism', 'Social Commentary'],
+                confidence: 'high'
+            }
+        ];
+
+        // User's current agents
+        let myAgents = [
+            { id: 'paula-scher', name: 'Paula Scher', type: 'preset', confidence: 100 },
+            { id: 'steve-jobs', name: 'Steve Jobs', type: 'preset', confidence: 100 },
+            { id: 'custom-1', name: 'Nina Roehrs', type: 'custom', confidence: 75 }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFeaturedCritics();
+            renderMyAgents();
+            setupTabs();
+        });
+
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Update active tab
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show corresponding content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                });
+            });
+        }
+
+        function renderFeaturedCritics() {
+            const grid = document.getElementById('featuredGrid');
+            grid.innerHTML = '';
+            
+            featuredCritics.forEach(critic => {
+                const isAdded = myAgents.some(a => a.id === critic.id);
+                
+                const card = document.createElement('div');
+                card.className = `critic-card ${isAdded ? 'added' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="critic-header">
+                        <div class="critic-avatar">${critic.avatar}</div>
+                        <div class="critic-info">
+                            <div class="critic-name">${critic.name}</div>
+                            <div class="critic-specialty">${critic.specialty}</div>
+                            <div class="critic-era">${critic.era}</div>
+                        </div>
+                    </div>
+                    <div class="critic-description">${critic.description}</div>
+                    <div class="critic-tags">
+                        ${critic.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                    <button class="add-btn ${isAdded ? 'added' : ''}" 
+                            onclick="addCritic('${critic.id}')"
+                            ${isAdded ? 'disabled' : ''}>
+                        ${isAdded ? '✓ Added' : '+ Quick Add'}
+                    </button>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function renderMyAgents() {
+            const list = document.getElementById('agentList');
+            
+            if (myAgents.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎭</div>
+                        <div>No agents added yet</div>
+                        <div style="font-size: 12px; margin-top: 10px;">Add critics from the Featured tab or create your own</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = myAgents.map(agent => `
+                <div class="agent-item">
+                    <div class="agent-details">
+                        <div class="critic-avatar">${agent.name.split(' ').map(n => n[0]).join('')}</div>
+                        <div>
+                            <div class="critic-name">${agent.name}</div>
+                            <div style="font-size: 12px; color: #999;">
+                                ${agent.type === 'preset' ? 'Preset' : 'Custom'} • 
+                                ${agent.confidence}% confidence
+                            </div>
+                        </div>
+                    </div>
+                    <div class="agent-actions">
+                        ${agent.type === 'custom' ? `
+                            <button class="action-btn action-btn-edit" onclick="editAgent('${agent.id}')">Edit</button>
+                            <button class="action-btn action-btn-train" onclick="trainAgent('${agent.id}')">Train</button>
+                        ` : ''}
+                        <button class="action-btn action-btn-delete" onclick="deleteAgent('${agent.id}')">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateAgentCount();
+        }
+
+        function addCritic(criticId) {
+            const critic = featuredCritics.find(c => c.id === criticId);
+            if (critic && !myAgents.some(a => a.id === criticId)) {
+                myAgents.push({
+                    id: criticId,
+                    name: critic.name,
+                    type: 'preset',
+                    confidence: critic.confidence === 'high' ? 100 : 80
+                });
+                
+                renderFeaturedCritics();
+                renderMyAgents();
+                
+                // Show success message
+                showNotification(`${critic.name} added to your agents!`);
+            }
+        }
+
+        function deleteAgent(agentId) {
+            if (confirm('Remove this agent from your collection?')) {
+                myAgents = myAgents.filter(a => a.id !== agentId);
+                renderFeaturedCritics();
+                renderMyAgents();
+                showNotification('Agent removed');
+            }
+        }
+
+        function trainAgent(agentId) {
+            document.getElementById('trainingModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('trainingModal').classList.remove('active');
+        }
+
+        function searchCritic() {
+            const query = document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!query) return;
+            
+            // Show loading
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            // Simulate API call
+            setTimeout(() => {
+                const confidence = Math.random() > 0.5 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low';
+                
+                resultsDiv.innerHTML = `
+                    <div class="search-result">
+                        <div>
+                            <div class="critic-name">${query}</div>
+                            <div style="font-size: 12px; color: #999; margin-top: 5px;">
+                                ${confidence === 'high' ? 'Well-documented critic' : 
+                                  confidence === 'medium' ? 'Some information available' : 
+                                  'Limited information - will need training'}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="confidence-badge confidence-${confidence}">
+                                ${confidence} confidence
+                            </span>
+                            <button class="add-btn" onclick="addSearchedCritic('${query}', '${confidence}')">
+                                ${confidence === 'low' ? 'Start Training' : 'Generate Agent'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        function addSearchedCritic(name, confidence) {
+            if (confidence === 'low') {
+                // Start training wizard
+                document.querySelector('[data-tab="create"]').click();
+                document.getElementById('criticName').value = name;
+            } else {
+                // Generate agent automatically
+                showNotification(`Generating ${name} agent...`);
+                
+                setTimeout(() => {
+                    myAgents.push({
+                        id: name.toLowerCase().replace(' ', '-'),
+                        name: name,
+                        type: 'generated',
+                        confidence: confidence === 'high' ? 95 : 75
+                    });
+                    
+                    renderMyAgents();
+                    showNotification(`${name} agent created successfully!`);
+                    
+                    // Switch to My Agents tab
+                    document.querySelector('[data-tab="myagents"]').click();
+                }, 2000);
+            }
+        }
+
+        function updateAgentCount() {
+            document.getElementById('agentCount').textContent = `${myAgents.length}/10`;
+        }
+
+        function showNotification(message) {
+            // Simple notification (could be enhanced with a toast library)
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+                z-index: 2000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Wizard functionality
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateWizard();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateWizard();
+            }
+        }
+
+        function updateWizard() {
+            // Update progress indicators
+            document.querySelectorAll('.wizard-step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index < currentStep - 1) {
+                    step.classList.add('completed');
+                } else if (index === currentStep - 1) {
+                    step.classList.add('active');
+                }
+            });
+            
+            // Update button states
+            document.querySelector('.wizard-btn-back').style.visibility = 
+                currentStep === 1 ? 'hidden' : 'visible';
+            
+            document.querySelector('.wizard-btn-next').textContent = 
+                currentStep === totalSteps ? 'Create Agent' : 'Next';
+        }
+    </script>
+</body>
+</html>

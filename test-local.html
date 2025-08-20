@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Test - Design Critic Studio</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-link {
+            display: block;
+            padding: 20px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .test-link:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+        }
+        .status {
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .working {
+            color: #4caf50;
+        }
+        .issue {
+            color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Design Critic Studio - Local Test</h1>
+    
+    <div class="status">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Click each link below</li>
+            <li>Try uploading an image</li>
+            <li>Check browser console (F12) for errors</li>
+            <li>Report what works/doesn't work</li>
+        </ol>
+    </div>
+
+    <h2>Test Links:</h2>
+    
+    <a href="index-hub.html" class="test-link">
+        📍 Main Hub<br>
+        <small>Landing page with version selector</small>
+    </a>
+    
+    <a href="index-enhanced-v4.html" class="test-link">
+        🎯 V1 Classic Mode<br>
+        <small>Should show critiques after image upload</small>
+    </a>
+    
+    <a href="v2-conversation-ui.html" class="test-link">
+        💬 V2 Conversation Mode<br>
+        <small>Upload image → Select 2+ critics → Start conversation</small>
+    </a>
+    
+    <a href="agent-manager.html" class="test-link">
+        🎭 Agent Manager<br>
+        <small>Add/remove critics from your collection</small>
+    </a>
+
+    <div class="status">
+        <h3>What Should Work:</h3>
+        <ul class="working">
+            <li>✓ Navigation between all pages</li>
+            <li>✓ V1: Shows demo critiques (API fallback)</li>
+            <li>✓ V2: Image upload + critic selection</li>
+            <li>✓ V2: Animated conversation phases</li>
+            <li>✓ Agent Manager: Add/remove critics</li>
+        </ul>
+        
+        <h3>Known Issues:</h3>
+        <ul class="issue">
+            <li>⚠️ Real AI critiques need API key in .env.local</li>
+            <li>⚠️ V2 conversations are simulated (not using AI yet)</li>
+        </ul>
+    </div>
+
+    <div class="status">
+        <h3>🔧 Debugging Tips:</h3>
+        <p><strong>If V1 doesn't show critiques:</strong></p>
+        <ol>
+            <li>Open browser console (F12)</li>
+            <li>Look for "Displaying demo results..." message</li>
+            <li>Should see demo critics appear after ~2 seconds</li>
+        </ol>
+        
+        <p><strong>If V2 upload doesn't work:</strong></p>
+        <ol>
+            <li>Check console for "Files dropped: 1" message</li>
+            <li>Try clicking upload zone instead of dragging</li>
+            <li>Make sure to select 2+ critics before starting</li>
+        </ol>
+    </div>
+
+    <script>
+        console.log('Test page loaded successfully');
+        console.log('Current URL:', window.location.href);
+        console.log('Available pages:', [
+            'index-hub.html',
+            'index-enhanced-v4.html', 
+            'v2-conversation-ui.html',
+            'agent-manager.html'
+        ]);
+    </script>
+</body>
+</html>

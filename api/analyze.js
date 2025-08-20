@@ -1,10 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const sharp = require('sharp');
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || 'demo-mode',
-});
-
 async function processImageFromUrl(imageUrl) {
   try {
     // Use dynamic import for node-fetch
@@ -42,9 +38,14 @@ async function generateCritiqueWithClaude(imageBase64, depth = 'standard', focus
   console.log('API Key starts with:', process.env.ANTHROPIC_API_KEY?.substring(0, 10));
   
   if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'demo-mode') {
-    console.log('Using demo mode');
+    console.log('Using demo mode - no API key');
     return generateDemoCritique();
   }
+
+  // Initialize Anthropic client with the API key
+  const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
 
   const prompts = {
     jobs: `You are Steve Jobs critiquing this design. Focus on simplicity, clarity, and emotional impact. 

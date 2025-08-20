@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Critic Agent - AI Powered</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 0%, #666 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #666;
+            font-weight: 300;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .upload-section {
+            background: #111;
+            border-radius: 20px;
+            padding: 60px;
+            text-align: center;
+            margin-bottom: 40px;
+            border: 1px solid #222;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.2s forwards;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #333;
+            transform: translateY(-2px);
+        }
+
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 60px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #555;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-text {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: #444;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: #fff;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        }
+
+        .analyze-btn:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .preview-section {
+            display: none;
+            background: #111;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid #222;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .critique-section {
+            display: none;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .critic-card {
+            background: #111;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid #222;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.5s ease-out forwards;
+            position: relative;
+        }
+
+        .critic-card:nth-child(1) { animation-delay: 0.1s; }
+        .critic-card:nth-child(2) { animation-delay: 0.2s; }
+        .critic-card:nth-child(3) { animation-delay: 0.3s; }
+        .critic-card:nth-child(4) { animation-delay: 0.4s; }
+        .critic-card:nth-child(5) { animation-delay: 0.5s; }
+
+        .critic-score {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            font-size: 24px;
+            font-weight: 200;
+            color: #4CAF50;
+        }
+
+        .critic-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .critic-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 300;
+            color: white;
+        }
+
+        .critic-name {
+            font-size: 18px;
+            font-weight: 400;
+            color: #fff;
+        }
+
+        .critic-title {
+            font-size: 14px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .critique-content {
+            line-height: 1.8;
+            color: #ccc;
+        }
+
+        .critique-point {
+            margin-bottom: 16px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .critique-point::before {
+            content: "—";
+            position: absolute;
+            left: 0;
+            color: #666;
+        }
+
+        .critique-point.positive::before {
+            content: "+";
+            color: #4CAF50;
+        }
+
+        .critique-point.negative::before {
+            content: "−";
+            color: #f44336;
+        }
+
+        .critique-point.neutral::before {
+            content: "•";
+            color: #666;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #222;
+            border-top-color: #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid #f44336;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #f44336;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4CAF50;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #4CAF50;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Design Critique Agent <span class="ai-badge">AI POWERED</span></h1>
+            <p class="subtitle">Real AI analysis from Claude, channeling legendary design wisdom</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="fileInput" accept="image/*">
+                <div class="upload-text">Drop your design here</div>
+                <div class="upload-subtext">or click to browse (JPG, PNG, GIF, WebP)</div>
+            </div>
+            <input type="text" class="url-input" id="urlInput" placeholder="Or paste a URL to your design">
+            <button class="analyze-btn" id="analyzeBtn">Analyze Design with AI</button>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <div class="preview-section" id="previewSection">
+            <h3 style="margin-bottom: 20px; font-weight: 300;">Your Design</h3>
+            <img id="previewImage" class="preview-image" alt="Design preview">
+        </div>
+
+        <div class="loading" id="loadingSection">
+            <div class="loading-spinner"></div>
+            <p>AI analyzing your design through expert lenses...</p>
+            <p style="font-size: 12px; color: #444; margin-top: 10px;">This may take 15-30 seconds</p>
+        </div>
+
+        <div class="critique-section" id="critiqueSection">
+            <!-- Critiques will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const urlInput = document.getElementById('urlInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const previewSection = document.getElementById('previewSection');
+        const previewImage = document.getElementById('previewImage');
+        const loadingSection = document.getElementById('loadingSection');
+        const critiqueSection = document.getElementById('critiqueSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        let currentFile = null;
+        let currentImageUrl = '';
+
+        // File upload handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleFile(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        function handleFile(file) {
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size must be less than 10MB');
+                return;
+            }
+
+            currentFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImageUrl = e.target.result;
+                previewImage.src = currentImageUrl;
+                previewSection.style.display = 'block';
+                hideMessages();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        urlInput.addEventListener('input', (e) => {
+            if (e.target.value) {
+                currentImageUrl = e.target.value;
+                previewImage.src = currentImageUrl;
+                previewSection.style.display = 'block';
+                currentFile = null;
+                hideMessages();
+            }
+        });
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (currentImageUrl || currentFile) {
+                await analyzeDesign();
+            } else {
+                showError('Please upload a design or provide a URL');
+            }
+        });
+
+        async function analyzeDesign() {
+            loadingSection.style.display = 'block';
+            critiqueSection.style.display = 'none';
+            analyzeBtn.disabled = true;
+            hideMessages();
+            
+            try {
+                const requestBody = {};
+                
+                if (currentFile) {
+                    // Convert file to base64
+                    const reader = new FileReader();
+                    const imageData = await new Promise((resolve) => {
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(currentFile);
+                    });
+                    requestBody.imageData = imageData;
+                } else if (currentImageUrl && !currentImageUrl.startsWith('data:')) {
+                    requestBody.imageUrl = currentImageUrl;
+                } else if (currentImageUrl && currentImageUrl.startsWith('data:')) {
+                    requestBody.imageData = currentImageUrl;
+                }
+                
+                requestBody.depth = 'standard';
+                requestBody.focus = 'all';
+
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                loadingSection.style.display = 'none';
+                critiqueSection.style.display = 'block';
+                
+                critiqueSection.innerHTML = data.critique.map(c => 
+                    generateCritiqueCard(c)
+                ).join('');
+
+                showSuccess('AI analysis complete! Here\'s your expert design critique.');
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                loadingSection.style.display = 'none';
+                
+                showError(`Analysis failed: ${error.message}. Showing demo critique instead.`);
+                
+                // Fallback to demo critiques
+                critiqueSection.style.display = 'block';
+                critiqueSection.innerHTML = generateDemoCritique();
+                
+            } finally {
+                analyzeBtn.disabled = false;
+            }
+        }
+
+        function generateCritiqueCard(critic) {
+            return `
+                <div class="critic-card">
+                    ${critic.score ? `<div class="critic-score">${critic.score}%</div>` : ''}
+                    <div class="critic-header">
+                        <div class="critic-avatar">${critic.avatar}</div>
+                        <div>
+                            <div class="critic-name">${critic.name}</div>
+                            <div class="critic-title">${critic.title}</div>
+                        </div>
+                    </div>
+                    <div class="critique-content">
+                        <p style="margin-bottom: 20px; color: #888;">${critic.focus}</p>
+                        ${critic.points.map(point => 
+                            typeof point === 'string' 
+                                ? `<div class="critique-point neutral">${point}</div>`
+                                : `<div class="critique-point ${point.type}">${point.text}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateDemoCritique() {
+            return `
+                <div class="critic-card">
+                    <div class="critic-score">Demo</div>
+                    <div class="critic-header">
+                        <div class="critic-avatar">AI</div>
+                        <div>
+                            <div class="critic-name">Demo Mode</div>
+                            <div class="critic-title">API Key Required</div>
+                        </div>
+                    </div>
+                    <div class="critique-content">
+                        <p style="margin-bottom: 20px; color: #888;">Connect your Anthropic API key for real AI analysis</p>
+                        <div class="critique-point neutral">Add ANTHROPIC_API_KEY environment variable to enable real AI-powered critiques</div>
+                        <div class="critique-point neutral">Once connected, Claude will analyze your actual design and provide personalized feedback</div>
+                        <div class="critique-point neutral">Each critique will be unique to your specific design elements, colors, layout, and user experience</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

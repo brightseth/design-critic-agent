@@ -2,6 +2,9 @@
   "functions": {
     "api/analyze.js": {
       "maxDuration": 30
+    },
+    "api/analyze-simple.js": {
+      "maxDuration": 30
     }
   },
   "routes": [

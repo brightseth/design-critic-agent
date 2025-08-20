@@ -149,6 +149,7 @@ async function generateSimpleCritique(imageBase64) {
 
 module.exports = async (req, res) => {
   console.log('API endpoint called:', req.method);
+  console.log('Request size (approx):', JSON.stringify(req.body).length);
   
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -156,6 +157,14 @@ module.exports = async (req, res) => {
 
   try {
     const { imageData, imageUrl } = req.body;
+    
+    // Check payload size
+    if (imageData && imageData.length > 2 * 1024 * 1024) { // 2MB limit for base64
+      return res.status(413).json({ 
+        error: 'Image too large',
+        message: 'Please compress your image to under 1MB before uploading' 
+      });
+    }
     
     let imageBase64 = '';
     

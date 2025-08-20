@@ -342,7 +342,7 @@
             <div class="upload-area" id="uploadArea">
                 <input type="file" id="fileInput" accept="image/*">
                 <div class="upload-text">Drop your design here</div>
-                <div class="upload-subtext">or click to browse (JPG, PNG, GIF, WebP)</div>
+                <div class="upload-subtext">or click to browse (JPG, PNG, GIF, WebP - Max 5MB)</div>
             </div>
             <input type="text" class="url-input" id="urlInput" placeholder="Or paste a URL to your design">
             <button class="analyze-btn" id="analyzeBtn">Analyze Design with AI</button>
@@ -412,18 +412,63 @@
         });
 
         function handleFile(file) {
-            if (file.size > 10 * 1024 * 1024) {
-                showError('File size must be less than 10MB');
+            if (file.size > 5 * 1024 * 1024) {
+                showError('File size must be less than 5MB for analysis');
                 return;
             }
 
             currentFile = file;
+            
+            // Compress image if needed
+            if (file.size > 1024 * 1024) { // 1MB
+                compressImage(file, (compressedDataUrl) => {
+                    currentImageUrl = compressedDataUrl;
+                    previewImage.src = currentImageUrl;
+                    previewSection.style.display = 'block';
+                    hideMessages();
+                });
+            } else {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentImageUrl = e.target.result;
+                    previewImage.src = currentImageUrl;
+                    previewSection.style.display = 'block';
+                    hideMessages();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function compressImage(file, callback) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                // Calculate new dimensions (max 800px on longest side)
+                const maxSize = 800;
+                let { width, height } = img;
+                
+                if (width > height && width > maxSize) {
+                    height = (height * maxSize) / width;
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width = (width * maxSize) / height;
+                    height = maxSize;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Draw and compress
+                ctx.drawImage(img, 0, 0, width, height);
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                callback(compressedDataUrl);
+            };
+            
             const reader = new FileReader();
             reader.onload = (e) => {
-                currentImageUrl = e.target.result;
-                previewImage.src = currentImageUrl;
-                previewSection.style.display = 'block';
-                hideMessages();
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }

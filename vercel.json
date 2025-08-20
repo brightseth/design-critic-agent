@@ -1,14 +1,11 @@
 {
-  "functions": {
-    "server.js": {
-      "maxDuration": 30
-    }
-  },
-  "routes": [
+  "builds": [
     {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
     {
       "src": "/(.*)",
       "dest": "/index.html"

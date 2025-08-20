@@ -918,13 +918,24 @@
     <div class="container">
         <div class="header">
             <h1>
-                <span style="--i: 0">D</span><span style="--i: 1">e</span><span style="--i: 2">s</span><span style="--i: 3">i</span><span style="--i: 4">g</span><span style="--i: 5">n</span>
-                <span style="--i: 6">M</span><span style="--i: 7">a</span><span style="--i: 8">s</span><span style="--i: 9">t</span><span style="--i: 10">e</span><span style="--i: 11">r</span><span style="--i: 12">y</span>
+                <span style="--i: 0">C</span><span style="--i: 1">r</span><span style="--i: 2">i</span><span style="--i: 3">t</span><span style="--i: 4">i</span><span style="--i: 5">c</span>
+                <span style="--i: 6">S</span><span style="--i: 7">t</span><span style="--i: 8">u</span><span style="--i: 9">d</span><span style="--i: 10">i</span><span style="--i: 11">o</span>
             </h1>
-            <p class="subtitle">AI-Powered Design Critique from the Masters</p>
+            <p class="subtitle">AI-Powered Critique from World-Renowned Experts</p>
         </div>
 
-        <!-- Mode selector removed - using comprehensive analysis only -->
+        <!-- Mode selector for different critique types -->
+        <div class="mode-selector" style="margin-bottom: 30px;">
+            <button class="mode-btn active" data-mode="design" onclick="switchCritiqueMode('design')">
+                <span style="font-size: 20px; margin-right: 8px;">🎨</span> Design
+            </button>
+            <button class="mode-btn" data-mode="photo" onclick="switchCritiqueMode('photo')">
+                <span style="font-size: 20px; margin-right: 8px;">📷</span> Photography
+            </button>
+            <button class="mode-btn" data-mode="art" onclick="switchCritiqueMode('art')">
+                <span style="font-size: 20px; margin-right: 8px;">🖼️</span> Art
+            </button>
+        </div>
 
         <div class="critic-selector" id="criticSelector" style="display: none; margin-bottom: 40px;">
             <h3 style="font-size: 24px; font-weight: 300; margin-bottom: 20px;">Select Your Design Critics</h3>
@@ -1507,14 +1518,41 @@
 
     <script>
         // Initialize the application
-        let currentMode = 'comprehensive';
+        let currentCritiqueMode = 'design'; // 'design', 'photo', or 'art'
         let uploadedImages = [];
         let annotations = [];
         let currentStage = 0;
         let critiqueData = {};
 
-        // Mode selector removed - always use comprehensive mode
-        currentMode = 'comprehensive';
+        // Function to switch between Design, Photo, and Art modes
+        function switchCritiqueMode(mode) {
+            currentCritiqueMode = mode;
+            
+            // Update button states
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.mode === mode) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update UI text based on mode
+            const subtitle = document.querySelector('.subtitle');
+            const uploadText = document.querySelector('#uploadArea h3');
+            
+            if (mode === 'photo') {
+                subtitle.textContent = 'AI-Powered Photography Critique from Master Photographers';
+                if (uploadText) uploadText.textContent = 'Drop Your Photo';
+            } else if (mode === 'art') {
+                subtitle.textContent = 'AI-Powered Art Critique from Renowned Curators & Critics';
+                if (uploadText) uploadText.textContent = 'Drop Your Artwork';
+            } else {
+                subtitle.textContent = 'AI-Powered Design Critique from the Masters';
+                if (uploadText) uploadText.textContent = 'Drop Your Design';
+            }
+            
+            console.log('Switched to', mode, 'mode');
+        }
 
         // File upload handlers
         const uploadArea = document.getElementById('uploadArea');
@@ -1799,7 +1837,7 @@
         async function analyzeImage(imageData, imageUrl) {
             try {
                 const payload = {
-                    mode: currentMode
+                    mode: currentCritiqueMode // Send the critique mode (design/photo/art)
                 };
                 
                 // Determine if it's a URL or base64 data

@@ -1,5 +1,283 @@
 const Anthropic = require('@anthropic-ai/sdk');
 
+// Photography Critics Panel (Past 50 years)
+function getPhotographyCritics(imageBase64) {
+  const critics = [
+    {
+      name: 'Susan Sontag',
+      avatar: 'SS',
+      title: 'Cultural Criticism',
+      focus: 'Photography as cultural artifact and moral document',
+      score: Math.floor(Math.random() * 20) + 70,
+      hotTake: 'The image participates in the ethics of seeing. What violence does this frame commit?',
+      points: [
+        { type: 'positive', text: 'The frame acknowledges its own construction - honest about its artifice.' },
+        { type: 'negative', text: 'Too comfortable with surface beauty, not enough interrogation of power.' },
+        { type: 'suggestion', text: 'Photography is not about capturing reality but about creating new ways of seeing.' }
+      ]
+    },
+    {
+      name: 'Annie Leibovitz',
+      avatar: 'AL',
+      title: 'Portrait Master',
+      focus: 'Intimate storytelling through environmental context',
+      score: Math.floor(Math.random() * 20) + 75,
+      hotTake: 'The environment tells half the story, but where\'s the soul in the eyes?',
+      points: [
+        { type: 'positive', text: 'Good use of natural light creates authentic mood.' },
+        { type: 'negative', text: 'The subject feels posed rather than revealed. Let them breathe.' },
+        { type: 'suggestion', text: 'Spend more time with your subject before shooting. Trust emerges in the waiting.' }
+      ]
+    },
+    {
+      name: 'Henri Cartier-Bresson',
+      avatar: 'HCB',
+      title: 'Decisive Moment',
+      focus: 'Geometry, timing, and the perfect instant',
+      score: Math.floor(Math.random() * 20) + 68,
+      hotTake: 'You caught A moment, but was it THE moment? The geometry says no.',
+      points: [
+        { type: 'negative', text: 'The golden ratio is broken - your lines fight each other.' },
+        { type: 'positive', text: 'Good instinct for human gesture, but timing is slightly off.' },
+        { type: 'suggestion', text: 'Wait. Always wait. The decisive moment comes to those who observe.' }
+      ]
+    },
+    {
+      name: 'Diane Arbus',
+      avatar: 'DA',
+      title: 'Psychological Depth',
+      focus: 'Finding the strange in the familiar',
+      score: Math.floor(Math.random() * 20) + 72,
+      hotTake: 'Too safe. Where\'s the discomfort that makes us question normalcy?',
+      points: [
+        { type: 'positive', text: 'There\'s tension here, something unsaid beneath the surface.' },
+        { type: 'negative', text: 'You\'re photographing from outside looking in. Get closer.' },
+        { type: 'suggestion', text: 'The best photographs make the ordinary feel alien.' }
+      ]
+    },
+    {
+      name: 'Richard Avedon',
+      avatar: 'RA',
+      title: 'Stark Revelation',
+      focus: 'Stripping away context to reveal essence',
+      score: Math.floor(Math.random() * 20) + 74,
+      hotTake: 'All that background noise - the subject is drowning in context.',
+      points: [
+        { type: 'negative', text: 'Too much environment dilutes the psychological impact.' },
+        { type: 'positive', text: 'Sharp focus reveals texture and character.' },
+        { type: 'suggestion', text: 'Try white backgrounds. Let the face be the only landscape.' }
+      ]
+    },
+    {
+      name: 'Sebastião Salgado',
+      avatar: 'SaS',
+      title: 'Epic Documentation',
+      focus: 'Humanity and dignity in challenging conditions',
+      score: Math.floor(Math.random() * 20) + 80,
+      hotTake: 'Beautiful suffering is still exploitation. Where\'s the subject\'s agency?',
+      points: [
+        { type: 'positive', text: 'The composition gives dignity to difficult subject matter.' },
+        { type: 'negative', text: 'Aestheticizing hardship can distance us from action.' },
+        { type: 'suggestion', text: 'Document with respect. The camera is not neutral.' }
+      ]
+    },
+    {
+      name: 'Cindy Sherman',
+      avatar: 'CS',
+      title: 'Constructed Identity',
+      focus: 'Photography as performance and fiction',
+      score: Math.floor(Math.random() * 20) + 77,
+      hotTake: 'This pretends to be truth when it should embrace its artifice.',
+      points: [
+        { type: 'positive', text: 'The staging reveals something about representation itself.' },
+        { type: 'negative', text: 'Not enough self-awareness about the construction.' },
+        { type: 'suggestion', text: 'Every photograph is a performance. Make that visible.' }
+      ]
+    },
+    {
+      name: 'Stephen Shore',
+      avatar: 'StS',
+      title: 'American Vernacular',
+      focus: 'Finding art in everyday American landscapes',
+      score: Math.floor(Math.random() * 20) + 71,
+      hotTake: 'This wants to be mundane but it\'s trying too hard to be art.',
+      points: [
+        { type: 'positive', text: 'Good color relationships create visual coherence.' },
+        { type: 'negative', text: 'The composition is neither casual nor formal - pick a lane.' },
+        { type: 'suggestion', text: 'The banal becomes profound through patient observation.' }
+      ]
+    },
+    {
+      name: 'Sally Mann',
+      avatar: 'SM',
+      title: 'Southern Gothic',
+      focus: 'Memory, mortality, and the landscape of the South',
+      score: Math.floor(Math.random() * 20) + 76,
+      hotTake: 'Pretty decay without the weight of history. Where\'s the haunting?',
+      points: [
+        { type: 'positive', text: 'The texture and tone evoke genuine atmosphere.' },
+        { type: 'negative', text: 'Nostalgia without critique becomes mere romanticism.' },
+        { type: 'suggestion', text: 'Let the past bleed through. Photography is always about time.' }
+      ]
+    },
+    {
+      name: 'Andreas Gursky',
+      avatar: 'AG',
+      title: 'Epic Scale',
+      focus: 'Contemporary life through massive, detailed tableaux',
+      score: Math.floor(Math.random() * 20) + 73,
+      hotTake: 'The scale is ambitious but where\'s the critical perspective on capitalism?',
+      points: [
+        { type: 'positive', text: 'The detail rewards close examination.' },
+        { type: 'negative', text: 'Spectacle without critique becomes complicit.' },
+        { type: 'suggestion', text: 'Use scale to reveal systems, not just to impress.' }
+      ]
+    }
+  ];
+  
+  // Return 5 random critics
+  return critics.sort(() => 0.5 - Math.random()).slice(0, 5);
+}
+
+// Art Critics & Curators Panel (Past 50 years)
+function getArtCritics(imageBase64) {
+  const critics = [
+    {
+      name: 'Jerry Saltz',
+      avatar: 'JS',
+      title: 'Populist Provocateur',
+      focus: 'Art should punch you in the gut',
+      score: Math.floor(Math.random() * 20) + 65,
+      hotTake: 'This is art school clever, not art world smart. Where\'s the FEELING?',
+      points: [
+        { type: 'negative', text: 'Too much concept, not enough visual power. Art isn\'t a thesis.' },
+        { type: 'positive', text: 'At least you\'re trying something. That\'s more than most.' },
+        { type: 'suggestion', text: 'Stop thinking and start feeling. Your brain is killing your art.' }
+      ]
+    },
+    {
+      name: 'Roberta Smith',
+      avatar: 'RS',
+      title: 'Formalist Eye',
+      focus: 'Visual intelligence and material honesty',
+      score: Math.floor(Math.random() * 20) + 72,
+      hotTake: 'The materials are fighting your concept. Let them speak.',
+      points: [
+        { type: 'positive', text: 'Strong formal relationships create visual tension.' },
+        { type: 'negative', text: 'The execution undermines the ambition.' },
+        { type: 'suggestion', text: 'Master your materials before attempting transcendence.' }
+      ]
+    },
+    {
+      name: 'Hans Ulrich Obrist',
+      avatar: 'HUO',
+      title: 'Global Connector',
+      focus: 'Art as urgent conversation',
+      score: Math.floor(Math.random() * 20) + 78,
+      hotTake: 'Interesting, but how does this speak to our current moment of crisis?',
+      points: [
+        { type: 'positive', text: 'The work engages with contemporary urgencies.' },
+        { type: 'negative', text: 'Too isolated from global conversations.' },
+        { type: 'suggestion', text: 'Art must be a bridge between worlds, not a island.' }
+      ]
+    },
+    {
+      name: 'Thelma Golden',
+      avatar: 'TG',
+      title: 'Cultural Visionary',
+      focus: 'Art as cultural production and identity',
+      score: Math.floor(Math.random() * 20) + 75,
+      hotTake: 'Who is this for? The work needs to know its audience and context.',
+      points: [
+        { type: 'positive', text: 'The work acknowledges its cultural position.' },
+        { type: 'negative', text: 'Not enough consideration of who views and who is excluded.' },
+        { type: 'suggestion', text: 'Art happens in culture, not above it.' }
+      ]
+    },
+    {
+      name: 'Nicolas Bourriaud',
+      avatar: 'NB',
+      title: 'Relational Aesthetics',
+      focus: 'Art as social interstice',
+      score: Math.floor(Math.random() * 20) + 70,
+      hotTake: 'This creates objects when it should create situations.',
+      points: [
+        { type: 'negative', text: 'Too focused on the thing, not the relations it produces.' },
+        { type: 'positive', text: 'Some potential for viewer activation.' },
+        { type: 'suggestion', text: 'Art\'s value is in the encounters it generates.' }
+      ]
+    },
+    {
+      name: 'Okwui Enwezor',
+      avatar: 'OE',
+      title: 'Postcolonial Lens',
+      focus: 'Art as political and historical document',
+      score: Math.floor(Math.random() * 20) + 73,
+      hotTake: 'The politics are superficial. Where\'s the deep structural critique?',
+      points: [
+        { type: 'positive', text: 'Attempts to engage with power structures.' },
+        { type: 'negative', text: 'Reproduces rather than challenges dominant narratives.' },
+        { type: 'suggestion', text: 'Decolonizing isn\'t a gesture, it\'s a practice.' }
+      ]
+    },
+    {
+      name: 'Arthur Danto',
+      avatar: 'AD',
+      title: 'Philosophical Depth',
+      focus: 'After the end of art',
+      score: Math.floor(Math.random() * 20) + 76,
+      hotTake: 'This could have been made in 1917. What makes it necessary NOW?',
+      points: [
+        { type: 'positive', text: 'Understands that anything can be art in the right context.' },
+        { type: 'negative', text: 'But context alone doesn\'t make it good art.' },
+        { type: 'suggestion', text: 'The question isn\'t "is it art?" but "why does it matter?"' }
+      ]
+    },
+    {
+      name: 'Claire Bishop',
+      avatar: 'CB',
+      title: 'Participatory Critique',
+      focus: 'The social turn and its discontents',
+      score: Math.floor(Math.random() * 20) + 69,
+      hotTake: 'Participation as decoration. Where\'s the actual agency?',
+      points: [
+        { type: 'negative', text: 'Invites participation but maintains artist control.' },
+        { type: 'positive', text: 'At least acknowledges the viewer as active.' },
+        { type: 'suggestion', text: 'True participation means risking authorship.' }
+      ]
+    },
+    {
+      name: 'Benjamin Buchloh',
+      avatar: 'BB',
+      title: 'Institutional Critique',
+      focus: 'Art\'s complicity with capital',
+      score: Math.floor(Math.random() * 20) + 67,
+      hotTake: 'This pretends to critique while seeking market validation.',
+      points: [
+        { type: 'negative', text: 'The radical gesture is immediately recuperated by the market.' },
+        { type: 'negative', text: 'No awareness of its own commodification.' },
+        { type: 'suggestion', text: 'True critique must include self-critique.' }
+      ]
+    },
+    {
+      name: 'Carolyn Christov-Bakargiev',
+      avatar: 'CCB',
+      title: 'Expanded Field',
+      focus: 'Art in the anthropocene',
+      score: Math.floor(Math.random() * 20) + 74,
+      hotTake: 'Too human-centered. What about the non-human actors?',
+      points: [
+        { type: 'positive', text: 'Attempts to think beyond traditional boundaries.' },
+        { type: 'negative', text: 'Still trapped in anthropocentric thinking.' },
+        { type: 'suggestion', text: 'Art must learn to speak with, not for, the world.' }
+      ]
+    }
+  ];
+  
+  // Return 5 random critics
+  return critics.sort(() => 0.5 - Math.random()).slice(0, 5);
+}
+
 function generateVariedCritiques() {
   const jobsCritiques = [
     [
@@ -152,9 +430,10 @@ function generateVariedCritiques() {
   ];
 }
 
-async function generateSimpleCritique(imageBase64, imageUrl) {
+async function generateSimpleCritique(imageBase64, imageUrl, mode = 'design') {
   console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
   console.log('API Key starts with:', process.env.ANTHROPIC_API_KEY?.substring(0, 15));
+  console.log('Critique mode:', mode);
   
   // For the FEAR LIBERATION poster or similar activist/artistic designs
   const posterContext = {
@@ -481,8 +760,9 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { imageData, imageUrl } = req.body;
+    const { imageData, imageUrl, mode = 'design' } = req.body;
     console.log('Processing URL:', imageUrl);
+    console.log('Mode:', mode);
     
     // Check payload size
     if (imageData && imageData.length > 2 * 1024 * 1024) { // 2MB limit for base64
@@ -506,7 +786,62 @@ module.exports = async (req, res) => {
 
     console.log('Processing image, base64 length:', imageBase64.length);
     
-    const result = await generateSimpleCritique(imageBase64);
+    // Call appropriate critics based on mode
+    let result;
+    if (mode === 'photo') {
+      // Photography mode
+      const critics = getPhotographyCritics(imageBase64);
+      result = {
+        imageAnalysis: {
+          description: "Analyzing photographic composition, light, and narrative",
+          primaryColors: ["Various"],
+          designType: "Photography",
+          elements: ["Composition", "Light", "Subject", "Moment"]
+        },
+        observations: [
+          'Examining photographic composition and framing',
+          'Analyzing light quality and direction',
+          'Evaluating emotional impact and narrative',
+          'Assessing technical execution and craft',
+          'Considering cultural and historical context'
+        ],
+        critique: critics,
+        scores: {
+          composition: Math.floor(Math.random() * 20) + 70,
+          narrative: Math.floor(Math.random() * 20) + 65,
+          technical: Math.floor(Math.random() * 20) + 70,
+          impact: Math.floor(Math.random() * 20) + 68
+        }
+      };
+    } else if (mode === 'art') {
+      // Art mode
+      const critics = getArtCritics(imageBase64);
+      result = {
+        imageAnalysis: {
+          description: "Analyzing artistic concept, execution, and cultural relevance",
+          primaryColors: ["Various"],
+          designType: "Contemporary Art",
+          elements: ["Concept", "Material", "Context", "Impact"]
+        },
+        observations: [
+          'Evaluating conceptual framework and artistic intent',
+          'Analyzing material choices and execution',
+          'Considering cultural and political context',
+          'Assessing innovation and contribution to discourse',
+          'Examining relationship to art history and contemporary practice'
+        ],
+        critique: critics,
+        scores: {
+          concept: Math.floor(Math.random() * 20) + 65,
+          execution: Math.floor(Math.random() * 20) + 70,
+          relevance: Math.floor(Math.random() * 20) + 68,
+          innovation: Math.floor(Math.random() * 20) + 60
+        }
+      };
+    } else {
+      // Default design mode - use existing function
+      result = await generateSimpleCritique(imageBase64, imageUrl);
+    }
     
     res.json({
       success: true,

@@ -22,7 +22,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/index-ai.html"
+      "dest": "/index-enhanced-v3.html"
     }
   ]
 }

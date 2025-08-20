@@ -850,6 +850,11 @@
         function displayDemoResults() {
             console.log('Displaying demo results for mode:', currentMode, 'personality:', currentPersonality);
             
+            // Regenerate observations each time for variety
+            const regenerateObservations = () => {
+                // Will be redefined below
+            };
+            
             // Adjust critiques based on personality
             const personalityModifiers = {
                 'balanced': {
@@ -868,15 +873,92 @@
             
             const modifier = personalityModifiers[currentPersonality] || personalityModifiers['balanced'];
             
+            // Generate dynamic observations based on current settings
+            const generateDynamicObservations = (mode) => {
+                const observationSets = {
+                    design: [
+                        [
+                            'Strong use of negative space creating visual breathing room',
+                            'Typography hierarchy clearly established with intentional scale',
+                            'Color palette demonstrates sophisticated restraint',
+                            'Grid system evident but could be more consistently applied',
+                            'Interface elements show attention to interaction states'
+                        ],
+                        [
+                            'Visual weight distribution creates natural eye flow',
+                            'Consistent design language throughout the composition',
+                            'Strategic use of contrast to guide user attention',
+                            'Microinteractions suggest personality without overwhelming',
+                            'Accessibility considerations evident in color choices'
+                        ],
+                        [
+                            'Systematic approach to spacing and alignment visible',
+                            'Brand personality comes through in subtle details',
+                            'Information architecture supports user goals effectively',
+                            'Design system thinking apparent in component patterns',
+                            'Balance between innovation and familiar patterns'
+                        ]
+                    ],
+                    photography: [
+                        [
+                            'Compelling use of natural light shapes the narrative',
+                            'Composition follows dynamic thirds with intentional breaks',
+                            'Depth of field choices enhance subject isolation',
+                            'Moment capture shows patience and anticipation',
+                            'Post-processing maintains authenticity while enhancing mood'
+                        ],
+                        [
+                            'Strong geometric elements create structural foundation',
+                            'Tonal range fully utilized from deep shadows to highlights',
+                            'Subject placement creates narrative tension',
+                            'Environmental context adds layers of meaning',
+                            'Technical execution supports artistic vision'
+                        ],
+                        [
+                            'Emotional resonance achieved through subtle gestures',
+                            'Frame edges utilized as compositional elements',
+                            'Color grading enhances without overpowering',
+                            'Decisive moment captured with precision',
+                            'Print quality considerations evident in tonal control'
+                        ]
+                    ],
+                    art: [
+                        [
+                            'Conceptual framework challenges conventional boundaries',
+                            'Material choices amplify thematic exploration',
+                            'Cultural references woven throughout the work',
+                            'Viewer participation implicit in the presentation',
+                            'Historical dialogue evident in formal choices'
+                        ],
+                        [
+                            'Tension between representation and abstraction',
+                            'Scale relationships create psychological impact',
+                            'Process visible as integral part of the concept',
+                            'Institutional critique embedded in execution',
+                            'Temporal elements suggest ongoing transformation'
+                        ],
+                        [
+                            'Identity politics addressed through material language',
+                            'Craft and concept in productive dialogue',
+                            'Site-specificity enhances contextual reading',
+                            'Documentation becomes part of the artwork',
+                            'Accessibility of concept balanced with depth'
+                        ]
+                    ]
+                };
+                
+                const sets = observationSets[mode] || observationSets.design;
+                const randomSet = sets[Math.floor(Math.random() * sets.length)];
+                
+                // Shuffle observations for variety
+                const shuffled = [...randomSet].sort(() => Math.random() - 0.5);
+                return shuffled.slice(0, 5);
+            };
+
+            // Regenerate demo data with fresh observations each time
             const demoData = {
                 design: {
-                    observations: [
-                        'Strong visual hierarchy with clear focal points',
-                        'Typography shows confident scale but lacks systematic approach',
-                        'Color palette demonstrates understanding of contrast',
-                        'Grid structure present but not consistently applied',
-                        'White space effectively used in primary areas'
-                    ],
+                    observations: generateDynamicObservations('design'),
                     critique: [
                         {
                             name: 'Paula Scher',
@@ -923,13 +1005,7 @@
                     ]
                 },
                 photo: {
-                    observations: [
-                        'Composition follows basic rule of thirds',
-                        'Lighting creates mood but lacks intentional direction',
-                        'Focus and depth of field used effectively',
-                        'Color grading present but inconsistent',
-                        'Moment captured but not decisive'
-                    ],
+                    observations: generateDynamicObservations('photography'),
                     critique: [
                         {
                             name: 'Ansel Adams',
@@ -964,13 +1040,7 @@
                     ]
                 },
                 art: {
-                    observations: [
-                        'Conceptual framework apparent but underdeveloped',
-                        'Technical execution shows competence',
-                        'Emotional resonance present but muted',
-                        'Cultural context acknowledged but not explored',
-                        'Personal voice emerging but not confident'
-                    ],
+                    observations: generateDynamicObservations('art'),
                     critique: [
                         {
                             name: 'Marina Abramović',

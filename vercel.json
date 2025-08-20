@@ -6,8 +6,12 @@
   },
   "routes": [
     {
+      "src": "/api/test-env",
+      "dest": "/api/test-env.js"
+    },
+    {
       "src": "/api/analyze",
-      "dest": "/api/analyze.js"
+      "dest": "/api/analyze-simple.js"
     },
     {
       "src": "/(.*)",

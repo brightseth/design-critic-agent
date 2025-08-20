@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Critic Studio - AI Design Analysis</title>
+    <style>
+        :root {
+            /* Vignelli-inspired strict grid system */
+            --grid-columns: 12;
+            --grid-gutter: 24px;
+            --grid-margin: 48px;
+            
+            /* Simplified color system */
+            --color-primary: #000;
+            --color-secondary: #666;
+            --color-tertiary: #999;
+            --color-background: #fff;
+            --color-surface: #f8f8f8;
+            
+            /* Type scale - Fibonacci based */
+            --type-xs: 12px;
+            --type-sm: 14px;
+            --type-md: 16px;
+            --type-lg: 20px;
+            --type-xl: 24px;
+            --type-2xl: 32px;
+            --type-3xl: 48px;
+            --type-4xl: 64px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--color-background);
+            color: var(--color-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Progressive Disclosure Container */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--grid-margin);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .app-container.analysis-active {
+            justify-content: flex-start;
+            padding-top: var(--grid-gutter);
+        }
+
+        /* Simplified Initial State - Just Upload */
+        .upload-zone {
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 16/9;
+            border: 2px dashed var(--color-tertiary);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--color-surface);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--color-primary);
+            background: var(--color-background);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--color-primary);
+            background: var(--color-surface);
+            transform: scale(1.02);
+        }
+
+        .upload-zone h1 {
+            font-size: var(--type-2xl);
+            font-weight: 200;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .upload-zone p {
+            color: var(--color-secondary);
+            font-size: var(--type-md);
+        }
+
+        /* Hidden initially - revealed progressively */
+        .mode-selector {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.6s ease;
+            margin-bottom: var(--grid-gutter);
+            display: none;
+        }
+
+        .mode-selector.visible {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mode-btn {
+            background: none;
+            border: 1px solid var(--color-tertiary);
+            padding: 12px 24px;
+            margin: 0 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: var(--type-sm);
+            border-radius: 24px;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--color-primary);
+            background: var(--color-primary);
+            color: var(--color-background);
+        }
+
+        .mode-btn.active {
+            background: var(--color-primary);
+            color: var(--color-background);
+            border-color: var(--color-primary);
+        }
+
+        /* Experience Level Selector */
+        .experience-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: none;
+        }
+
+        .experience-selector.visible {
+            display: block;
+        }
+
+        .experience-toggle {
+            background: var(--color-surface);
+            border: 1px solid var(--color-tertiary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: var(--type-sm);
+        }
+
+        .experience-options {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--color-background);
+            border: 1px solid var(--color-tertiary);
+            border-radius: 8px;
+            margin-top: 8px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .experience-options.visible {
+            display: block;
+        }
+
+        .experience-option {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .experience-option:hover {
+            background: var(--color-surface);
+        }
+
+        /* Critique Personality Selector */
+        .personality-selector {
+            margin: var(--grid-gutter) 0;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .personality-selector.visible {
+            opacity: 1;
+        }
+
+        .personality-btn {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 8px;
+            cursor: pointer;
+            font-size: var(--type-sm);
+            color: var(--color-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .personality-btn.active {
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+
+        /* Analysis Results - Progressive Reveal */
+        .analysis-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .analysis-container.visible {
+            display: block;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Strict 12-column grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--grid-gutter);
+            margin: var(--grid-margin) 0;
+        }
+
+        .col-12 { grid-column: span 12; }
+        .col-8 { grid-column: span 8; }
+        .col-6 { grid-column: span 6; }
+        .col-4 { grid-column: span 4; }
+        .col-3 { grid-column: span 3; }
+
+        /* Visual Annotation System */
+        .annotation-canvas {
+            position: relative;
+            width: 100%;
+            cursor: crosshair;
+        }
+
+        .annotation-marker {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--color-primary);
+            background: var(--color-background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--type-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease;
+        }
+
+        .annotation-marker:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .annotation-tooltip {
+            position: absolute;
+            background: var(--color-primary);
+            color: var(--color-background);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: var(--type-sm);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .annotation-marker:hover + .annotation-tooltip {
+            opacity: 1;
+        }
+
+        /* Simplified Critique Cards */
+        .critique-card {
+            background: var(--color-surface);
+            padding: var(--grid-gutter);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .critique-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .critique-summary {
+            font-size: var(--type-lg);
+            font-weight: 300;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .critique-score {
+            font-size: var(--type-3xl);
+            font-weight: 200;
+            letter-spacing: -0.02em;
+        }
+
+        .critique-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .critique-card.expanded .critique-details {
+            max-height: 500px;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            :root {
+                --grid-margin: 20px;
+                --grid-gutter: 16px;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+
+            .col-12, .col-8, .col-6, .col-4, .col-3 {
+                grid-column: span 1;
+            }
+
+            .upload-zone {
+                aspect-ratio: 1;
+            }
+        }
+
+        /* Hidden by default */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Loading state */
+        .loading {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-tertiary);
+            border-radius: 8px;
+            font-size: var(--type-md);
+            margin-top: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="appContainer">
+        <!-- Experience Level Selector (Hidden Initially) -->
+        <div class="experience-selector" id="experienceSelector">
+            <button class="experience-toggle" onclick="toggleExperience()">
+                <span id="experienceLabel">Professional</span> ▼
+            </button>
+            <div class="experience-options" id="experienceOptions">
+                <div class="experience-option" onclick="setExperience('first-timer')">First Timer</div>
+                <div class="experience-option" onclick="setExperience('student')">Student</div>
+                <div class="experience-option" onclick="setExperience('professional')">Professional</div>
+            </div>
+        </div>
+
+        <!-- Initial Upload Zone - Minimal -->
+        <div class="upload-zone" id="uploadZone">
+            <h1>Drop Your Work</h1>
+            <p>or click to browse</p>
+            <input type="file" id="fileInput" accept="image/*">
+            <input type="text" class="url-input hidden" id="urlInput" placeholder="Or paste image URL...">
+        </div>
+
+        <!-- Mode Selector - Revealed After Upload -->
+        <div class="mode-selector" id="modeSelector">
+            <button class="mode-btn active" data-mode="design" onclick="setMode('design')">Design</button>
+            <button class="mode-btn" data-mode="photo" onclick="setMode('photo')">Photography</button>
+            <button class="mode-btn" data-mode="art" onclick="setMode('art')">Art</button>
+        </div>
+
+        <!-- Personality Selector - Revealed After Mode -->
+        <div class="personality-selector" id="personalitySelector">
+            <span style="color: var(--color-secondary); margin-right: 16px;">Critique Style:</span>
+            <button class="personality-btn active" onclick="setPersonality('balanced')">Balanced</button>
+            <button class="personality-btn" onclick="setPersonality('encouraging')">Encouraging</button>
+            <button class="personality-btn" onclick="setPersonality('tough-love')">Tough Love</button>
+        </div>
+
+        <!-- Analysis Results - Revealed Progressively -->
+        <div class="analysis-container" id="analysisContainer">
+            <div class="grid-container">
+                <!-- Image with Annotations -->
+                <div class="col-8">
+                    <div class="annotation-canvas" id="annotationCanvas">
+                        <img id="previewImage" style="width: 100%; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <!-- Key Observations -->
+                <div class="col-4">
+                    <h3 style="font-size: var(--type-xl); margin-bottom: 16px;">Key Observations</h3>
+                    <div id="observations"></div>
+                </div>
+
+                <!-- Critique Cards -->
+                <div class="col-12" style="margin-top: var(--grid-margin);">
+                    <div class="grid-container" id="critiqueGrid">
+                        <!-- Critiques will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let currentMode = 'design';
+        let currentExperience = 'professional';
+        let currentPersonality = 'balanced';
+        let uploadedImage = null;
+        let annotations = [];
+        let aiPowered = false;
+
+        // DOM Elements
+        const appContainer = document.getElementById('appContainer');
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const urlInput = document.getElementById('urlInput');
+        const modeSelector = document.getElementById('modeSelector');
+        const personalitySelector = document.getElementById('personalitySelector');
+        const experienceSelector = document.getElementById('experienceSelector');
+        const analysisContainer = document.getElementById('analysisContainer');
+
+        // Initialize
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('dragleave', handleDragLeave);
+        uploadZone.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Show URL input on shift+click
+        uploadZone.addEventListener('click', (e) => {
+            if (e.shiftKey) {
+                e.stopPropagation();
+                urlInput.classList.toggle('hidden');
+                urlInput.focus();
+            }
+        });
+
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                handleURL(e.target.value.trim());
+            }
+        });
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedImage = e.target.result;
+                startProgressiveReveal();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleURL(url) {
+            if (!url.startsWith('http')) {
+                url = 'https://' + url;
+            }
+            uploadedImage = url;
+            startProgressiveReveal();
+        }
+
+        // Progressive Reveal Sequence
+        function startProgressiveReveal() {
+            // Step 1: Transform upload zone
+            uploadZone.style.transform = 'scale(0.8)';
+            uploadZone.style.opacity = '0.5';
+            uploadZone.style.pointerEvents = 'none';
+
+            // Step 2: Reveal mode selector (after 300ms)
+            setTimeout(() => {
+                appContainer.classList.add('analysis-active');
+                modeSelector.classList.add('visible');
+            }, 300);
+
+            // Step 3: Reveal experience selector (after 600ms)
+            setTimeout(() => {
+                experienceSelector.classList.add('visible');
+            }, 600);
+
+            // Step 4: Reveal personality selector (after 900ms)
+            setTimeout(() => {
+                personalitySelector.classList.add('visible');
+            }, 900);
+
+            // Step 5: Start analysis (after 1200ms)
+            setTimeout(() => {
+                analyzeImage();
+            }, 1200);
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+        }
+
+        function setExperience(level) {
+            currentExperience = level;
+            document.getElementById('experienceLabel').textContent = 
+                level.charAt(0).toUpperCase() + level.slice(1).replace('-', ' ');
+            document.getElementById('experienceOptions').classList.remove('visible');
+        }
+
+        function setPersonality(personality) {
+            currentPersonality = personality;
+            document.querySelectorAll('.personality-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().replace(' ', '-') === personality);
+            });
+        }
+
+        function toggleExperience() {
+            document.getElementById('experienceOptions').classList.toggle('visible');
+        }
+
+        async function analyzeImage() {
+            // Show loading state
+            uploadZone.innerHTML = '<p>Analyzing...</p>';
+
+            try {
+                // Compress image if needed
+                let imageData = uploadedImage;
+                if (uploadedImage.startsWith('data:image')) {
+                    imageData = await compressImage(uploadedImage);
+                }
+
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: currentMode,
+                        imageData: imageData.startsWith('data:') ? imageData : null,
+                        imageUrl: !imageData.startsWith('data:') ? imageData : null,
+                        experience: currentExperience,
+                        personality: currentPersonality
+                    })
+                });
+
+                const result = await response.json();
+                aiPowered = result.aiPowered || false;
+                displayResults(result);
+            } catch (error) {
+                console.error('Analysis failed:', error);
+                // Show demo results
+                displayDemoResults();
+            }
+        }
+
+        function compressImage(dataUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Max 800px on longest side
+                    let { width, height } = img;
+                    const maxSize = 800;
+                    
+                    if (width > height && width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        function displayResults(result) {
+            // Hide upload zone completely
+            uploadZone.style.display = 'none';
+
+            // Show analysis container with animation
+            analysisContainer.classList.add('visible');
+
+            // Display image
+            document.getElementById('previewImage').src = uploadedImage;
+
+            // Display observations with staggered animation
+            const observationsEl = document.getElementById('observations');
+            observationsEl.innerHTML = '';
+            
+            (result.observations || []).forEach((obs, index) => {
+                setTimeout(() => {
+                    const obsEl = document.createElement('div');
+                    obsEl.style.cssText = `
+                        padding: 12px 0;
+                        border-bottom: 1px solid var(--color-tertiary);
+                        opacity: 0;
+                        transform: translateX(-20px);
+                        animation: fadeInLeft 0.5s ease forwards;
+                    `;
+                    obsEl.innerHTML = `<strong>${index + 1}.</strong> ${obs}`;
+                    observationsEl.appendChild(obsEl);
+                }, index * 200);
+            });
+
+            // Display critiques with progressive reveal
+            const critiqueGrid = document.getElementById('critiqueGrid');
+            critiqueGrid.innerHTML = '';
+
+            (result.critique || []).forEach((critic, index) => {
+                setTimeout(() => {
+                    const card = createCritiqueCard(critic);
+                    critiqueGrid.appendChild(card);
+                }, 1000 + (index * 300));
+            });
+
+            // Add AI badge if powered by real AI
+            if (aiPowered) {
+                const badge = document.createElement('div');
+                badge.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: var(--color-primary);
+                    color: var(--color-background);
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-size: var(--type-sm);
+                `;
+                badge.textContent = '✨ Powered by Claude Vision AI';
+                document.body.appendChild(badge);
+            }
+        }
+
+        function createCritiqueCard(critic) {
+            const card = document.createElement('div');
+            card.className = 'critique-card col-4';
+            card.innerHTML = `
+                <div class="critique-score">${critic.score || 75}</div>
+                <h3 style="font-size: var(--type-lg); margin: 8px 0;">${critic.name}</h3>
+                <div class="critique-summary">"${critic.hotTake || 'Analyzing...'}"</div>
+                <div class="critique-details">
+                    ${critic.points ? critic.points.map(p => `
+                        <div style="padding: 8px 0; color: var(--color-secondary);">
+                            ${p.type === 'strength' ? '✓' : p.type === 'weakness' ? '×' : '→'} ${p.text}
+                        </div>
+                    `).join('') : ''}
+                </div>
+            `;
+            
+            card.onclick = () => card.classList.toggle('expanded');
+            
+            return card;
+        }
+
+        function displayDemoResults() {
+            displayResults({
+                observations: [
+                    'Strong visual hierarchy detected',
+                    'Color palette shows good contrast',
+                    'Typography needs refinement'
+                ],
+                critique: [
+                    {
+                        name: 'Demo Critic',
+                        score: 75,
+                        hotTake: 'This is a demo critique. Connect API for real analysis.',
+                        points: [
+                            { type: 'strength', text: 'Good foundation' },
+                            { type: 'weakness', text: 'Needs API connection' },
+                            { type: 'suggestion', text: 'Add Claude API key' }
+                        ]
+                    }
+                ]
+            });
+        }
+
+        // Add fadeInLeft animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInLeft {
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

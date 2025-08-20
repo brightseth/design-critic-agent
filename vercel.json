@@ -22,7 +22,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/index-enhanced-v3.html"
+      "dest": "/index-enhanced-v4.html"
     }
   ]
 }

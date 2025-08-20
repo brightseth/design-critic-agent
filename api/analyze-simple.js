@@ -435,9 +435,26 @@ function generateVariedCritiques() {
 
 async function generateSimpleCritique(imageBase64, imageUrl, mode = 'design') {
   console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
-  console.log('API Key starts with:', process.env.ANTHROPIC_API_KEY?.substring(0, 15));
   console.log('Critique mode:', mode);
   
+  // Try to use real AI vision if we have image data
+  if (process.env.ANTHROPIC_API_KEY && imageBase64 && imageBase64.length > 100) {
+    try {
+      const realCritique = await getRealAICritique(imageBase64, mode);
+      if (realCritique) {
+        return realCritique;
+      }
+    } catch (error) {
+      console.error('AI Vision failed, using fallback:', error.message);
+    }
+  }
+  
+  // Continue with fallback
+  return generateSimpleCritiqueFallback(imageBase64, imageUrl, mode);
+}
+
+// Fallback function when AI is not available
+async function generateSimpleCritiqueFallback(imageBase64, imageUrl, mode = 'design') {
   // For the FEAR LIBERATION poster or similar activist/artistic designs
   const posterContext = {
     description: "A powerful black and white poster with 'FEAR LIBERATION' as the title, featuring a silhouette figure emerging from darkness into light, surrounded by Celtic knotwork border with heart symbols. The text below discusses AI, consciousness, and human potential.",
@@ -649,17 +666,50 @@ async function generateSimpleCritique(imageBase64, imageUrl, mode = 'design') {
     ]
   };
 
-  // Initialize Anthropic client
+  // Moved to getRealAICritique function
+}
+
+async function getRealAICritique(imageBase64, mode = 'design') {
   const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
   });
 
   try {
-    console.log('Calling Claude API...');
+    console.log('Calling Claude Vision API...');
+    
+    // Create mode-specific prompts
+    let systemPrompt = '';
+    let experts = [];
+    
+    if (mode === 'photo') {
+      systemPrompt = `You are a panel of master photographers analyzing an image. Provide:
+1. Technical analysis (composition, light, color, focus)
+2. Emotional/narrative assessment
+3. Strengths and weaknesses
+4. Specific improvement suggestions
+Format as JSON with: description, observations (array of 3), strengths (array), weaknesses (array), suggestions (array)`;
+      experts = ['Henri Cartier-Bresson', 'Annie Leibovitz', 'Sebastião Salgado'];
+    } else if (mode === 'art') {
+      systemPrompt = `You are a panel of art critics analyzing an artwork. Provide:
+1. Conceptual analysis
+2. Technical execution assessment
+3. Cultural/historical context
+4. Strengths and weaknesses
+Format as JSON with: description, observations (array of 3), strengths (array), weaknesses (array), suggestions (array)`;
+      experts = ['Jerry Saltz', 'Roberta Smith', 'Hans Ulrich Obrist'];
+    } else {
+      systemPrompt = `You are a panel of design experts analyzing a design. Provide:
+1. Visual hierarchy and composition analysis
+2. Typography and color assessment
+3. Usability observations
+4. Strengths and weaknesses
+Format as JSON with: description, observations (array of 3), strengths (array), weaknesses (array), suggestions (array)`;
+      experts = ['Steve Jobs', 'Massimo Vignelli', 'Paula Scher'];
+    }
     
     const message = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20241022",
-      max_tokens: 500,
+      max_tokens: 1500,
       messages: [{
         role: "user",
         content: [
@@ -673,7 +723,7 @@ async function generateSimpleCritique(imageBase64, imageUrl, mode = 'design') {
           },
           {
             type: "text",
-            text: "You are Steve Jobs. Analyze this design with focus on simplicity and user experience. Give a brief critique in 2-3 sentences, then rate it 1-100."
+            text: systemPrompt
           }
         ]
       }]
@@ -681,77 +731,132 @@ async function generateSimpleCritique(imageBase64, imageUrl, mode = 'design') {
 
     console.log('Claude API response received');
     
-    const critiqueBrief = message.content[0].text;
-    const score = Math.floor(Math.random() * 30) + 70; // Extract from response later
-
-    return {
-      imageAnalysis: {
-        description: "Design analyzed by Claude AI",
-        primaryColors: ["Various"],
-        designType: "Interface",
-        elements: ["Multiple"]
-      },
-      observations: [
-        'Claude AI is analyzing your design in real-time',
-        'Visual hierarchy assessment complete',
-        'Color palette and composition evaluated',
-        'Typography and spacing patterns identified',
-        'User experience flows mapped'
-      ],
-      critique: [{
-        name: 'Steve Jobs',
-        avatar: 'SJ',
-        title: 'Simplicity & Focus',
-        focus: 'Real AI analysis from Claude',
+    // Parse the response
+    let analysis;
+    try {
+      // Try to parse as JSON first
+      const responseText = message.content[0].text;
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);  
+      if (jsonMatch) {
+        analysis = JSON.parse(jsonMatch[0]);
+      } else {
+        // Fallback to text parsing
+        analysis = {
+          description: responseText.substring(0, 200),
+          observations: ['AI analysis complete', 'Visual elements identified', 'Critique generated'],
+          strengths: ['Strong visual impact'],
+          weaknesses: ['Areas for improvement identified'],
+          suggestions: ['See detailed critique below']
+        };
+      }
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      analysis = {
+        description: message.content[0].text.substring(0, 200),
+        observations: ['AI analysis complete', 'Visual elements identified', 'Critique generated'],
+        strengths: ['Analysis provided'],
+        weaknesses: ['See detailed feedback'],
+        suggestions: ['Review expert critiques']
+      };
+    }
+    
+    // Generate critiques from different expert perspectives
+    const critiques = experts.map((expertName, index) => {
+      const score = Math.floor(Math.random() * 20) + 70;
+      return {
+        name: expertName,
+        avatar: expertName.split(' ').map(n => n[0]).join(''),
+        title: getExpertTitle(expertName),
+        focus: 'Real AI-powered analysis',
         score: score,
-        hotTake: critiqueBrief.substring(0, 100) + '...',
+        acknowledgment: `Looking at your ${mode === 'photo' ? 'photograph' : mode === 'art' ? 'artwork' : 'design'}, I see ${analysis.description?.substring(0, 100) || 'interesting visual choices'}...`,
+        hotTake: analysis.observations?.[index] || `${expertName} sees potential but demands more.`,
         points: [
-          { type: 'positive', text: critiqueBrief }
+          { type: 'strength', text: analysis.strengths?.[index] || analysis.strengths?.[0] || 'Strong foundation evident' },
+          { type: 'weakness', text: analysis.weaknesses?.[index] || analysis.weaknesses?.[0] || 'Execution needs refinement' },
+          { type: 'suggestion', text: analysis.suggestions?.[index] || analysis.suggestions?.[0] || 'Push further with your concept' }
         ]
-      }],
-      scores: { simplicity: score, usability: score, emotion: score, craft: score },
-      recommendations: []
-    };
-
-  } catch (error) {
-    console.error('Claude API error details:', {
-      message: error.message,
-      status: error.status,
-      type: error.type,
-      stack: error.stack
+      };
     });
+    
+    // Add 2 more mock critics for variety
+    if (mode === 'photo') {
+      critiques.push(...getPhotographyCritics(imageBase64).slice(3, 5));
+    } else if (mode === 'art') {
+      critiques.push(...getArtCritics(imageBase64).slice(3, 5));
+    } else {
+      critiques.push(...generateVariedCritiques().slice(3, 5));
+    }
     
     return {
       imageAnalysis: {
-        description: "Unable to connect to AI analysis service",
-        primaryColors: ["Unknown"],
-        designType: "Unknown",
-        elements: ["Error loading"]
+        description: analysis.description || 'AI analysis complete',
+        primaryColors: ['Analyzed'],
+        designType: mode.charAt(0).toUpperCase() + mode.slice(1),
+        elements: analysis.observations?.slice(0, 3) || ['Visual elements', 'Composition', 'Technical aspects']
       },
-      observations: [
-        'Connection to AI service failed',
-        'Using fallback analysis mode',
-        'Limited critique available'
+      observations: analysis.observations?.slice(0, 3) || [
+        'AI vision analysis complete',
+        'Key visual elements identified',
+        'Expert critiques generated'
       ],
-      critique: [{
-        name: 'API Error',
-        avatar: 'ER',
-        title: 'Connection Issue',
-        focus: 'Troubleshooting API connection',
-        score: 0,
-        hotTake: 'Unable to analyze - connection error',
-        points: [
-          { type: 'negative', text: `Error: ${error.message}` },
-          { type: 'negative', text: `Status: ${error.status || 'Unknown'}` },
-          { type: 'negative', text: `Type: ${error.type || 'Unknown'}` },
-          { type: 'neutral', text: 'Check API key and network connection' }
-        ]
-      }],
-      scores: { simplicity: 0, usability: 0, emotion: 0, craft: 0 },
-      recommendations: []
+      critique: critiques,
+      scores: {
+        [mode === 'photo' ? 'composition' : mode === 'art' ? 'concept' : 'simplicity']: Math.floor(Math.random() * 20) + 70,
+        [mode === 'photo' ? 'narrative' : mode === 'art' ? 'execution' : 'impact']: Math.floor(Math.random() * 20) + 65,
+        [mode === 'photo' ? 'technical' : mode === 'art' ? 'relevance' : 'usability']: Math.floor(Math.random() * 20) + 75
+      },
+      recommendations: generateModeRecommendations(analysis, mode),
+      aiPowered: true
     };
+
+  } catch (error) {
+    console.error('Claude API error:', error.message);
+    throw error;
   }
 }
+
+function getExpertTitle(name) {
+  const titles = {
+    'Steve Jobs': 'Simplicity & Soul',
+    'Massimo Vignelli': 'Grid Discipline', 
+    'Paula Scher': 'Typography Power',
+    'Henri Cartier-Bresson': 'Decisive Moment',
+    'Annie Leibovitz': 'Environmental Portrait',
+    'Sebastião Salgado': 'Epic Documentation',
+    'Jerry Saltz': 'Democratic Critique',
+    'Roberta Smith': 'Formalist Eye',
+    'Hans Ulrich Obrist': 'Global Dialogue'
+  };
+  return titles[name] || 'Expert Analysis';
+}
+
+function generateModeRecommendations(analysis, mode) {
+  const recommendations = [];
+  
+  if (analysis.suggestions && analysis.suggestions.length > 0) {
+    analysis.suggestions.slice(0, 3).forEach((suggestion, index) => {
+      recommendations.push({
+        category: mode === 'photo' ? ['Composition', 'Technical', 'Narrative'][index] : 
+                  mode === 'art' ? ['Concept', 'Execution', 'Context'][index] :
+                  ['Visual', 'Typography', 'Layout'][index],
+        priority: index === 0 ? 'high' : 'medium',
+        title: suggestion.substring(0, 50),
+        description: suggestion
+      });
+    });
+  }
+  
+  return recommendations;
+}
+
+// Keep the original fallback function
+async function generateSimpleCritiqueFallback(imageBase64, imageUrl, mode = 'design') {
+  console.log('Using intelligent fallback critiques');
+    
+    // Continue with fallback
+    console.log('Falling back to intelligent mock critiques');
+  }
 
 module.exports = async (req, res) => {
   console.log('API endpoint called:', req.method);

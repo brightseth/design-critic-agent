@@ -1750,9 +1750,17 @@
             updateAnnotationsList();
         }
 
-        function updateAnnotationsList() {
+        function updateAnnotationsList(observations = null) {
             const list = document.getElementById('annotationsList');
-            if (annotations.length === 0) {
+            
+            // If we have observations from the API, display them
+            if (observations && observations.length > 0) {
+                list.innerHTML = observations.map((obs, index) => `
+                    <div class="annotation-item">
+                        <strong>${index + 1}.</strong> ${obs}
+                    </div>
+                `).join('');
+            } else if (annotations.length === 0) {
                 // Show default content if no annotations
                 list.innerHTML = `
                     <div class="annotation-item">
@@ -1839,6 +1847,14 @@
                     // Show image description
                     if (result.imageAnalysis) {
                         showImageDescription(result.imageAnalysis);
+                    }
+                    // Update Key Observations
+                    if (result.observations) {
+                        updateAnnotationsList(result.observations);
+                    }
+                    // Store critique data for later display
+                    if (result.critique) {
+                        window.apiCritiques = result.critique;
                     }
                 } else {
                     console.error('Analysis failed:', result.error);
@@ -2004,7 +2020,13 @@
             
             critiqueSection.style.display = 'block';
             
-            // Use API critique data if available
+            // Use API critique data if available (stored in window.apiCritiques)
+            if (window.apiCritiques && window.apiCritiques.length > 0) {
+                displayAPICritiques(window.apiCritiques);
+                return;
+            }
+            
+            // Also check critiqueData for backwards compatibility
             if (critiqueData && critiqueData.critique && critiqueData.critique.length > 0) {
                 displayAPICritiques(critiqueData.critique);
                 return;

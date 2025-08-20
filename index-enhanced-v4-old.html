@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Critic Studio V1 - AI Design Analysis</title>
+    <style>
+        :root {
+            /* Vignelli-inspired strict grid system */
+            --grid-columns: 12;
+            --grid-gutter: 24px;
+            --grid-margin: 48px;
+            
+            /* Simplified color system */
+            --color-primary: #000;
+            --color-secondary: #666;
+            --color-tertiary: #999;
+            --color-background: #fff;
+            --color-surface: #f8f8f8;
+            
+            /* Type scale - Fibonacci based */
+            --type-xs: 12px;
+            --type-sm: 14px;
+            --type-md: 16px;
+            --type-lg: 20px;
+            --type-xl: 24px;
+            --type-2xl: 32px;
+            --type-3xl: 48px;
+            --type-4xl: 64px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--color-background);
+            color: var(--color-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+
+        .nav-bar a:hover {
+            opacity: 1;
+        }
+
+        .nav-title {
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .version-switcher {
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 4px;
+            gap: 4px;
+        }
+        
+        .version-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .version-btn.active {
+            background: white;
+            color: #667eea;
+        }
+        
+        .version-btn:not(.active):hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Progressive Disclosure Container */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--grid-margin);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .app-container.analysis-active {
+            justify-content: flex-start;
+            padding-top: var(--grid-gutter);
+        }
+
+        /* Simplified Initial State - Just Upload */
+        .upload-zone {
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 16/9;
+            border: 2px dashed var(--color-tertiary);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--color-surface);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--color-primary);
+            background: var(--color-background);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--color-primary);
+            background: var(--color-surface);
+            transform: scale(1.02);
+        }
+
+        .upload-zone h1 {
+            font-size: var(--type-2xl);
+            font-weight: 200;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .upload-zone p {
+            color: var(--color-secondary);
+            font-size: var(--type-md);
+        }
+
+        /* Hidden initially - revealed progressively */
+        .mode-selector {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.6s ease;
+            margin-bottom: var(--grid-gutter);
+            display: none;
+        }
+
+        .mode-selector.visible {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mode-btn {
+            background: none;
+            border: 1px solid var(--color-tertiary);
+            padding: 12px 24px;
+            margin: 0 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: var(--type-sm);
+            border-radius: 24px;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--color-primary);
+            background: var(--color-primary);
+            color: var(--color-background);
+        }
+
+        .mode-btn.active {
+            background: var(--color-primary);
+            color: var(--color-background);
+            border-color: var(--color-primary);
+        }
+
+        /* Experience Level Selector */
+        .experience-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: none;
+        }
+
+        .experience-selector.visible {
+            display: block;
+        }
+
+        .experience-toggle {
+            background: var(--color-surface);
+            border: 1px solid var(--color-tertiary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: var(--type-sm);
+        }
+
+        .experience-options {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--color-background);
+            border: 1px solid var(--color-tertiary);
+            border-radius: 8px;
+            margin-top: 8px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .experience-options.visible {
+            display: block;
+        }
+
+        .experience-option {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .experience-option:hover {
+            background: var(--color-surface);
+        }
+
+        /* Critique Personality Selector */
+        .personality-selector {
+            margin: var(--grid-gutter) 0;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .personality-selector.visible {
+            opacity: 1;
+        }
+
+        .personality-btn {
+            background: var(--color-surface);
+            border: 2px solid transparent;
+            padding: 10px 20px;
+            margin: 0 8px;
+            cursor: pointer;
+            font-size: var(--type-sm);
+            color: var(--color-secondary);
+            transition: all 0.3s ease;
+            border-radius: 20px;
+        }
+
+        .personality-btn:hover {
+            border-color: var(--color-secondary);
+            transform: translateY(-2px);
+        }
+
+        .personality-btn.active {
+            color: var(--color-background);
+            background: var(--color-primary);
+            font-weight: 500;
+            border-color: var(--color-primary);
+        }
+
+        /* Analysis Results - Progressive Reveal */
+        .analysis-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .analysis-container.visible {
+            display: block;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Strict 12-column grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--grid-gutter);
+            margin: var(--grid-margin) 0;
+        }
+
+        .col-12 { grid-column: span 12; }
+        .col-8 { grid-column: span 8; }
+        .col-6 { grid-column: span 6; }
+        .col-4 { grid-column: span 4; }
+        .col-3 { grid-column: span 3; }
+
+        /* Visual Annotation System */
+        .annotation-canvas {
+            position: relative;
+            width: 100%;
+            cursor: crosshair;
+        }
+
+        .annotation-marker {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--color-primary);
+            background: var(--color-background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--type-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease;
+        }
+
+        .annotation-marker:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .annotation-tooltip {
+            position: absolute;
+            background: var(--color-primary);
+            color: var(--color-background);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: var(--type-sm);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .annotation-marker:hover + .annotation-tooltip {
+            opacity: 1;
+        }
+
+        /* Simplified Critique Cards */
+        .critique-card {
+            background: var(--color-surface);
+            padding: var(--grid-gutter);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .critique-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .critique-summary {
+            font-size: var(--type-lg);
+            font-weight: 300;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .critique-score {
+            font-size: var(--type-3xl);
+            font-weight: 200;
+            letter-spacing: -0.02em;
+        }
+
+        .critique-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .critique-card.expanded .critique-details {
+            max-height: 500px;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            :root {
+                --grid-margin: 20px;
+                --grid-gutter: 16px;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+
+            .col-12, .col-8, .col-6, .col-4, .col-3 {
+                grid-column: span 1;
+            }
+
+            .upload-zone {
+                aspect-ratio: 1;
+            }
+        }
+
+        /* Hidden by default */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Loading state */
+        .loading {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-tertiary);
+            border-radius: 8px;
+            font-size: var(--type-md);
+            margin-top: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="index-hub.html" style="font-size: 20px;">🎨</a>
+            <span class="nav-title">Design Critic Studio</span>
+        </div>
+        <div class="version-switcher">
+            <a href="index-enhanced-v4.html" class="version-btn active">V1 Classic</a>
+            <a href="v2-conversation-ui.html" class="version-btn">V2 Conversations</a>
+        </div>
+    </div>
+    <div class="app-container" id="appContainer">
+        <!-- Experience Level Selector (Hidden Initially) -->
+        <div class="experience-selector" id="experienceSelector">
+            <button class="experience-toggle" onclick="toggleExperience()">
+                <span id="experienceLabel">Professional</span> ▼
+            </button>
+            <div class="experience-options" id="experienceOptions">
+                <div class="experience-option" onclick="setExperience('first-timer')">First Timer</div>
+                <div class="experience-option" onclick="setExperience('student')">Student</div>
+                <div class="experience-option" onclick="setExperience('professional')">Professional</div>
+            </div>
+        </div>
+
+        <!-- Initial Upload Zone - Minimal -->
+        <div class="upload-zone" id="uploadZone">
+            <h1>Drop Your Work</h1>
+            <p>or click to browse</p>
+            <input type="file" id="fileInput" accept="image/*">
+            <input type="text" class="url-input hidden" id="urlInput" placeholder="Or paste image URL...">
+        </div>
+
+        <!-- Mode Selector - Revealed After Upload -->
+        <div class="mode-selector" id="modeSelector">
+            <button class="mode-btn active" data-mode="design" onclick="setMode('design')">Design</button>
+            <button class="mode-btn" data-mode="photo" onclick="setMode('photo')">Photography</button>
+            <button class="mode-btn" data-mode="art" onclick="setMode('art')">Art</button>
+        </div>
+
+        <!-- Personality Selector - Revealed After Mode -->
+        <div class="personality-selector" id="personalitySelector">
+            <span style="color: var(--color-secondary); margin-right: 16px;">Critique Style:</span>
+            <button class="personality-btn active" onclick="setPersonality('balanced')">Balanced</button>
+            <button class="personality-btn" onclick="setPersonality('encouraging')">Encouraging</button>
+            <button class="personality-btn" onclick="setPersonality('tough-love')">Tough Love</button>
+        </div>
+
+        <!-- Analysis Results - Revealed Progressively -->
+        <div class="analysis-container" id="analysisContainer">
+            <div class="grid-container">
+                <!-- Image with Annotations -->
+                <div class="col-8">
+                    <div class="annotation-canvas" id="annotationCanvas">
+                        <img id="previewImage" style="width: 100%; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <!-- Key Observations -->
+                <div class="col-4">
+                    <h3 style="font-size: var(--type-xl); margin-bottom: 16px;">Key Observations</h3>
+                    <div id="observations"></div>
+                </div>
+
+                <!-- Critique Cards -->
+                <div class="col-12" style="margin-top: var(--grid-margin);">
+                    <div class="grid-container" id="critiqueGrid">
+                        <!-- Critiques will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let currentMode = 'design';
+        let currentExperience = 'professional';
+        let currentPersonality = 'balanced';
+        let uploadedImage = null;
+        let annotations = [];
+        let aiPowered = false;
+
+        // DOM Elements
+        const appContainer = document.getElementById('appContainer');
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const urlInput = document.getElementById('urlInput');
+        const modeSelector = document.getElementById('modeSelector');
+        const personalitySelector = document.getElementById('personalitySelector');
+        const experienceSelector = document.getElementById('experienceSelector');
+        const analysisContainer = document.getElementById('analysisContainer');
+
+        // Initialize
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('dragleave', handleDragLeave);
+        uploadZone.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Show URL input on shift+click
+        uploadZone.addEventListener('click', (e) => {
+            if (e.shiftKey) {
+                e.stopPropagation();
+                urlInput.classList.toggle('hidden');
+                urlInput.focus();
+            }
+        });
+
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                handleURL(e.target.value.trim());
+            }
+        });
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedImage = e.target.result;
+                startProgressiveReveal();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleURL(url) {
+            if (!url.startsWith('http')) {
+                url = 'https://' + url;
+            }
+            uploadedImage = url;
+            startProgressiveReveal();
+        }
+
+        // Progressive Reveal Sequence
+        function startProgressiveReveal() {
+            // Step 1: Transform upload zone
+            uploadZone.style.transform = 'scale(0.8)';
+            uploadZone.style.opacity = '0.5';
+            uploadZone.style.pointerEvents = 'none';
+
+            // Step 2: Reveal mode selector (after 300ms)
+            setTimeout(() => {
+                appContainer.classList.add('analysis-active');
+                modeSelector.classList.add('visible');
+            }, 300);
+
+            // Step 3: Reveal experience selector (after 600ms)
+            setTimeout(() => {
+                experienceSelector.classList.add('visible');
+            }, 600);
+
+            // Step 4: Reveal personality selector (after 900ms)
+            setTimeout(() => {
+                personalitySelector.classList.add('visible');
+            }, 900);
+
+            // Step 5: Start analysis (after 1200ms)
+            setTimeout(() => {
+                analyzeImage();
+            }, 1200);
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            console.log('Setting mode to:', mode);
+            
+            // Update button states
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            
+            // Re-analyze with new mode if we have an image
+            if (uploadedImage && appContainer.classList.contains('analysis-active')) {
+                console.log('Re-analyzing with new mode:', mode);
+                analyzeImage();
+            }
+        }
+
+        function setExperience(level) {
+            currentExperience = level;
+            document.getElementById('experienceLabel').textContent = 
+                level.charAt(0).toUpperCase() + level.slice(1).replace('-', ' ');
+            document.getElementById('experienceOptions').classList.remove('visible');
+        }
+
+        function setPersonality(personality) {
+            currentPersonality = personality;
+            console.log('Setting personality to:', personality);
+            
+            // Update button states
+            document.querySelectorAll('.personality-btn').forEach(btn => {
+                const btnPersonality = btn.textContent.toLowerCase().replace(' ', '-');
+                btn.classList.toggle('active', btnPersonality === personality);
+            });
+            
+            // If we already have results, update them with new personality
+            if (uploadedImage && appContainer.classList.contains('analysis-active')) {
+                console.log('Re-analyzing with new personality:', personality);
+                analyzeImage();
+            }
+        }
+
+        function toggleExperience() {
+            document.getElementById('experienceOptions').classList.toggle('visible');
+        }
+
+        async function analyzeImage() {
+            // Show loading state
+            uploadZone.innerHTML = '<p style="color: var(--color-secondary);">🔍 Analyzing your design...</p>';
+            
+            // Show loading in results area too
+            const observationsEl = document.getElementById('observations');
+            const critiqueGrid = document.getElementById('critiqueGrid');
+            observationsEl.innerHTML = '<p style="color: var(--color-tertiary);">Generating observations...</p>';
+            critiqueGrid.innerHTML = '';
+
+            try {
+                // Compress image if needed
+                let imageData = uploadedImage;
+                if (uploadedImage && uploadedImage.startsWith('data:image')) {
+                    imageData = await compressImage(uploadedImage);
+                }
+
+                // Try the simple API first (more reliable)
+                const response = await fetch('/api/analyze-simple', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: currentMode,
+                        imageData: imageData && imageData.startsWith('data:') ? imageData : null,
+                        imageUrl: imageData && !imageData.startsWith('data:') ? imageData : null,
+                        experience: currentExperience,
+                        personality: currentPersonality
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('API Response:', result);
+                
+                aiPowered = result.aiPowered || false;
+                displayResults(result);
+                
+                // Update upload zone to show success
+                uploadZone.innerHTML = '<p style="color: #4caf50;">✓ Analysis complete</p>';
+                
+            } catch (error) {
+                console.error('Analysis failed:', error);
+                console.log('Falling back to demo results...');
+                
+                // Show demo results as fallback
+                displayDemoResults();
+                
+                // Update upload zone
+                uploadZone.innerHTML = '<p style="color: var(--color-secondary);">Using demo mode (API unavailable)</p>';
+            }
+        }
+
+        function compressImage(dataUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Max 800px on longest side
+                    let { width, height } = img;
+                    const maxSize = 800;
+                    
+                    if (width > height && width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        function displayResults(result) {
+            // Hide upload zone completely
+            uploadZone.style.display = 'none';
+
+            // Show analysis container with animation
+            analysisContainer.classList.add('visible');
+
+            // Display image
+            document.getElementById('previewImage').src = uploadedImage;
+
+            // Display observations with staggered animation
+            const observationsEl = document.getElementById('observations');
+            observationsEl.innerHTML = '';
+            
+            (result.observations || []).forEach((obs, index) => {
+                setTimeout(() => {
+                    const obsEl = document.createElement('div');
+                    obsEl.style.cssText = `
+                        padding: 12px 0;
+                        border-bottom: 1px solid var(--color-tertiary);
+                        opacity: 0;
+                        transform: translateX(-20px);
+                        animation: fadeInLeft 0.5s ease forwards;
+                    `;
+                    obsEl.innerHTML = `<strong>${index + 1}.</strong> ${obs}`;
+                    observationsEl.appendChild(obsEl);
+                }, index * 200);
+            });
+
+            // Display critiques with progressive reveal
+            const critiqueGrid = document.getElementById('critiqueGrid');
+            critiqueGrid.innerHTML = '';
+
+            (result.critique || []).forEach((critic, index) => {
+                setTimeout(() => {
+                    const card = createCritiqueCard(critic);
+                    critiqueGrid.appendChild(card);
+                }, 1000 + (index * 300));
+            });
+
+            // Add AI badge if powered by real AI
+            if (aiPowered) {
+                const badge = document.createElement('div');
+                badge.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: var(--color-primary);
+                    color: var(--color-background);
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-size: var(--type-sm);
+                `;
+                badge.textContent = '✨ Powered by Claude Vision AI';
+                document.body.appendChild(badge);
+            }
+        }
+
+        function createCritiqueCard(critic) {
+            const card = document.createElement('div');
+            card.className = 'critique-card col-4';
+            card.innerHTML = `
+                <div class="critique-score">${critic.score || 75}</div>
+                <h3 style="font-size: var(--type-lg); margin: 8px 0;">${critic.name}</h3>
+                <div class="critique-summary">"${critic.hotTake || 'Analyzing...'}"</div>
+                <div class="critique-details">
+                    ${critic.points ? critic.points.map(p => `
+                        <div style="padding: 8px 0; color: var(--color-secondary);">
+                            ${p.type === 'strength' ? '✓' : p.type === 'weakness' ? '×' : '→'} ${p.text}
+                        </div>
+                    `).join('') : ''}
+                </div>
+            `;
+            
+            card.onclick = () => card.classList.toggle('expanded');
+            
+            return card;
+        }
+
+        function displayDemoResults() {
+            console.log('Displaying demo results for mode:', currentMode, 'personality:', currentPersonality);
+            
+            // Regenerate observations each time for variety
+            const regenerateObservations = () => {
+                // Will be redefined below
+            };
+            
+            // Adjust critiques based on personality
+            const personalityModifiers = {
+                'balanced': {
+                    scoreAdjust: 0,
+                    toneAdjust: 'balanced'
+                },
+                'encouraging': {
+                    scoreAdjust: 10,
+                    toneAdjust: 'positive'
+                },
+                'tough-love': {
+                    scoreAdjust: -10,
+                    toneAdjust: 'harsh'
+                }
+            };
+            
+            const modifier = personalityModifiers[currentPersonality] || personalityModifiers['balanced'];
+            
+            // Generate dynamic observations based on current settings
+            const generateDynamicObservations = (mode) => {
+                const observationSets = {
+                    design: [
+                        [
+                            'Strong use of negative space creating visual breathing room',
+                            'Typography hierarchy clearly established with intentional scale',
+                            'Color palette demonstrates sophisticated restraint',
+                            'Grid system evident but could be more consistently applied',
+                            'Interface elements show attention to interaction states'
+                        ],
+                        [
+                            'Visual weight distribution creates natural eye flow',
+                            'Consistent design language throughout the composition',
+                            'Strategic use of contrast to guide user attention',
+                            'Microinteractions suggest personality without overwhelming',
+                            'Accessibility considerations evident in color choices'
+                        ],
+                        [
+                            'Systematic approach to spacing and alignment visible',
+                            'Brand personality comes through in subtle details',
+                            'Information architecture supports user goals effectively',
+                            'Design system thinking apparent in component patterns',
+                            'Balance between innovation and familiar patterns'
+                        ]
+                    ],
+                    photography: [
+                        [
+                            'Compelling use of natural light shapes the narrative',
+                            'Composition follows dynamic thirds with intentional breaks',
+                            'Depth of field choices enhance subject isolation',
+                            'Moment capture shows patience and anticipation',
+                            'Post-processing maintains authenticity while enhancing mood'
+                        ],
+                        [
+                            'Strong geometric elements create structural foundation',
+                            'Tonal range fully utilized from deep shadows to highlights',
+                            'Subject placement creates narrative tension',
+                            'Environmental context adds layers of meaning',
+                            'Technical execution supports artistic vision'
+                        ],
+                        [
+                            'Emotional resonance achieved through subtle gestures',
+                            'Frame edges utilized as compositional elements',
+                            'Color grading enhances without overpowering',
+                            'Decisive moment captured with precision',
+                            'Print quality considerations evident in tonal control'
+                        ]
+                    ],
+                    art: [
+                        [
+                            'Conceptual framework challenges conventional boundaries',
+                            'Material choices amplify thematic exploration',
+                            'Cultural references woven throughout the work',
+                            'Viewer participation implicit in the presentation',
+                            'Historical dialogue evident in formal choices'
+                        ],
+                        [
+                            'Tension between representation and abstraction',
+                            'Scale relationships create psychological impact',
+                            'Process visible as integral part of the concept',
+                            'Institutional critique embedded in execution',
+                            'Temporal elements suggest ongoing transformation'
+                        ],
+                        [
+                            'Identity politics addressed through material language',
+                            'Craft and concept in productive dialogue',
+                            'Site-specificity enhances contextual reading',
+                            'Documentation becomes part of the artwork',
+                            'Accessibility of concept balanced with depth'
+                        ]
+                    ]
+                };
+                
+                const sets = observationSets[mode] || observationSets.design;
+                const randomSet = sets[Math.floor(Math.random() * sets.length)];
+                
+                // Shuffle observations for variety
+                const shuffled = [...randomSet].sort(() => Math.random() - 0.5);
+                return shuffled.slice(0, 5);
+            };
+
+            // Regenerate demo data with fresh observations each time
+            const demoData = {
+                design: {
+                    observations: generateDynamicObservations('design'),
+                    critique: [
+                        {
+                            name: 'Paula Scher',
+                            score: Math.max(0, Math.min(100, 72 + modifier.scoreAdjust)),
+                            hotTake: currentPersonality === 'encouraging' 
+                                ? 'I see the energy here! Let\'s make it LOUDER and more confident!'
+                                : currentPersonality === 'tough-love'
+                                ? 'This is PATHETIC! It\'s whispering when it should be SCREAMING!'
+                                : 'This is WHISPERING when it should be SHOUTING! Where\'s the confidence?',
+                            points: [
+                                { type: 'strength', text: 'Bold headline treatment shows promise' },
+                                { type: 'weakness', text: 'Typography is too timid - needs 300% more presence' },
+                                { type: 'suggestion', text: 'Make the type THE image - let it dominate' }
+                            ]
+                        },
+                        {
+                            name: 'Massimo Vignelli',
+                            score: Math.max(0, Math.min(100, 65 + modifier.scoreAdjust)),
+                            hotTake: currentPersonality === 'encouraging'
+                                ? 'The foundation is there! Now let\'s add proper discipline and structure.'
+                                : currentPersonality === 'tough-love'
+                                ? 'This is CHAOS! Complete lack of discipline. Start over with a proper grid!'
+                                : 'The grid is suggestions, not law. This lacks discipline.',
+                            points: [
+                                { type: 'strength', text: 'Attempt at systematic layout is evident' },
+                                { type: 'weakness', text: 'Alignment is chaos - establish a proper 12-column grid' },
+                                { type: 'suggestion', text: 'Use only Helvetica. One typeface is sufficient.' }
+                            ]
+                        },
+                        {
+                            name: 'Steve Jobs',
+                            score: Math.max(0, Math.min(100, 68 + modifier.scoreAdjust)),
+                            hotTake: currentPersonality === 'encouraging'
+                                ? 'This shows promise! Keep simplifying and you\'ll find the magic.'
+                                : currentPersonality === 'tough-love'
+                                ? 'This is shit. Complete shit. Where\'s the soul? Start over!'
+                                : 'It\'s... fine. But fine is the enemy of great.',
+                            points: [
+                                { type: 'strength', text: 'Clean approach shows restraint' },
+                                { type: 'weakness', text: 'Lacks soul - what problem does this solve?' },
+                                { type: 'suggestion', text: 'Remove half of this. Then remove half again.' }
+                            ]
+                        }
+                    ]
+                },
+                photo: {
+                    observations: generateDynamicObservations('photography'),
+                    critique: [
+                        {
+                            name: 'Ansel Adams',
+                            score: 70,
+                            hotTake: 'The shadows are completely blocked! You\'ve lost all detail.',
+                            points: [
+                                { type: 'strength', text: 'Tonal range shows potential' },
+                                { type: 'weakness', text: 'No true blacks or whites - muddy middle tones' },
+                                { type: 'suggestion', text: 'Apply Zone System thinking - expose for shadows' }
+                            ]
+                        },
+                        {
+                            name: 'Annie Leibovitz',
+                            score: 74,
+                            hotTake: 'Where\'s the STORY? This is just a picture, not a photograph.',
+                            points: [
+                                { type: 'strength', text: 'Subject placement shows awareness' },
+                                { type: 'weakness', text: 'No narrative - what\'s the emotion here?' },
+                                { type: 'suggestion', text: 'Build a world around your subject' }
+                            ]
+                        },
+                        {
+                            name: 'Henri Cartier-Bresson',
+                            score: 66,
+                            hotTake: 'You missed the decisive moment by half a second.',
+                            points: [
+                                { type: 'strength', text: 'Geometric elements present' },
+                                { type: 'weakness', text: 'The moment feels forced, not discovered' },
+                                { type: 'suggestion', text: 'Be invisible - let the moment reveal itself' }
+                            ]
+                        }
+                    ]
+                },
+                art: {
+                    observations: generateDynamicObservations('art'),
+                    critique: [
+                        {
+                            name: 'Marina Abramović',
+                            score: 62,
+                            hotTake: 'This is SAFE! Where is the RISK? You are not present here.',
+                            points: [
+                                { type: 'strength', text: 'Attempt at vulnerability detected' },
+                                { type: 'weakness', text: 'No real presence - playing it safe' },
+                                { type: 'suggestion', text: 'Remove all comfort - find the edge' }
+                            ]
+                        },
+                        {
+                            name: 'Andy Warhol',
+                            score: 71,
+                            hotTake: 'It\'s not famous enough. Can you repeat it 50 times?',
+                            points: [
+                                { type: 'strength', text: 'Surface quality is appealing' },
+                                { type: 'weakness', text: 'Too much depth - needs more surface' },
+                                { type: 'suggestion', text: 'Make it in pink. Pink sells.' }
+                            ]
+                        },
+                        {
+                            name: 'Frida Kahlo',
+                            score: 64,
+                            hotTake: 'Where are your WOUNDS? This is pretty but empty.',
+                            points: [
+                                { type: 'strength', text: 'Color shows life force' },
+                                { type: 'weakness', text: 'No personal truth - hiding behind technique' },
+                                { type: 'suggestion', text: 'Paint with your blood, not your brushes' }
+                            ]
+                        }
+                    ]
+                }
+            };
+            
+            const data = demoData[currentMode] || demoData.design;
+            displayResults(data);
+        }
+
+        // Add fadeInLeft animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInLeft {
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

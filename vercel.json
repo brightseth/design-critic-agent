@@ -19,10 +19,6 @@
     {
       "src": "/api/analyze",
       "dest": "/api/analyze-simple.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index-enhanced-v4.html"
     }
   ]
 }

@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Critic Studio</title>
+    <style>
+        :root {
+            --color-background: #0a0a0a;
+            --color-surface: #1a1a1a;
+            --color-primary: #fff;
+            --color-secondary: #888;
+            --color-tertiary: #333;
+            --color-accent: #667eea;
+            --type-sm: 13px;
+            --type-base: 15px;
+            --type-lg: 18px;
+            --type-xl: 24px;
+            --type-2xl: 32px;
+            --grid-margin: 40px;
+            --grid-gutter: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-background);
+            color: var(--color-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .nav-logo span:first-child {
+            font-size: 24px;
+        }
+
+        .nav-logo span:last-child {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .version-switcher {
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .version-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .version-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .version-btn:not(.active):hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Main Container */
+        .app-container {
+            padding: var(--grid-margin);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Controls Bar */
+        .controls-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-label {
+            font-size: var(--type-sm);
+            color: var(--color-secondary);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .dropdown-button {
+            background: var(--color-surface);
+            border: 1px solid var(--color-tertiary);
+            color: var(--color-primary);
+            padding: 10px 40px 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: var(--type-base);
+            min-width: 180px;
+            text-align: left;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .dropdown-button:hover {
+            border-color: var(--color-accent);
+        }
+
+        .dropdown-button::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--color-secondary);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--color-surface);
+            border: 1px solid var(--color-tertiary);
+            border-radius: 8px;
+            margin-top: 5px;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--color-tertiary);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: var(--color-tertiary);
+        }
+
+        .dropdown-item.selected {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            background: var(--color-surface);
+            border: 2px dashed var(--color-tertiary);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--color-accent);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--color-accent);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+
+        /* Analysis Results */
+        .analysis-container {
+            display: none;
+        }
+
+        .analysis-container.visible {
+            display: block;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .observations-panel {
+            background: var(--color-surface);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .observations-title {
+            font-size: var(--type-lg);
+            margin-bottom: 15px;
+            color: var(--color-accent);
+        }
+
+        .observation-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--color-tertiary);
+            font-size: var(--type-sm);
+            line-height: 1.5;
+        }
+
+        .observation-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Critique Cards */
+        .critiques-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .critique-card {
+            background: var(--color-surface);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--color-tertiary);
+        }
+
+        .critique-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
+            border-color: var(--color-accent);
+        }
+
+        .critic-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .critic-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--color-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 12px;
+        }
+
+        .critic-info h3 {
+            font-size: var(--type-lg);
+            margin-bottom: 4px;
+        }
+
+        .critic-score {
+            display: inline-block;
+            background: var(--color-accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: var(--type-sm);
+            font-weight: 600;
+        }
+
+        .critique-content {
+            margin-top: 16px;
+        }
+
+        .hot-take {
+            font-style: italic;
+            color: var(--color-secondary);
+            margin-bottom: 16px;
+            padding: 12px;
+            background: var(--color-background);
+            border-radius: 8px;
+        }
+
+        .critique-points {
+            list-style: none;
+        }
+
+        .critique-point {
+            padding: 8px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .point-icon {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+
+        .point-icon.strength { color: #4ade80; }
+        .point-icon.weakness { color: #f87171; }
+        .point-icon.suggestion { color: #60a5fa; }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--color-secondary);
+        }
+
+        .loading-spinner {
+            border: 3px solid var(--color-tertiary);
+            border-top: 3px solid var(--color-accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <a href="index-hub.html" class="nav-logo">
+            <span>🎨</span>
+            <span>Design Critic Studio</span>
+        </a>
+        <div class="version-switcher">
+            <button class="version-btn active" onclick="location.href='index-enhanced-v5.html'">V1 Classic</button>
+            <button class="version-btn" onclick="location.href='v2-conversation-ui.html'">V2 Conversations</button>
+        </div>
+    </nav>
+
+    <div class="app-container">
+        <!-- Control Panel -->
+        <div class="controls-bar">
+            <!-- Mode Dropdown -->
+            <div class="dropdown">
+                <label class="dropdown-label">Critique Mode</label>
+                <button class="dropdown-button" id="modeDropdown">
+                    <span id="modeText">Design</span>
+                </button>
+                <div class="dropdown-menu" id="modeMenu">
+                    <div class="dropdown-item selected" data-value="design">🎨 Design</div>
+                    <div class="dropdown-item" data-value="photography">📷 Photography</div>
+                    <div class="dropdown-item" data-value="art">🖼️ Art</div>
+                </div>
+            </div>
+
+            <!-- Personality Dropdown -->
+            <div class="dropdown">
+                <label class="dropdown-label">Critique Style</label>
+                <button class="dropdown-button" id="personalityDropdown">
+                    <span id="personalityText">Balanced</span>
+                </button>
+                <div class="dropdown-menu" id="personalityMenu">
+                    <div class="dropdown-item selected" data-value="balanced">⚖️ Balanced</div>
+                    <div class="dropdown-item" data-value="encouraging">💝 Encouraging</div>
+                    <div class="dropdown-item" data-value="tough-love">🔥 Tough Love</div>
+                </div>
+            </div>
+
+            <!-- Experience Dropdown -->
+            <div class="dropdown">
+                <label class="dropdown-label">Experience Level</label>
+                <button class="dropdown-button" id="experienceDropdown">
+                    <span id="experienceText">Student</span>
+                </button>
+                <div class="dropdown-menu" id="experienceMenu">
+                    <div class="dropdown-item" data-value="first-timer">👶 First-Timer</div>
+                    <div class="dropdown-item selected" data-value="student">📚 Student</div>
+                    <div class="dropdown-item" data-value="professional">💼 Professional</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📤</div>
+            <h2>Drop your masterpiece here</h2>
+            <p style="color: var(--color-secondary); margin-top: 8px;">or click to select • or paste an image URL</p>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        </div>
+
+        <!-- Analysis Results -->
+        <div class="analysis-container" id="analysisContainer">
+            <div class="results-grid">
+                <!-- Image Preview -->
+                <div>
+                    <img id="previewImage" class="preview-image" alt="Your design">
+                </div>
+
+                <!-- Observations -->
+                <div class="observations-panel">
+                    <h3 class="observations-title">Key Observations</h3>
+                    <div id="observations"></div>
+                </div>
+            </div>
+
+            <!-- Critique Cards -->
+            <div class="critiques-grid" id="critiquesGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentMode = 'design';
+        let currentPersonality = 'balanced';
+        let currentExperience = 'student';
+        let uploadedImage = null;
+
+        // Elements
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const analysisContainer = document.getElementById('analysisContainer');
+        const previewImage = document.getElementById('previewImage');
+        const observations = document.getElementById('observations');
+        const critiquesGrid = document.getElementById('critiquesGrid');
+
+        // Dropdown functionality
+        function setupDropdown(buttonId, menuId, textId, onSelect) {
+            const button = document.getElementById(buttonId);
+            const menu = document.getElementById(menuId);
+            const text = document.getElementById(textId);
+
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close other dropdowns
+                document.querySelectorAll('.dropdown-menu').forEach(m => {
+                    if (m !== menu) m.classList.remove('active');
+                });
+                menu.classList.toggle('active');
+            });
+
+            menu.addEventListener('click', (e) => {
+                if (e.target.classList.contains('dropdown-item')) {
+                    const value = e.target.dataset.value;
+                    const label = e.target.textContent.replace(/[^\w\s]/g, '').trim();
+                    
+                    // Update selection
+                    menu.querySelectorAll('.dropdown-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    e.target.classList.add('selected');
+                    
+                    text.textContent = label;
+                    menu.classList.remove('active');
+                    
+                    onSelect(value);
+                }
+            });
+        }
+
+        // Setup dropdowns
+        setupDropdown('modeDropdown', 'modeMenu', 'modeText', (value) => {
+            currentMode = value;
+            if (uploadedImage) analyzeImage();
+        });
+
+        setupDropdown('personalityDropdown', 'personalityMenu', 'personalityText', (value) => {
+            currentPersonality = value;
+            if (uploadedImage) analyzeImage();
+        });
+
+        setupDropdown('experienceDropdown', 'experienceMenu', 'experienceText', (value) => {
+            currentExperience = value;
+            if (uploadedImage) analyzeImage();
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('active');
+            });
+        });
+
+        // File upload
+        uploadZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) handleFile(files[0]);
+        });
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        }
+
+        function handleFile(file) {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedImage = e.target.result;
+                    analyzeImage();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // URL input
+        uploadZone.addEventListener('paste', (e) => {
+            const text = e.clipboardData.getData('text');
+            if (text && (text.startsWith('http') || text.startsWith('data:image'))) {
+                e.preventDefault();
+                uploadedImage = text;
+                analyzeImage();
+            }
+        });
+
+        function analyzeImage() {
+            // Hide upload zone
+            uploadZone.style.display = 'none';
+            
+            // Show analysis container
+            analysisContainer.classList.add('visible');
+            
+            // Display image
+            previewImage.src = uploadedImage;
+            
+            // Generate dynamic observations
+            const observationSets = {
+                design: [
+                    ['Visual hierarchy creates clear information flow', 'Typography demonstrates sophisticated restraint', 'Color palette balanced between energy and sophistication', 'Whitespace used strategically to guide attention', 'Component consistency shows system thinking'],
+                    ['Grid structure provides solid foundation', 'Interface elements show attention to microinteractions', 'Accessibility considerations evident throughout', 'Brand personality expressed through subtle details', 'Information architecture supports user journey'],
+                    ['Design language consistent across touchpoints', 'Visual weight distribution creates natural rhythm', 'Strategic use of contrast for emphasis', 'Responsive considerations built into core design', 'Balance between innovation and convention']
+                ],
+                photography: [
+                    ['Light quality shapes emotional narrative', 'Composition uses geometric structure effectively', 'Decisive moment captured with precision', 'Depth layers create dimensional storytelling', 'Post-processing enhances without overwhelming'],
+                    ['Subject isolation through intentional focus', 'Environmental context adds narrative depth', 'Tonal range fully explored and controlled', 'Frame edges used as compositional elements', 'Technical precision supports artistic vision'],
+                    ['Color grading enhances mood and atmosphere', 'Dynamic tension through subject placement', 'Gesture and expression convey emotion', 'Print-quality considerations in tonal control', 'Narrative elements woven throughout frame']
+                ],
+                art: [
+                    ['Conceptual framework challenges conventions', 'Material choices amplify thematic content', 'Cultural dialogue evident in execution', 'Process visible as conceptual element', 'Viewer participation implicit in presentation'],
+                    ['Tension between representation and abstraction', 'Scale relationships create psychological impact', 'Historical references inform contemporary practice', 'Identity politics addressed through form', 'Documentation integral to the work'],
+                    ['Institutional critique embedded in approach', 'Craft and concept in productive dialogue', 'Temporal elements suggest transformation', 'Site-specificity enhances meaning', 'Accessibility balanced with conceptual depth']
+                ]
+            };
+
+            const modeObservations = observationSets[currentMode] || observationSets.design;
+            const selectedSet = modeObservations[Math.floor(Math.random() * modeObservations.length)];
+            
+            // Display observations
+            observations.innerHTML = '';
+            selectedSet.forEach((obs, i) => {
+                const item = document.createElement('div');
+                item.className = 'observation-item';
+                item.innerHTML = `<strong>${i + 1}.</strong> ${obs}`;
+                observations.appendChild(item);
+            });
+
+            // Generate critiques
+            generateCritiques();
+        }
+
+        function generateCritiques() {
+            const critics = {
+                design: [
+                    { name: 'Steve Jobs', icon: '🍎', expertise: 'Simplicity & Focus' },
+                    { name: 'Paula Scher', icon: '🎯', expertise: 'Bold Typography' },
+                    { name: 'Jony Ive', icon: '📱', expertise: 'Material Honesty' }
+                ],
+                photography: [
+                    { name: 'Ansel Adams', icon: '🏔️', expertise: 'Tonal Mastery' },
+                    { name: 'Annie Leibovitz', icon: '📸', expertise: 'Narrative Portraits' },
+                    { name: 'Henri Cartier-Bresson', icon: '🎭', expertise: 'Decisive Moments' }
+                ],
+                art: [
+                    { name: 'Marina Abramović', icon: '🔥', expertise: 'Performance & Presence' },
+                    { name: 'Andy Warhol', icon: '🥫', expertise: 'Pop & Repetition' },
+                    { name: 'Frida Kahlo', icon: '🌺', expertise: 'Personal Truth' }
+                ]
+            };
+
+            const modeCritics = critics[currentMode] || critics.design;
+            
+            // Personality modifiers
+            const scoreModifiers = {
+                balanced: 0,
+                encouraging: 15,
+                'tough-love': -20
+            };
+
+            const toneExamples = {
+                balanced: {
+                    strength: 'Strong foundation here',
+                    weakness: 'Could be improved',
+                    suggestion: 'Consider exploring'
+                },
+                encouraging: {
+                    strength: 'Fantastic work on',
+                    weakness: 'Small opportunity to enhance',
+                    suggestion: 'You might love trying'
+                },
+                'tough-love': {
+                    strength: 'At least you got',
+                    weakness: 'This is failing because',
+                    suggestion: 'Stop doing this and instead'
+                }
+            };
+
+            critiquesGrid.innerHTML = '';
+
+            modeCritics.forEach((critic, index) => {
+                const baseScore = 65 + Math.floor(Math.random() * 20);
+                const score = Math.max(0, Math.min(100, baseScore + scoreModifiers[currentPersonality]));
+                const tone = toneExamples[currentPersonality];
+
+                const card = document.createElement('div');
+                card.className = 'critique-card';
+                card.innerHTML = `
+                    <div class="critic-header">
+                        <div class="critic-avatar">${critic.icon}</div>
+                        <div class="critic-info">
+                            <h3>${critic.name}</h3>
+                            <span class="critic-score">${score}/100</span>
+                        </div>
+                    </div>
+                    <div class="critique-content">
+                        <div class="hot-take">
+                            "${getHotTake(critic.name, currentPersonality)}"
+                        </div>
+                        <ul class="critique-points">
+                            <li class="critique-point">
+                                <span class="point-icon strength">✓</span>
+                                <span>${tone.strength} ${getStrength(critic.name)}</span>
+                            </li>
+                            <li class="critique-point">
+                                <span class="point-icon weakness">×</span>
+                                <span>${tone.weakness} ${getWeakness(critic.name)}</span>
+                            </li>
+                            <li class="critique-point">
+                                <span class="point-icon suggestion">→</span>
+                                <span>${tone.suggestion} ${getSuggestion(critic.name)}</span>
+                            </li>
+                        </ul>
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    critiquesGrid.appendChild(card);
+                }, index * 200);
+            });
+        }
+
+        function getHotTake(critic, personality) {
+            const takes = {
+                'Steve Jobs': {
+                    balanced: "It's not simple enough. What can we remove?",
+                    encouraging: "I see the vision! Now let's make it even simpler.",
+                    'tough-love': "This is SHIT. Start over and think different."
+                },
+                'Paula Scher': {
+                    balanced: "It needs more ENERGY. Make it LOUDER!",
+                    encouraging: "Yes! Now push it further - be BRAVE!",
+                    'tough-love': "BORING! Where's the fucking IMPACT?"
+                },
+                'Jony Ive': {
+                    balanced: "The details aren't quite resolved yet.",
+                    encouraging: "Beautiful start - now refine every detail.",
+                    'tough-love': "This lacks craft. It's carelessly executed."
+                },
+                'Ansel Adams': {
+                    balanced: "Your tonal range needs work.",
+                    encouraging: "Good exposure choices - expand your zones!",
+                    'tough-love': "Muddy tones. You ignored the Zone System."
+                },
+                'Annie Leibovitz': {
+                    balanced: "Tell me more of the story.",
+                    encouraging: "I feel the emotion - deepen it!",
+                    'tough-love': "No story. Just empty technique."
+                },
+                'Henri Cartier-Bresson': {
+                    balanced: "You were close to the decisive moment.",
+                    encouraging: "Patient waiting paid off here!",
+                    'tough-love': "You missed it. Be invisible next time."
+                },
+                'Marina Abramović': {
+                    balanced: "Where is your presence in this?",
+                    encouraging: "I see vulnerability emerging - go deeper!",
+                    'tough-love': "COWARD! You're hiding behind safety."
+                },
+                'Andy Warhol': {
+                    balanced: "It could be more famous.",
+                    encouraging: "Love the surface! Make 50 more!",
+                    'tough-love': "Not commercial enough. Will it sell?"
+                },
+                'Frida Kahlo': {
+                    balanced: "Show me your pain and truth.",
+                    encouraging: "Your honesty is beginning to show!",
+                    'tough-love': "Empty decoration. Where's YOUR blood?"
+                }
+            };
+            return takes[critic]?.[personality] || "Interesting approach.";
+        }
+
+        function getStrength(critic) {
+            const strengths = {
+                'Steve Jobs': 'the focus on essential elements',
+                'Paula Scher': 'bold typographic choices',
+                'Jony Ive': 'material consideration',
+                'Ansel Adams': 'tonal relationships',
+                'Annie Leibovitz': 'emotional connection',
+                'Henri Cartier-Bresson': 'geometric composition',
+                'Marina Abramović': 'conceptual framework',
+                'Andy Warhol': 'repetitive elements',
+                'Frida Kahlo': 'color intensity'
+            };
+            return strengths[critic] || 'the overall approach';
+        }
+
+        function getWeakness(critic) {
+            const weaknesses = {
+                'Steve Jobs': 'unnecessary complexity',
+                'Paula Scher': 'typographic hierarchy',
+                'Jony Ive': 'unresolved details',
+                'Ansel Adams': 'blocked shadows',
+                'Annie Leibovitz': 'narrative depth',
+                'Henri Cartier-Bresson': 'timing precision',
+                'Marina Abramović': 'risk avoidance',
+                'Andy Warhol': 'commercial appeal',
+                'Frida Kahlo': 'emotional authenticity'
+            };
+            return weaknesses[critic] || 'execution refinement';
+        }
+
+        function getSuggestion(critic) {
+            const suggestions = {
+                'Steve Jobs': 'removing 50% of elements',
+                'Paula Scher': 'increasing typographic contrast',
+                'Jony Ive': 'perfecting edge transitions',
+                'Ansel Adams': 'applying Zone System principles',
+                'Annie Leibovitz': 'building environmental context',
+                'Henri Cartier-Bresson': 'waiting for natural moments',
+                'Marina Abramović': 'embracing discomfort',
+                'Andy Warhol': 'serial repetition',
+                'Frida Kahlo': 'incorporating personal symbolism'
+            };
+            return suggestions[critic] || 'further iteration';
+        }
+    </script>
+</body>
+</html>

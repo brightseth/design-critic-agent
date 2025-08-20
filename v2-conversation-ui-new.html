@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2 Conversations - Multi-Agent Critique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            background: #000;
+            color: #0f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Matrix rain effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            background: rgba(0, 255, 0, 0.1);
+            border-bottom: 1px solid #0f0;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: #0f0;
+        }
+
+        .nav-logo span:first-child {
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .version-switcher {
+            display: flex;
+            gap: 10px;
+        }
+
+        .version-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #0f0;
+            color: #0f0;
+            text-decoration: none;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .version-btn.active {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .version-btn:hover:not(.active) {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Terminal Header */
+        .terminal-header {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #0f0;
+            padding: 20px;
+            margin-bottom: 30px;
+            font-family: 'SF Mono', monospace;
+        }
+
+        .terminal-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .terminal-header p {
+            color: rgba(0, 255, 0, 0.7);
+            font-size: 14px;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-panel {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #0f0;
+            padding: 20px;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(0, 255, 0, 0.3);
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-zone:hover {
+            border-color: #0f0;
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .upload-zone.active {
+            border-color: #0f0;
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+
+        .image-preview {
+            width: 100%;
+            max-width: 200px;
+            margin: 20px auto;
+            display: none;
+        }
+
+        .image-preview img {
+            width: 100%;
+            border: 1px solid #0f0;
+            filter: brightness(1.2) contrast(1.1);
+        }
+
+        .image-preview.active {
+            display: block;
+        }
+
+        /* Agent Selection */
+        .agent-selection {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #0f0;
+            padding: 20px;
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .agent-card {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .agent-card:hover {
+            border-color: #0f0;
+            background: rgba(0, 255, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .agent-card.selected {
+            border-color: #0f0;
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .agent-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .agent-name {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Conversation Display */
+        .conversation-container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #0f0;
+            padding: 30px;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .phase-indicator {
+            display: flex;
+            gap: 20px;
+        }
+
+        .phase {
+            padding: 5px 10px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .phase.active {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #0f0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        /* Chat Messages */
+        .chat-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 0, 0.5);
+            border-radius: 4px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: typewriter 0.5s ease-out;
+        }
+
+        @keyframes typewriter {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .agent-avatar {
+            width: 30px;
+            height: 30px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #0f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .agent-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #0f0;
+        }
+
+        .message-content {
+            margin-left: 40px;
+            padding: 10px;
+            background: rgba(0, 255, 0, 0.05);
+            border-left: 2px solid rgba(0, 255, 0, 0.3);
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(0, 255, 0, 0.9);
+        }
+
+        /* Control Panel */
+        .control-panel {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .control-btn {
+            padding: 12px 30px;
+            background: transparent;
+            border: 1px solid #0f0;
+            color: #0f0;
+            font-family: inherit;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Loading Animation */
+        .typing-indicator {
+            display: inline-block;
+            margin-left: 40px;
+            padding: 10px;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #0f0;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.3;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Background -->
+    <canvas class="matrix-bg" id="matrix"></canvas>
+
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <a href="index-hub.html" class="nav-logo">
+            <span>🤖</span>
+            <span>CRITIC.MATRIX</span>
+        </a>
+        <div class="version-switcher">
+            <a href="index-enhanced-v5.html" class="version-btn">V1.CLASSIC</a>
+            <a href="v2-conversation-ui-new.html" class="version-btn active">V2.MATRIX</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Terminal Header -->
+        <div class="terminal-header">
+            <h1>&gt; MULTI-AGENT_CRITIQUE_SYSTEM</h1>
+            <p>// Initialize quantum consciousness matrix for artistic evaluation protocol...</p>
+        </div>
+
+        <!-- Upload and Agent Selection -->
+        <div class="upload-section">
+            <!-- Upload Panel -->
+            <div class="upload-panel">
+                <h3 style="margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                    &gt; INPUT.FEED
+                </h3>
+                <div class="upload-zone" id="uploadZone">
+                    <div style="font-size: 32px; margin-bottom: 10px;">📡</div>
+                    <div style="font-size: 12px; text-transform: uppercase;">
+                        Drop.File || Click.Upload
+                    </div>
+                </div>
+                <div class="image-preview" id="imagePreview">
+                    <img id="previewImg" alt="Input">
+                </div>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- Agent Selection -->
+            <div class="agent-selection">
+                <h3 style="margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                    &gt; AGENT.SELECT [3 REQUIRED]
+                </h3>
+                <div class="agent-grid" id="agentGrid">
+                    <!-- Design Agents -->
+                    <div class="agent-card" data-agent="jobs">
+                        <div class="agent-icon">🍎</div>
+                        <div class="agent-name">Jobs.AI</div>
+                    </div>
+                    <div class="agent-card" data-agent="scher">
+                        <div class="agent-icon">🎯</div>
+                        <div class="agent-name">Scher.AI</div>
+                    </div>
+                    <div class="agent-card" data-agent="ive">
+                        <div class="agent-icon">📱</div>
+                        <div class="agent-name">Ive.AI</div>
+                    </div>
+                    <!-- Photo Agents -->
+                    <div class="agent-card" data-agent="adams">
+                        <div class="agent-icon">🏔️</div>
+                        <div class="agent-name">Adams.AI</div>
+                    </div>
+                    <div class="agent-card" data-agent="leibovitz">
+                        <div class="agent-icon">📸</div>
+                        <div class="agent-name">Leibovitz.AI</div>
+                    </div>
+                    <div class="agent-card" data-agent="bresson">
+                        <div class="agent-icon">🎭</div>
+                        <div class="agent-name">Bresson.AI</div>
+                    </div>
+                    <!-- Art Agents -->
+                    <div class="agent-card" data-agent="abramovic">
+                        <div class="agent-icon">🔥</div>
+                        <div class="agent-name">Abramović.AI</div>
+                    </div>
+                    <div class="agent-card" data-agent="warhol">
+                        <div class="agent-icon">🥫</div>
+                        <div class="agent-name">Warhol.AI</div>
+                    </div>
+                    <div class="agent-card" data-agent="kahlo">
+                        <div class="agent-icon">🌺</div>
+                        <div class="agent-name">Kahlo.AI</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversation Display -->
+        <div class="conversation-container">
+            <div class="conversation-header">
+                <h3 style="text-transform: uppercase; letter-spacing: 1px;">
+                    &gt; CRITIQUE.STREAM
+                </h3>
+                <div class="phase-indicator">
+                    <div class="phase active" id="phase1">SCAN</div>
+                    <div class="phase" id="phase2">ANALYZE</div>
+                    <div class="phase" id="phase3">DEBATE</div>
+                    <div class="phase" id="phase4">CONSENSUS</div>
+                </div>
+            </div>
+            <div class="chat-container" id="chatContainer">
+                <div style="color: rgba(0, 255, 0, 0.5); text-align: center; padding: 50px;">
+                    // Awaiting input signal...
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <button class="control-btn" id="startBtn">INITIALIZE.CRITIQUE</button>
+            <button class="control-btn" id="resetBtn">SYSTEM.RESET</button>
+        </div>
+    </div>
+
+    <script>
+        // Matrix rain effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+        const matrixArray = matrix.split("");
+
+        const fontSize = 10;
+        const columns = canvas.width / fontSize;
+
+        const drops = [];
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0f0';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 35);
+
+        // Application logic
+        let selectedAgents = [];
+        let uploadedImage = null;
+
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const agentCards = document.querySelectorAll('.agent-card');
+        const chatContainer = document.getElementById('chatContainer');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // File upload
+        uploadZone.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedImage = e.target.result;
+                    previewImg.src = uploadedImage;
+                    imagePreview.classList.add('active');
+                    uploadZone.classList.add('active');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Drag and drop
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('active');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('active');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Agent selection
+        agentCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const agent = card.dataset.agent;
+                
+                if (selectedAgents.includes(agent)) {
+                    selectedAgents = selectedAgents.filter(a => a !== agent);
+                    card.classList.remove('selected');
+                } else if (selectedAgents.length < 3) {
+                    selectedAgents.push(agent);
+                    card.classList.add('selected');
+                } else {
+                    // Replace first selected
+                    const firstAgent = selectedAgents.shift();
+                    document.querySelector(`[data-agent="${firstAgent}"]`).classList.remove('selected');
+                    selectedAgents.push(agent);
+                    card.classList.add('selected');
+                }
+            });
+        });
+
+        // Start conversation
+        startBtn.addEventListener('click', () => {
+            if (!uploadedImage) {
+                chatContainer.innerHTML = '<div style="color: #ff0000; text-align: center; padding: 50px;">ERROR: No input detected</div>';
+                return;
+            }
+
+            if (selectedAgents.length !== 3) {
+                chatContainer.innerHTML = '<div style="color: #ff0000; text-align: center; padding: 50px;">ERROR: Select exactly 3 agents</div>';
+                return;
+            }
+
+            startConversation();
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            location.reload();
+        });
+
+        function startConversation() {
+            const agents = {
+                jobs: { name: 'Jobs.AI', icon: '🍎' },
+                scher: { name: 'Scher.AI', icon: '🎯' },
+                ive: { name: 'Ive.AI', icon: '📱' },
+                adams: { name: 'Adams.AI', icon: '🏔️' },
+                leibovitz: { name: 'Leibovitz.AI', icon: '📸' },
+                bresson: { name: 'Bresson.AI', icon: '🎭' },
+                abramovic: { name: 'Abramović.AI', icon: '🔥' },
+                warhol: { name: 'Warhol.AI', icon: '🥫' },
+                kahlo: { name: 'Kahlo.AI', icon: '🌺' }
+            };
+
+            const dialogue = [
+                { phase: 1, agent: 0, text: "Initial scan complete. Detecting primary visual hierarchy..." },
+                { phase: 1, agent: 1, text: "Interesting composition. The energy flow suggests intentional chaos." },
+                { phase: 1, agent: 2, text: "Material honesty questionable. Surface treatment lacks depth." },
+                { phase: 2, agent: 0, text: "Disagree. The surface IS the message here. Pure interface." },
+                { phase: 2, agent: 1, text: "But where's the IMPACT? This whispers when it should SCREAM!" },
+                { phase: 2, agent: 2, text: "Perhaps the whisper is intentional. Subtlety has power." },
+                { phase: 3, agent: 1, text: "Power comes from BOLDNESS! This needs more courage!" },
+                { phase: 3, agent: 0, text: "Courage is removing, not adding. Strip it down further." },
+                { phase: 3, agent: 2, text: "The craft details are unresolved. Each pixel must be perfect." },
+                { phase: 4, agent: 0, text: "Consensus: Strong foundation, needs refinement." },
+                { phase: 4, agent: 1, text: "Agreed. Push the boundaries but maintain control." },
+                { phase: 4, agent: 2, text: "Resolution achieved. Focus on execution excellence." }
+            ];
+
+            chatContainer.innerHTML = '';
+            let messageIndex = 0;
+
+            function addMessage() {
+                if (messageIndex < dialogue.length) {
+                    const msg = dialogue[messageIndex];
+                    const agentInfo = agents[selectedAgents[msg.agent]];
+                    
+                    // Update phase indicator
+                    document.querySelectorAll('.phase').forEach((p, i) => {
+                        p.classList.toggle('active', i < msg.phase);
+                    });
+
+                    // Add typing indicator
+                    const typingDiv = document.createElement('div');
+                    typingDiv.className = 'typing-indicator';
+                    typingDiv.innerHTML = '<span></span><span></span><span></span>';
+                    chatContainer.appendChild(typingDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                    setTimeout(() => {
+                        typingDiv.remove();
+                        
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'message';
+                        messageDiv.innerHTML = `
+                            <div class="message-header">
+                                <div class="agent-avatar">${agentInfo.icon}</div>
+                                <div class="agent-label">${agentInfo.name}</div>
+                            </div>
+                            <div class="message-content">${msg.text}</div>
+                        `;
+                        
+                        chatContainer.appendChild(messageDiv);
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                        
+                        messageIndex++;
+                        setTimeout(addMessage, 2000);
+                    }, 1500);
+                } else {
+                    // Add final summary
+                    setTimeout(() => {
+                        const summaryDiv = document.createElement('div');
+                        summaryDiv.style.cssText = 'margin-top: 30px; padding: 20px; border: 1px solid #0f0; background: rgba(0, 255, 0, 0.05);';
+                        summaryDiv.innerHTML = `
+                            <h4 style="margin-bottom: 10px; text-transform: uppercase;">&gt; CRITIQUE.COMPLETE</h4>
+                            <p style="color: rgba(0, 255, 0, 0.8); line-height: 1.6;">
+                                Score: ${75 + Math.floor(Math.random() * 20)}/100<br>
+                                Status: NEEDS_ITERATION<br>
+                                Priority: SIMPLIFICATION
+                            </p>
+                        `;
+                        chatContainer.appendChild(summaryDiv);
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }, 1000);
+                }
+            }
+
+            addMessage();
+        }
+    </script>
+</body>
+</html>

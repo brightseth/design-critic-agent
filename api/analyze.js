@@ -1,5 +1,4 @@
 const Anthropic = require('@anthropic-ai/sdk');
-const fetch = require('node-fetch');
 const sharp = require('sharp');
 
 const anthropic = new Anthropic({
@@ -8,6 +7,8 @@ const anthropic = new Anthropic({
 
 async function processImageFromUrl(imageUrl) {
   try {
+    // Use dynamic import for node-fetch
+    const fetch = (await import('node-fetch')).default;
     const response = await fetch(imageUrl);
     if (!response.ok) throw new Error('Failed to fetch image');
     

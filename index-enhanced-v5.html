@@ -102,93 +102,6 @@
             margin: 0 auto;
         }
 
-        /* Controls Bar */
-        .controls-bar {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        /* Dropdown Styles */
-        .dropdown {
-            position: relative;
-        }
-
-        .dropdown-label {
-            font-size: var(--type-sm);
-            color: var(--color-secondary);
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .dropdown-button {
-            background: var(--color-surface);
-            border: 1px solid var(--color-tertiary);
-            color: var(--color-primary);
-            padding: 10px 40px 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: var(--type-base);
-            min-width: 180px;
-            text-align: left;
-            position: relative;
-            transition: all 0.3s;
-        }
-
-        .dropdown-button:hover {
-            border-color: var(--color-accent);
-        }
-
-        .dropdown-button::after {
-            content: '▼';
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 10px;
-            color: var(--color-secondary);
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--color-surface);
-            border: 1px solid var(--color-tertiary);
-            border-radius: 8px;
-            margin-top: 5px;
-            display: none;
-            z-index: 100;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-
-        .dropdown-menu.active {
-            display: block;
-        }
-
-        .dropdown-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            transition: background 0.2s;
-            border-bottom: 1px solid var(--color-tertiary);
-        }
-
-        .dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .dropdown-item:hover {
-            background: var(--color-tertiary);
-        }
-
-        .dropdown-item.selected {
-            background: var(--color-accent);
-            color: white;
-        }
-
         /* Upload Zone */
         .upload-zone {
             background: var(--color-surface);
@@ -408,47 +321,6 @@
     </nav>
 
     <div class="app-container">
-        <!-- Control Panel -->
-        <div class="controls-bar">
-            <!-- Mode Dropdown -->
-            <div class="dropdown">
-                <label class="dropdown-label">Critique Mode</label>
-                <button class="dropdown-button" id="modeDropdown">
-                    <span id="modeText">Design</span>
-                </button>
-                <div class="dropdown-menu" id="modeMenu">
-                    <div class="dropdown-item selected" data-value="design">🎨 Design</div>
-                    <div class="dropdown-item" data-value="photography">📷 Photography</div>
-                    <div class="dropdown-item" data-value="art">🖼️ Art</div>
-                </div>
-            </div>
-
-            <!-- Personality Dropdown -->
-            <div class="dropdown">
-                <label class="dropdown-label">Critique Style</label>
-                <button class="dropdown-button" id="personalityDropdown">
-                    <span id="personalityText">Balanced</span>
-                </button>
-                <div class="dropdown-menu" id="personalityMenu">
-                    <div class="dropdown-item selected" data-value="balanced">⚖️ Balanced</div>
-                    <div class="dropdown-item" data-value="encouraging">💝 Encouraging</div>
-                    <div class="dropdown-item" data-value="tough-love">🔥 Tough Love</div>
-                </div>
-            </div>
-
-            <!-- Experience Dropdown -->
-            <div class="dropdown">
-                <label class="dropdown-label">Experience Level</label>
-                <button class="dropdown-button" id="experienceDropdown">
-                    <span id="experienceText">Student</span>
-                </button>
-                <div class="dropdown-menu" id="experienceMenu">
-                    <div class="dropdown-item" data-value="first-timer">👶 First-Timer</div>
-                    <div class="dropdown-item selected" data-value="student">📚 Student</div>
-                    <div class="dropdown-item" data-value="professional">💼 Professional</div>
-                </div>
-            </div>
-        </div>
 
         <!-- Upload Zone -->
         <div class="upload-zone" id="uploadZone">
@@ -486,9 +358,7 @@
 
     <script>
         // State
-        let currentMode = 'design';
-        let currentPersonality = 'balanced';
-        let currentExperience = 'student';
+        let currentMode = 'auto'; // Will be auto-detected
         let uploadedImage = null;
 
         // Elements
@@ -498,63 +368,6 @@
         const previewImage = document.getElementById('previewImage');
         const observations = document.getElementById('observations');
         const critiquesGrid = document.getElementById('critiquesGrid');
-
-        // Dropdown functionality
-        function setupDropdown(buttonId, menuId, textId, onSelect) {
-            const button = document.getElementById(buttonId);
-            const menu = document.getElementById(menuId);
-            const text = document.getElementById(textId);
-
-            button.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Close other dropdowns
-                document.querySelectorAll('.dropdown-menu').forEach(m => {
-                    if (m !== menu) m.classList.remove('active');
-                });
-                menu.classList.toggle('active');
-            });
-
-            menu.addEventListener('click', (e) => {
-                if (e.target.classList.contains('dropdown-item')) {
-                    const value = e.target.dataset.value;
-                    const label = e.target.textContent.replace(/[^\w\s]/g, '').trim();
-                    
-                    // Update selection
-                    menu.querySelectorAll('.dropdown-item').forEach(item => {
-                        item.classList.remove('selected');
-                    });
-                    e.target.classList.add('selected');
-                    
-                    text.textContent = label;
-                    menu.classList.remove('active');
-                    
-                    onSelect(value);
-                }
-            });
-        }
-
-        // Setup dropdowns
-        setupDropdown('modeDropdown', 'modeMenu', 'modeText', (value) => {
-            currentMode = value;
-            if (uploadedImage) analyzeImage();
-        });
-
-        setupDropdown('personalityDropdown', 'personalityMenu', 'personalityText', (value) => {
-            currentPersonality = value;
-            if (uploadedImage) analyzeImage();
-        });
-
-        setupDropdown('experienceDropdown', 'experienceMenu', 'experienceText', (value) => {
-            currentExperience = value;
-            if (uploadedImage) analyzeImage();
-        });
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                menu.classList.remove('active');
-            });
-        });
 
         // File upload
         uploadZone.addEventListener('click', () => fileInput.click());
@@ -617,11 +430,9 @@
             critiquesGrid.innerHTML = '';
             
             try {
-                // Prepare image data
+                // Prepare image data - let AI auto-detect the type
                 let payload = {
-                    mode: currentMode,
-                    personality: currentPersonality,
-                    experienceLevel: currentExperience
+                    mode: 'auto' // AI will determine if it's design, photo, or art
                 };
                 
                 // Check if it's a data URL or regular URL
@@ -653,7 +464,12 @@
                         const descText = document.getElementById('descriptionText');
                         
                         if (isRealAnalysis) {
-                            descText.innerHTML = result.imageAnalysis.description;
+                            // Show detected type if available
+                            const detectedType = result.imageAnalysis.detectedMode || result.imageAnalysis.designType;
+                            const typeLabel = detectedType === 'photo' ? '📷 Photography' : 
+                                            detectedType === 'art' ? '🖼️ Artwork' : '🎨 Design';
+                            
+                            descText.innerHTML = `<small style="opacity: 0.8">Detected as: ${typeLabel}</small><br><br>${result.imageAnalysis.description}`;
                         } else {
                             // We got demo content, show warning
                             descText.innerHTML = `<strong style="color: #ff6b6b;">⚠️ Demo Mode</strong><br>
@@ -675,7 +491,9 @@
                 console.error('API Error:', error);
             }
             
-            // Fallback to demo mode
+            // Fallback to demo mode - randomly pick a type for demo
+            const demoTypes = ['design', 'photography', 'art'];
+            currentMode = demoTypes[Math.floor(Math.random() * demoTypes.length)];
             displayDemoDescription();
             
             const observationSets = {

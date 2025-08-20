@@ -689,11 +689,56 @@ async function getRealAICritique(imageBase64, mode = 'design') {
     console.log('Calling Claude Vision API...');
     console.log('Base64 data length:', imageBase64.length);
     
+    // Auto-detect mode if set to 'auto'
+    let detectedMode = mode;
+    if (mode === 'auto') {
+      // First, ask Claude to identify the type of image
+      const detectPrompt = `Look at this image and determine if it is:
+1. A photograph (photo taken with a camera)
+2. A design (UI, web design, poster, branding, etc.)
+3. An artwork (painting, illustration, sculpture, etc.)
+
+Respond with just one word: "photography", "design", or "art"`;
+
+      const detectResponse = await anthropic.messages.create({
+        model: "claude-3-haiku-20240307", // Use faster model for detection
+        max_tokens: 10,
+        messages: [{
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: "image/jpeg",
+                data: imageBase64
+              }
+            },
+            {
+              type: "text",
+              text: detectPrompt
+            }
+          ]
+        }]
+      });
+      
+      const detection = detectResponse.content[0].text.toLowerCase();
+      if (detection.includes('photo')) {
+        detectedMode = 'photo';
+      } else if (detection.includes('art')) {
+        detectedMode = 'art';
+      } else {
+        detectedMode = 'design';
+      }
+      
+      console.log('Auto-detected mode:', detectedMode);
+    }
+    
     // Create mode-specific prompts
     let systemPrompt = '';
     let experts = [];
     
-    if (mode === 'photo') {
+    if (detectedMode === 'photo') {
       systemPrompt = `You are a panel of master photographers analyzing an image. 
 FIRST, describe exactly what you see in the image - the subject matter, objects, people, setting, colors, composition.
 THEN provide:
@@ -703,7 +748,7 @@ THEN provide:
 4. Specific improvement suggestions
 Format as JSON with: description (detailed description of what's visible in the image), observations (array of 3 specific things about THIS image), strengths (array), weaknesses (array), suggestions (array)`;
       experts = ['Henri Cartier-Bresson', 'Annie Leibovitz', 'Sebastião Salgado'];
-    } else if (mode === 'art') {
+    } else if (detectedMode === 'art') {
       systemPrompt = `You are a panel of art critics analyzing an artwork.
 FIRST, describe exactly what you see - the medium, subject matter, visual elements, colors, style, technique.
 THEN provide:
@@ -810,7 +855,8 @@ Format as JSON with: description (detailed description of what's visible), obser
       imageAnalysis: {
         description: analysis.description || 'AI analysis complete',
         primaryColors: ['Analyzed'],
-        designType: mode.charAt(0).toUpperCase() + mode.slice(1),
+        designType: detectedMode.charAt(0).toUpperCase() + detectedMode.slice(1),
+        detectedMode: detectedMode, // Include what type was detected
         elements: analysis.observations?.slice(0, 3) || ['Visual elements', 'Composition', 'Technical aspects']
       },
       observations: analysis.observations?.slice(0, 3) || [

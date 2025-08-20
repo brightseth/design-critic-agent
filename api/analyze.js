@@ -38,7 +38,11 @@ async function processImageFromFile(fileBuffer) {
 }
 
 async function generateCritiqueWithClaude(imageBase64, depth = 'standard', focus = 'all') {
+  console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
+  console.log('API Key starts with:', process.env.ANTHROPIC_API_KEY?.substring(0, 10));
+  
   if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'demo-mode') {
+    console.log('Using demo mode');
     return generateDemoCritique();
   }
 

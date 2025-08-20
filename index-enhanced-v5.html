@@ -138,6 +138,29 @@
         .analysis-container.visible {
             display: block;
         }
+        
+        /* Upload Another Button */
+        .upload-another {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            border: none;
+            font-size: var(--type-base);
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        
+        .upload-another:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(102, 126, 234, 0.4);
+        }
 
         .image-description {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -354,6 +377,11 @@
             <!-- Critique Cards -->
             <div class="critiques-grid" id="critiquesGrid"></div>
         </div>
+        
+        <!-- Upload Another Button (hidden initially) -->
+        <button class="upload-another" id="uploadAnother" style="display: none;">
+            📤 Upload Another Image
+        </button>
     </div>
 
     <script>
@@ -368,6 +396,7 @@
         const previewImage = document.getElementById('previewImage');
         const observations = document.getElementById('observations');
         const critiquesGrid = document.getElementById('critiquesGrid');
+        const uploadAnother = document.getElementById('uploadAnother');
 
         // File upload
         uploadZone.addEventListener('click', () => fileInput.click());
@@ -414,6 +443,35 @@
                 analyzeImage();
             }
         });
+        
+        // Upload Another button
+        uploadAnother.addEventListener('click', () => {
+            resetForNewUpload();
+        });
+        
+        function resetForNewUpload() {
+            // Hide analysis results
+            analysisContainer.classList.remove('visible');
+            document.getElementById('imageDescription').style.display = 'none';
+            
+            // Show upload zone
+            uploadZone.style.display = 'block';
+            uploadZone.innerHTML = `
+                <div class="upload-icon">📤</div>
+                <h2>Drop your masterpiece here</h2>
+                <p style="color: var(--color-secondary); margin-top: 8px;">or click to select • or paste an image URL</p>
+            `;
+            
+            // Hide upload another button
+            uploadAnother.style.display = 'none';
+            
+            // Clear state
+            uploadedImage = null;
+            currentMode = 'auto';
+            
+            // Reset file input
+            fileInput.value = '';
+        }
 
         async function analyzeImage() {
             // Hide upload zone
@@ -466,6 +524,12 @@
                         if (isRealAnalysis) {
                             // Show detected type if available
                             const detectedType = result.imageAnalysis.detectedMode || result.imageAnalysis.designType;
+                            
+                            // Update currentMode to match detected type for correct critics
+                            if (detectedType) {
+                                currentMode = detectedType === 'photo' ? 'photography' : detectedType;
+                            }
+                            
                             const typeLabel = detectedType === 'photo' ? '📷 Photography' : 
                                             detectedType === 'art' ? '🖼️ Artwork' : '🎨 Design';
                             
@@ -482,6 +546,8 @@
                     if (result.observations && result.observations.length > 0) {
                         displayObservations(result.observations);
                         displayCritiques(result.critique || result.critiques);
+                        // Show upload another button
+                        uploadAnother.style.display = 'block';
                         return;
                     }
                 } else {
@@ -522,6 +588,9 @@
             
             // Generate demo critiques
             generateCritiques();
+            
+            // Show upload another button
+            uploadAnother.style.display = 'block';
         }
         
         function displayDemoDescription() {

@@ -924,14 +924,7 @@
             <p class="subtitle">AI-Powered Design Critique from the Masters</p>
         </div>
 
-        <div class="mode-selector">
-            <button class="mode-btn active" data-mode="comprehensive">Comprehensive Analysis</button>
-            <button class="mode-btn" data-mode="quick">Quick Review</button>
-            <button class="mode-btn" data-mode="comparison">Compare Designs</button>
-            <button class="mode-btn" data-mode="principles">Principles Check</button>
-            <button class="mode-btn" data-mode="accessibility">Accessibility Audit</button>
-            <button class="mode-btn" data-mode="custom">Custom Critics</button>
-        </div>
+        <!-- Mode selector removed - using comprehensive analysis only -->
 
         <div class="critic-selector" id="criticSelector" style="display: none; margin-bottom: 40px;">
             <h3 style="font-size: 24px; font-weight: 300; margin-bottom: 20px;">Select Your Design Critics</h3>
@@ -1520,27 +1513,8 @@
         let currentStage = 0;
         let critiqueData = {};
 
-        // Mode selector
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentMode = btn.dataset.mode;
-                updateUIForMode();
-            });
-        });
-
-        function updateUIForMode() {
-            const criticSelector = document.getElementById('criticSelector');
-            
-            if (currentMode === 'custom') {
-                criticSelector.style.display = 'block';
-            } else {
-                criticSelector.style.display = 'none';
-            }
-            
-            console.log(`Switched to ${currentMode} mode`);
-        }
+        // Mode selector removed - always use comprehensive mode
+        currentMode = 'comprehensive';
 
         // File upload handlers
         const uploadArea = document.getElementById('uploadArea');
@@ -1681,8 +1655,9 @@
                 previewImage.src = imageUrl;
                 previewImage.style.display = 'block';
             } else {
-                // Website URL - show placeholder
+                // Website URL - hide image and show placeholder
                 previewImage.style.display = 'none';
+                previewImage.src = ''; // Clear any previous src to prevent loading errors
                 
                 // Create a placeholder for website URLs
                 const existingPlaceholder = document.getElementById('urlPlaceholder');
@@ -1705,12 +1680,13 @@
                     color: white;
                     text-align: center;
                     padding: 20px;
+                    margin: 0 auto;
                 `;
                 placeholder.innerHTML = `
                     <div style="font-size: 48px; margin-bottom: 16px;">🌐</div>
-                    <div style="font-size: 18px; margin-bottom: 8px;">Analyzing URL</div>
-                    <div style="font-size: 14px; opacity: 0.9; word-break: break-all;">${imageUrl}</div>
-                    <div style="font-size: 12px; opacity: 0.7; margin-top: 16px;">Website preview not available</div>
+                    <div style="font-size: 18px; margin-bottom: 8px;">Analyzing Website</div>
+                    <div style="font-size: 14px; opacity: 0.9; word-break: break-all; max-width: 400px;">${imageUrl}</div>
+                    <div style="font-size: 12px; opacity: 0.7; margin-top: 16px;">Design analysis in progress...</div>
                 `;
                 imageContainer.appendChild(placeholder);
             }

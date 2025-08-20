@@ -1220,9 +1220,9 @@
         </div>
 
         <div class="principles-section">
-            <h2 style="font-size: 32px; font-weight: 300; margin-bottom: 30px;">Design Principles Deep Dive</h2>
+            <h2 id="deepDiveTitle" style="font-size: 32px; font-weight: 300; margin-bottom: 30px;">Design Principles Deep Dive</h2>
             
-            <div class="principles-tabs">
+            <div class="principles-tabs" id="principlesTabs">
                 <div class="principle-tab active" onclick="showPrinciple('jobs')">Steve Jobs</div>
                 <div class="principle-tab" onclick="showPrinciple('maeda')">John Maeda</div>
                 <div class="principle-tab" onclick="showPrinciple('vignelli')">Massimo Vignelli</div>
@@ -1539,19 +1539,148 @@
             // Update UI text based on mode
             const subtitle = document.querySelector('.subtitle');
             const uploadText = document.querySelector('#uploadArea h3');
+            const deepDiveTitle = document.getElementById('deepDiveTitle');
+            const principlesTabs = document.getElementById('principlesTabs');
             
             if (mode === 'photo') {
                 subtitle.textContent = 'AI-Powered Photography Critique from Master Photographers';
                 if (uploadText) uploadText.textContent = 'Drop Your Photo';
+                if (deepDiveTitle) deepDiveTitle.textContent = 'Photography Masters Deep Dive';
+                updatePrincipleTabs('photo');
             } else if (mode === 'art') {
                 subtitle.textContent = 'AI-Powered Art Critique from Renowned Curators & Critics';
                 if (uploadText) uploadText.textContent = 'Drop Your Artwork';
+                if (deepDiveTitle) deepDiveTitle.textContent = 'Art Critics & Curators Deep Dive';
+                updatePrincipleTabs('art');
             } else {
                 subtitle.textContent = 'AI-Powered Design Critique from the Masters';
                 if (uploadText) uploadText.textContent = 'Drop Your Design';
+                if (deepDiveTitle) deepDiveTitle.textContent = 'Design Principles Deep Dive';
+                updatePrincipleTabs('design');
             }
             
             console.log('Switched to', mode, 'mode');
+        }
+        
+        // Function to update principle tabs based on mode
+        function updatePrincipleTabs(mode) {
+            const principlesTabs = document.getElementById('principlesTabs');
+            if (!principlesTabs) return;
+            
+            let tabsHTML = '';
+            
+            if (mode === 'photo') {
+                // Photography masters
+                tabsHTML = `
+                    <div class="principle-tab active" onclick="showPrinciple('cartier-bresson')">Henri Cartier-Bresson</div>
+                    <div class="principle-tab" onclick="showPrinciple('leibovitz')">Annie Leibovitz</div>
+                    <div class="principle-tab" onclick="showPrinciple('avedon')">Richard Avedon</div>
+                    <div class="principle-tab" onclick="showPrinciple('arbus')">Diane Arbus</div>
+                    <div class="principle-tab" onclick="showPrinciple('salgado')">Sebastião Salgado</div>
+                    <div class="principle-tab" onclick="showPrinciple('sherman')">Cindy Sherman</div>
+                    <div class="principle-tab" onclick="showPrinciple('mann')">Sally Mann</div>
+                    <div class="principle-tab" onclick="showPrinciple('gursky')">Andreas Gursky</div>
+                `;
+                updatePrincipleContent('photo');
+            } else if (mode === 'art') {
+                // Art critics and curators
+                tabsHTML = `
+                    <div class="principle-tab active" onclick="showPrinciple('saltz')">Jerry Saltz</div>
+                    <div class="principle-tab" onclick="showPrinciple('smith')">Roberta Smith</div>
+                    <div class="principle-tab" onclick="showPrinciple('obrist')">Hans Ulrich Obrist</div>
+                    <div class="principle-tab" onclick="showPrinciple('golden')">Thelma Golden</div>
+                    <div class="principle-tab" onclick="showPrinciple('bourriaud')">Nicolas Bourriaud</div>
+                    <div class="principle-tab" onclick="showPrinciple('bishop')">Claire Bishop</div>
+                    <div class="principle-tab" onclick="showPrinciple('danto')">Arthur Danto</div>
+                    <div class="principle-tab" onclick="showPrinciple('enwezor')">Okwui Enwezor</div>
+                `;
+                updatePrincipleContent('art');
+            } else {
+                // Design masters (default)
+                tabsHTML = `
+                    <div class="principle-tab active" onclick="showPrinciple('jobs')">Steve Jobs</div>
+                    <div class="principle-tab" onclick="showPrinciple('maeda')">John Maeda</div>
+                    <div class="principle-tab" onclick="showPrinciple('vignelli')">Massimo Vignelli</div>
+                    <div class="principle-tab" onclick="showPrinciple('rand')">Paul Rand</div>
+                    <div class="principle-tab" onclick="showPrinciple('scher')">Paula Scher</div>
+                    <div class="principle-tab" onclick="showPrinciple('carson')">David Carson</div>
+                    <div class="principle-tab" onclick="showPrinciple('glaser')">Milton Glaser</div>
+                    <div class="principle-tab" onclick="showPrinciple('walsh')">Jessica Walsh</div>
+                    <div class="principle-tab" onclick="showPrinciple('sagmeister')">Stefan Sagmeister</div>
+                `;
+                // Keep existing design content
+            }
+            
+            principlesTabs.innerHTML = tabsHTML;
+        }
+        
+        // Function to update principle content based on mode
+        function updatePrincipleContent(mode) {
+            // Find or create a container for dynamic principle content
+            let contentContainer = document.querySelector('.principles-section .principle-content.active');
+            if (!contentContainer) return;
+            
+            if (mode === 'photo') {
+                contentContainer.innerHTML = `
+                    <h3 style="font-size: 24px; margin-bottom: 20px;">Henri Cartier-Bresson: The Decisive Moment</h3>
+                    <p style="color: #999; line-height: 1.8; margin-bottom: 30px;">
+                        The father of modern photojournalism believed in capturing the precise moment when the visual and emotional elements of a scene come together in perfect harmony. His concept of the "decisive moment" revolutionized photography.
+                    </p>
+                    <div class="example-grid">
+                        <div class="example-card">
+                            <div class="example-image" style="height: 200px; background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">📷 Geometric Composition</div>
+                            <div class="example-content">
+                                <h4>Behind Gare Saint-Lazare (1932)</h4>
+                                <p style="color: #666; font-size: 14px;">Perfect timing meets geometric composition. The leap frozen at the exact moment before impact.</p>
+                            </div>
+                        </div>
+                        <div class="example-card">
+                            <div class="example-image" style="height: 200px; background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">🌍 Street Photography</div>
+                            <div class="example-content">
+                                <h4>Rue Mouffetard (1954)</h4>
+                                <p style="color: #666; font-size: 14px;">Candid street photography capturing authentic human moments without intrusion.</p>
+                            </div>
+                        </div>
+                        <div class="example-card">
+                            <div class="example-image" style="height: 200px; background: linear-gradient(135deg, #6a6a6a 0%, #3a3a3a 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">✨ Visual Rhythm</div>
+                            <div class="example-content">
+                                <h4>Cyclades, Greece (1961)</h4>
+                                <p style="color: #666; font-size: 14px;">Geometric patterns and human forms creating visual music in black and white.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (mode === 'art') {
+                contentContainer.innerHTML = `
+                    <h3 style="font-size: 24px; margin-bottom: 20px;">Jerry Saltz: Art for the People</h3>
+                    <p style="color: #999; line-height: 1.8; margin-bottom: 30px;">
+                        Pulitzer Prize-winning critic Jerry Saltz democratizes art criticism with his passionate, accessible approach. He believes art should punch you in the gut, not require a PhD to understand.
+                    </p>
+                    <div class="example-grid">
+                        <div class="example-card">
+                            <div class="example-image" style="height: 200px; background: linear-gradient(135deg, #ff6b6b 0%, #cc5555 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">🎨 Emotional Impact</div>
+                            <div class="example-content">
+                                <h4>"How to Be an Artist" (2020)</h4>
+                                <p style="color: #666; font-size: 14px;">33 rules including: "Art is not about understanding. It's about experience."</p>
+                            </div>
+                        </div>
+                        <div class="example-card">
+                            <div class="example-image" style="height: 200px; background: linear-gradient(135deg, #4ecdc4 0%, #3aa39a 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">🗣️ Direct Voice</div>
+                            <div class="example-content">
+                                <h4>Instagram Criticism</h4>
+                                <p style="color: #666; font-size: 14px;">Bringing art criticism to social media. "The art world is not the art market."</p>
+                            </div>
+                        </div>
+                        <div class="example-card">
+                            <div class="example-image" style="height: 200px; background: linear-gradient(135deg, #f7b731 0%, #d4991f 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">✨ Accessibility</div>
+                            <div class="example-content">
+                                <h4>New York Magazine</h4>
+                                <p style="color: #666; font-size: 14px;">Making contemporary art accessible: "All art is contemporary art."</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         // File upload handlers

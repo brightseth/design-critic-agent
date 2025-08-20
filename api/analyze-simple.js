@@ -75,7 +75,13 @@ async function generateSimpleCritique(imageBase64) {
     };
 
   } catch (error) {
-    console.error('Claude API error:', error);
+    console.error('Claude API error details:', {
+      message: error.message,
+      status: error.status,
+      type: error.type,
+      stack: error.stack
+    });
+    
     return {
       critique: [{
         name: 'API Error',
@@ -85,6 +91,8 @@ async function generateSimpleCritique(imageBase64) {
         score: 0,
         points: [
           { type: 'negative', text: `Error: ${error.message}` },
+          { type: 'negative', text: `Status: ${error.status || 'Unknown'}` },
+          { type: 'negative', text: `Type: ${error.type || 'Unknown'}` },
           { type: 'neutral', text: 'Check API key and network connection' }
         ]
       }],

@@ -489,6 +489,14 @@ async function generateSimpleCritique(imageBase64, imageUrl, mode = 'design') {
 
 
 async function getRealAICritique(imageBase64, mode = 'design') {
+  console.log('=== getRealAICritique called ===');
+  console.log('Mode:', mode);
+  
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('No API key found!');
+    throw new Error('No API key configured');
+  }
+
   const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
   });
@@ -501,6 +509,8 @@ async function getRealAICritique(imageBase64, mode = 'design') {
     
     console.log('Calling Claude Vision API...');
     console.log('Base64 data length:', imageBase64.length);
+    console.log('API Key exists:', !!process.env.ANTHROPIC_API_KEY);
+    console.log('API Key preview:', process.env.ANTHROPIC_API_KEY.substring(0, 20) + '...');
     
     // Auto-detect mode if set to 'auto'
     let detectedMode = mode;
@@ -606,12 +616,14 @@ Format as JSON with: description (detailed description of what's visible), obser
     });
 
     console.log('Claude API response received');
+    console.log('Response type:', typeof response);
+    console.log('Response has content:', !!response.content);
     
     // Parse the response
     let analysis;
     try {
       // Try to parse as JSON first
-      const responseText = message.content[0].text;
+      const responseText = response.content[0].text;
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);  
       if (jsonMatch) {
         analysis = JSON.parse(jsonMatch[0]);
@@ -688,12 +700,23 @@ Format as JSON with: description (detailed description of what's visible), obser
     };
 
   } catch (error) {
-    console.error('Claude API error:', error.message);
+    console.error('=== CLAUDE API ERROR IN getRealAICritique ===');
+    console.error('Error message:', error.message);
     console.error('Error type:', error.name);
     console.error('Error status:', error.status);
-    if (error.response) {
-      console.error('Error response:', error.response.data);
+    console.error('Full error:', JSON.stringify(error, null, 2));
+    
+    // Check for common issues
+    if (error.message && error.message.toLowerCase().includes('credit')) {
+      console.error('⚠️ API CREDITS ISSUE - Please check Claude account balance');
     }
+    if (error.status === 401) {
+      console.error('⚠️ AUTHENTICATION ERROR - API key may be invalid');
+    }
+    if (error.status === 413) {
+      console.error('⚠️ IMAGE TOO LARGE - Need to compress image');
+    }
+    
     throw error;
   }
 }

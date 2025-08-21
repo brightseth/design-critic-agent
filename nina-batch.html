@@ -529,6 +529,26 @@
                 <div class="stat-label">Average Score</div>
             </div>
         </div>
+        
+        <!-- Z-Score Distribution -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333;">
+            <h3 style="font-size: 16px; margin-bottom: 15px;">SCORE DISTRIBUTION</h3>
+            <canvas id="distributionChart" width="100%" height="150" style="background: #111; border: 1px solid #333;"></canvas>
+            <div id="zScoreInfo" style="margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <div class="stat-card" style="background: #0a0a0a;">
+                    <div class="stat-value" id="zMean" style="font-size: 18px;">0</div>
+                    <div class="stat-label" style="font-size: 10px;">Mean Score</div>
+                </div>
+                <div class="stat-card" style="background: #0a0a0a;">
+                    <div class="stat-value" id="zStdDev" style="font-size: 18px;">0</div>
+                    <div class="stat-label" style="font-size: 10px;">Std Deviation</div>
+                </div>
+                <div class="stat-card" style="background: #0a0a0a;">
+                    <div class="stat-value" id="zRange" style="font-size: 18px;">0</div>
+                    <div class="stat-label" style="font-size: 10px;">Score Range</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Filter Buttons -->
@@ -734,7 +754,7 @@
         // Evaluate Single Image
         async function evaluateImage(imageData, filename) {
             try {
-                const response = await fetch('/api/nina-curator', {
+                const response = await fetch('http://localhost:3001/api/nina-curator-v2', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -751,7 +771,27 @@
 
                 const result = await response.json();
                 
-                if (result.success && result.ninaEvaluation) {
+                // Handle v2 API response format
+                if (result.success && result.evaluation) {
+                    const eval = result.evaluation;
+                    return {
+                        filename,
+                        imageData: imageData.originalDataUrl,
+                        i_see: eval.i_see,
+                        gate: eval.gate,
+                        scores_raw: eval.scores_raw,
+                        rationales: eval.rationales,
+                        weighted_total: eval.weighted_total,
+                        verdict: eval.verdict,
+                        flags: eval.flags,
+                        confidence: eval.confidence,
+                        nina_pick: eval.nina_pick,
+                        finalScore: eval.weighted_total * 100,
+                        rankHint: eval.verdict.toLowerCase(),
+                        dimensions: eval.scores_raw // Map to old format
+                    };
+                } else if (result.success && result.ninaEvaluation) {
+                    // Fallback to old format
                     return {
                         filename,
                         imageData: imageData.originalDataUrl,
@@ -783,18 +823,22 @@
             
             // Apply filter
             if (currentFilter !== 'all') {
-                displayResults = evaluationResults.filter(r => r.rankHint === currentFilter);
+                displayResults = evaluationResults.filter(r => {
+                    // Handle both old and new formats
+                    const hint = r.verdict ? r.verdict.toLowerCase() : r.rankHint;
+                    return hint === currentFilter;
+                });
             }
 
             // Apply sort
             const sortBy = sortSelect.value;
             displayResults = [...displayResults].sort((a, b) => {
                 if (sortBy === 'score') return b.finalScore - a.finalScore;
-                if (sortBy === 'conceptual') return (b.dimensions?.conceptualAlignment?.score || 0) - (a.dimensions?.conceptualAlignment?.score || 0);
-                if (sortBy === 'dataset') return (b.dimensions?.datasetReflexivity?.score || 0) - (a.dimensions?.datasetReflexivity?.score || 0);
-                if (sortBy === 'aesthetic') return (b.dimensions?.aestheticAuthority?.score || 0) - (a.dimensions?.aestheticAuthority?.score || 0);
-                if (sortBy === 'exhibition') return (b.dimensions?.exhibitionPresence?.score || 0) - (a.dimensions?.exhibitionPresence?.score || 0);
-                if (sortBy === 'risk') return (b.dimensions?.riskFactor?.score || 0) - (a.dimensions?.riskFactor?.score || 0);
+                if (sortBy === 'conceptual') return (b.scores_raw?.conceptual_strength || 0) - (a.scores_raw?.conceptual_strength || 0);
+                if (sortBy === 'dataset') return (b.scores_raw?.ai_criticality || 0) - (a.scores_raw?.ai_criticality || 0);
+                if (sortBy === 'aesthetic') return (b.scores_raw?.technical_excellence || 0) - (a.scores_raw?.technical_excellence || 0);
+                if (sortBy === 'exhibition') return (b.scores_raw?.paris_photo_ready || 0) - (a.scores_raw?.paris_photo_ready || 0);
+                if (sortBy === 'risk') return (b.scores_raw?.cultural_dialogue || 0) - (a.scores_raw?.cultural_dialogue || 0);
                 return 0;
             });
 
@@ -821,22 +865,22 @@
                 </div>
                 <div class="card-info">
                     <div class="card-filename">${result.filename}</div>
-                    <div class="card-score">${result.finalScore}/100</div>
-                    <div class="card-hint ${result.rankHint}">${result.rankHint}</div>
-                    <div class="card-title">${result.titleSuggestion || 'Untitled'}</div>
-                    ${result.dimensions ? `
+                    <div class="card-score">${Math.round(result.finalScore)}/100</div>
+                    <div class="card-hint ${result.rankHint}">${result.verdict || result.rankHint}</div>
+                    ${result.i_see ? `<div class="card-description" style="font-size: 10px; color: #aaa; margin: 5px 0; font-style: italic;">${result.i_see.substring(0, 100)}...</div>` : ''}
+                    ${result.scores_raw ? `
                         <div style="margin-top: 10px;">
                             <div class="dimension-mini">
+                                <span>Paris Photo</span>
+                                <span class="dimension-mini-score">${result.scores_raw.paris_photo_ready || 0}</span>
+                            </div>
+                            <div class="dimension-mini">
+                                <span>AI-Critical</span>
+                                <span class="dimension-mini-score">${result.scores_raw.ai_criticality || 0}</span>
+                            </div>
+                            <div class="dimension-mini">
                                 <span>Conceptual</span>
-                                <span class="dimension-mini-score">${result.dimensions.conceptualAlignment?.score || 0}</span>
-                            </div>
-                            <div class="dimension-mini">
-                                <span>Dataset Politics</span>
-                                <span class="dimension-mini-score">${result.dimensions.datasetReflexivity?.score || 0}</span>
-                            </div>
-                            <div class="dimension-mini">
-                                <span>Exhibition</span>
-                                <span class="dimension-mini-score">${result.dimensions.exhibitionPresence?.score || 0}</span>
+                                <span class="dimension-mini-score">${result.scores_raw.conceptual_strength || 0}</span>
                             </div>
                         </div>
                     ` : ''}
@@ -850,16 +894,91 @@
         // Display Statistics
         function displayStatistics() {
             const total = evaluationResults.length;
-            const include = evaluationResults.filter(r => r.rankHint === 'include').length;
-            const borderline = evaluationResults.filter(r => r.rankHint === 'borderline').length;
-            const exclude = evaluationResults.filter(r => r.rankHint === 'exclude').length;
-            const average = Math.round(evaluationResults.reduce((sum, r) => sum + r.finalScore, 0) / total);
+            const include = evaluationResults.filter(r => {
+                const hint = r.verdict ? r.verdict.toLowerCase() : r.rankHint;
+                return hint === 'include';
+            }).length;
+            const borderline = evaluationResults.filter(r => {
+                const hint = r.verdict ? r.verdict.toLowerCase() : r.rankHint;
+                return hint === 'maybe' || hint === 'borderline';
+            }).length;
+            const exclude = evaluationResults.filter(r => {
+                const hint = r.verdict ? r.verdict.toLowerCase() : r.rankHint;
+                return hint === 'exclude';
+            }).length;
+            const scores = evaluationResults.map(r => r.finalScore);
+            const average = Math.round(scores.reduce((sum, s) => sum + s, 0) / total);
+            
+            // Calculate z-score statistics
+            const mean = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+            const variance = scores.reduce((sum, s) => sum + Math.pow(s - mean, 2), 0) / scores.length;
+            const stdDev = Math.sqrt(variance);
+            const range = Math.max(...scores) - Math.min(...scores);
 
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statInclude').textContent = include;
             document.getElementById('statBorderline').textContent = borderline;
             document.getElementById('statExclude').textContent = exclude;
             document.getElementById('statAverage').textContent = average;
+            
+            // Update z-score info
+            document.getElementById('zMean').textContent = mean.toFixed(1);
+            document.getElementById('zStdDev').textContent = stdDev.toFixed(1);
+            document.getElementById('zRange').textContent = range.toFixed(0);
+            
+            // Draw distribution chart
+            drawDistributionChart(scores);
+        }
+        
+        // Draw score distribution chart
+        function drawDistributionChart(scores) {
+            const canvas = document.getElementById('distributionChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Create histogram bins
+            const binCount = 10;
+            const min = Math.min(...scores);
+            const max = Math.max(...scores);
+            const binSize = (max - min) / binCount;
+            const bins = new Array(binCount).fill(0);
+            
+            scores.forEach(score => {
+                const binIndex = Math.min(Math.floor((score - min) / binSize), binCount - 1);
+                bins[binIndex]++;
+            });
+            
+            const maxBin = Math.max(...bins);
+            const barWidth = width / binCount;
+            
+            // Draw bars
+            ctx.fillStyle = '#4CAF50';
+            bins.forEach((count, i) => {
+                const barHeight = (count / maxBin) * (height - 20);
+                const x = i * barWidth;
+                const y = height - barHeight;
+                
+                // Color based on score range
+                const binScore = min + (i * binSize);
+                if (binScore >= 80) ctx.fillStyle = '#4CAF50';
+                else if (binScore >= 65) ctx.fillStyle = '#FF9800';
+                else ctx.fillStyle = '#f44336';
+                
+                ctx.fillRect(x, y, barWidth - 2, barHeight);
+            });
+            
+            // Draw axis
+            ctx.strokeStyle = '#666';
+            ctx.beginPath();
+            ctx.moveTo(0, height - 1);
+            ctx.lineTo(width, height - 1);
+            ctx.stroke();
         }
 
         // Sort Handler

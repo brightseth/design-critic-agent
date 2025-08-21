@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NINA ROEHRS — PARIS PHOTO DIGITAL CURATOR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .header {
+            padding: 30px 40px;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: #888;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .mode-indicator {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #4CAF50;
+            display: inline-block;
+        }
+
+        /* Nina Avatar */
+        .curator-presence {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+        }
+
+        .curator-avatar-container {
+            position: relative;
+        }
+
+        .curator-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #333, #111);
+            border: 2px solid #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            transition: all 0.3s;
+        }
+        
+        .curator-avatar:hover {
+            border-color: #fff;
+            transform: scale(1.05);
+        }
+
+        .curator-tooltip {
+            display: none;
+            position: absolute;
+            top: 70px;
+            right: 0;
+            width: 300px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid #444;
+            z-index: 1000;
+        }
+
+        .curator-avatar-container:hover .curator-tooltip {
+            display: block;
+        }
+
+        /* Mode Tabs */
+        .mode-tabs {
+            display: flex;
+            background: #111;
+            border-bottom: 1px solid #333;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-right: 1px solid #333;
+            position: relative;
+        }
+
+        .mode-tab:last-child {
+            border-right: none;
+        }
+
+        .mode-tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mode-tab.active {
+            background: #000;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .mode-tab-title {
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .mode-tab-desc {
+            font-size: 10px;
+            color: #666;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Content Areas */
+        .content-area {
+            display: none;
+            flex: 1;
+            animation: fadeIn 0.3s;
+        }
+
+        .content-area.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Single Mode Styles */
+        .single-container {
+            display: flex;
+            height: calc(100vh - 200px);
+        }
+
+        .upload-section {
+            width: 400px;
+            padding: 40px;
+            border-right: 1px solid #333;
+        }
+
+        .drop-zone {
+            border: 2px dashed #444;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone:hover {
+            border-color: #666;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .drop-zone.dragging {
+            border-color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .drop-zone p {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: #fff;
+            color: #000;
+            border: none;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            display: none;
+        }
+
+        .submit-btn.active {
+            display: block;
+        }
+
+        .submit-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+        }
+
+        .preview-img {
+            width: 100%;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .results-section {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        /* Batch Mode Styles */
+        .batch-container {
+            padding: 40px;
+        }
+
+        .batch-upload-area {
+            border: 2px dashed #444;
+            padding: 60px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+        }
+
+        .batch-upload-area:hover {
+            border-color: #666;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .batch-upload-area.dragging {
+            border-color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #222;
+            margin: 20px 0;
+            position: relative;
+            display: none;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: #111;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .image-card {
+            background: #111;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-card:hover {
+            border-color: #666;
+            transform: translateY(-2px);
+        }
+
+        .rank-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .rank-badge.gold {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+        }
+
+        .rank-badge.silver {
+            background: linear-gradient(135deg, #C0C0C0, #808080);
+            color: #000;
+        }
+
+        .rank-badge.bronze {
+            background: linear-gradient(135deg, #CD7F32, #8B4513);
+            color: #fff;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .card-info {
+            padding: 15px;
+        }
+
+        .card-filename {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-score {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-hint {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .card-hint.include {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+        }
+
+        .card-hint.maybe {
+            background: rgba(255, 152, 0, 0.2);
+            color: #FF9800;
+            border: 1px solid #FF9800;
+        }
+
+        .card-hint.exclude {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        /* Playoff Mode Styles */
+        .playoff-container {
+            padding: 40px;
+        }
+
+        .comparison-area {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            justify-content: center;
+            margin: 40px 0;
+            min-height: 500px;
+        }
+
+        .image-panel {
+            flex: 1;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .image-frame {
+            position: relative;
+            border: 2px solid #333;
+            padding: 20px;
+            background: #111;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-frame:hover {
+            border-color: #666;
+            transform: scale(1.02);
+        }
+
+        .image-frame.selected {
+            border-color: #4CAF50;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.3);
+        }
+
+        .image-frame img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+        }
+
+        .vs-divider {
+            width: 60px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #666;
+            text-align: center;
+        }
+
+        .i-see-text {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-left: 2px solid #666;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #bbb;
+            font-style: italic;
+            text-align: left;
+        }
+
+        .dimension-mini {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .dimension-mini-score {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Common Elements */
+        .btn {
+            padding: 12px 24px;
+            background: #fff;
+            color: #000;
+            border: none;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 5px;
+        }
+
+        .btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: #fff;
+            border: 2px solid #666;
+        }
+
+        .btn.secondary:hover {
+            border-color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            gap: 10px;
+            border-top: 1px solid #333;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: transparent;
+            color: #888;
+            border: 1px solid #444;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            border-color: #666;
+            color: #fff;
+        }
+
+        .filter-btn.active {
+            background: #333;
+            color: #fff;
+            border-color: #666;
+        }
+
+        #fileInput, #batchFileInput, #playoffFileInput {
+            display: none;
+        }
+        
+        /* Algorithm Modal */
+        .algorithm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 40px;
+        }
+        
+        .algorithm-modal.active {
+            display: block;
+        }
+        
+        .modal-content {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #111;
+            border: 1px solid #333;
+            padding: 40px;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            color: #666;
+            font-size: 24px;
+            text-align: center;
+            line-height: 30px;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            color: #fff;
+        }
+        
+        .modal-section {
+            margin-bottom: 40px;
+        }
+        
+        .modal-section h2 {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            color: #fff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        .modal-section h3 {
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin: 20px 0 10px 0;
+            color: #888;
+        }
+        
+        .modal-section p, .modal-section li {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+        
+        .modal-section ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .modal-section li:before {
+            content: "→ ";
+            color: #666;
+            margin-right: 10px;
+        }
+        
+        .dimension-detail {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid #333;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .dimension-detail h4 {
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        
+        .dimension-detail .weight {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #333;
+            color: #888;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+        
+        .rationale-text {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #aaa;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-text {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            color: #444;
+        }
+
+        .empty-state p {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Algorithm Modal -->
+    <div class="algorithm-modal" id="algorithmModal">
+        <div class="modal-content">
+            <div class="modal-close" onclick="closeAlgorithmModal()">×</div>
+            
+            <div class="modal-section">
+                <h2>NINABOT ALGORITHM</h2>
+                <p>Based on Dr. Nina Roehrs' curatorial vision for Paris Photo Digital Sector, this algorithm evaluates AI-generated photographs through a brutally selective lens that prioritizes exhibition readiness, AI-critical discourse, and conceptual rigor.</p>
+            </div>
+
+            <div class="modal-section">
+                <h2>SCORING DIMENSIONS</h2>
+                
+                <div class="dimension-detail">
+                    <h4>Paris Photo Readiness <span class="weight">30%</span></h4>
+                    <p class="rationale-text">Wall presence at 80-120cm viewing distance. Must read clearly at 3-5m and hold detail up close. This is the primary gate - would Zwirner or Gagosian hang this?</p>
+                    <p class="rationale-text"><strong>Scoring:</strong> 85+ (Museum-grade), 75-85 (Exhibition-worthy), 65-75 (Professional), 55-65 (Portfolio), <55 (Student)</p>
+                </div>
+
+                <div class="dimension-detail">
+                    <h4>AI-Criticality <span class="weight">25%</span></h4>
+                    <p class="rationale-text">Does the image embed a stance on dataset politics, bias, and consent? Not just using AI, but challenging AI. The politics must be visible in the frame, not just wall text.</p>
+                    <p class="rationale-text"><strong>References:</strong> Trevor Paglen's ImageNet critiques, Stephanie Dinkins' family-trained models, Jake Elwes' Zizi project</p>
+                </div>
+
+                <div class="dimension-detail">
+                    <h4>Conceptual Strength <span class="weight">20%</span></h4>
+                    <p class="rationale-text">Posthuman and cyberfeminist clarity. Identity as construction/performance. Body-technology entanglement visible, not just asserted.</p>
+                    <p class="rationale-text"><strong>Theory Base:</strong> Donna Haraway's cyborg manifesto, Judith Butler's performativity, Legacy Russell's glitch feminism</p>
+                </div>
+
+                <div class="dimension-detail">
+                    <h4>Technical Excellence <span class="weight">15%</span></h4>
+                    <p class="rationale-text">Light, color, tonal control, composition, edge discipline. No cheap "AI gloss" or Instagram filters. Leibovitz/Kander/Platon level control.</p>
+                    <p class="rationale-text"><strong>Benchmark:</strong> Could this compete with traditional photography on formal grounds alone?</p>
+                </div>
+
+                <div class="dimension-detail">
+                    <h4>Cultural Dialogue <span class="weight">10%</span></h4>
+                    <p class="rationale-text">Legible conversation with artistic lineage. Not pastiche, but genuine dialogue with precedents.</p>
+                    <p class="rationale-text"><strong>Key Artists:</strong> Cindy Sherman (staged identity), Wolfgang Tillmans (intimacy), Amalia Ulman (performance), Björk (bio-techno poetics)</p>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <h2>CALIBRATION METHODOLOGY</h2>
+                
+                <h3>Brutal Selectivity</h3>
+                <ul>
+                    <li>Scoring starts at 50 - artists must EARN every point</li>
+                    <li>Only top 15-25% receive INCLUDE verdict</li>
+                    <li>MAYBE is the default stance</li>
+                    <li>When uncertain, lean toward EXCLUDE</li>
+                </ul>
+
+                <h3>Gate Checks (Pass/Fail)</h3>
+                <ul>
+                    <li><strong>Print Integrity:</strong> No stitching/morphological errors at exhibition scale</li>
+                    <li><strong>Artifact Control:</strong> No AI telltales (plastic skin, double irises, halo edges)</li>
+                    <li><strong>Ethics Process:</strong> Documentation of method, dataset, consent stance</li>
+                </ul>
+
+                <h3>Penalty System</h3>
+                <ul>
+                    <li>-10 points for artifacting or weak print quality</li>
+                    <li>-7 points for morphological errors or halo edges</li>
+                    <li>-5 points for unclear process or derivative work</li>
+                </ul>
+            </div>
+
+            <div class="modal-section">
+                <h2>INFLUENCES & BACKGROUNDS</h2>
+                
+                <h3>Curatorial Philosophy</h3>
+                <p>Nina Roehrs bridges analogue display and code-based thinking. Her Digital Sector at Paris Photo features NFT prints, AR displays, algorithmic portraits, and blockchain-enabled curation. The guiding principle: images must engage digital systems without surrendering critical weight.</p>
+
+                <h3>Key Theoretical Frameworks</h3>
+                <ul>
+                    <li><strong>Cyberfeminism:</strong> Sadie Plant, VNS Matrix, Legacy Russell</li>
+                    <li><strong>Posthumanism:</strong> Rosi Braidotti, Karen Barad, N. Katherine Hayles</li>
+                    <li><strong>AI Ethics:</strong> Kate Crawford, Timnit Gebru, Joy Buolamwini</li>
+                    <li><strong>Digital Art History:</strong> Christiane Paul, Edward Shanken, Beryl Graham</li>
+                </ul>
+
+                <h3>Exhibition Context</h3>
+                <p>Paris Photo at Grand Palais sets the standard for photographic excellence. Works must survive comparison to main floor galleries: Gagosian, Zwirner, Pace, Hauser & Wirth. The Digital Sector maintains these standards while pushing into new territories.</p>
+            </div>
+
+            <div class="modal-section">
+                <h2>ADJUSTABLE PARAMETERS</h2>
+                <p style="color: #FF9800;">Contact seth@solienne.ai to adjust these parameters:</p>
+                <ul>
+                    <li>Dimension weights (currently 30/25/20/15/10)</li>
+                    <li>Verdict thresholds (currently 75/55 for INCLUDE/MAYBE)</li>
+                    <li>Penalty multipliers</li>
+                    <li>Artist references and benchmarks</li>
+                    <li>Gate check strictness</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="header">
+        <h1>NINABOT</h1>
+        <div class="subtitle">BRUTALLY SELECTIVE AI PHOTOGRAPHY CURATION SYSTEM</div>
+        <div class="mode-indicator">AI VISION ACTIVE - HARSH CALIBRATION</div>
+        
+        <!-- Nina's Presence -->
+        <div class="curator-presence">
+            <div class="curator-avatar-container">
+                <div class="curator-avatar" onclick="showAlgorithmModal()">NR</div>
+                <div class="curator-tooltip">
+                    <strong style="color: #fff; font-size: 14px;">NINABOT Algorithm</strong><br>
+                    <span style="color: #888; font-size: 11px; line-height: 1.5; display: block; margin-top: 8px;">
+                        Click for full algorithm details
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div class="mode-tabs">
+        <div class="mode-tab active" onclick="switchMode('single')">
+            <div class="mode-tab-title">SINGLE</div>
+            <div class="mode-tab-desc">Detailed Analysis</div>
+        </div>
+        <div class="mode-tab" onclick="switchMode('batch')">
+            <div class="mode-tab-title">BATCH</div>
+            <div class="mode-tab-desc">Process Multiple</div>
+        </div>
+        <div class="mode-tab" onclick="switchMode('playoff')">
+            <div class="mode-tab-title">PLAYOFF</div>
+            <div class="mode-tab-desc">Pairwise Selection</div>
+        </div>
+    </div>
+
+    <!-- Single Mode -->
+    <div id="singleMode" class="content-area active">
+        <div class="single-container">
+            <div class="upload-section">
+                <div class="drop-zone" id="dropZone">
+                    <p>Drop Image or Click</p>
+                </div>
+                <input type="file" id="fileInput" accept="image/*">
+                
+                <button class="submit-btn" id="submitBtn">ANALYZE IMAGE</button>
+
+                <div class="preview-container" id="previewContainer">
+                    <img class="preview-img" id="previewImg" alt="Preview">
+                </div>
+            </div>
+
+            <div class="results-section" id="singleResults">
+                <div class="empty-state">
+                    <p>Upload an image for brutal critique</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Mode -->
+    <div id="batchMode" class="content-area">
+        <div class="batch-container">
+            <div class="batch-upload-area" id="batchUploadArea">
+                <h2 style="margin-bottom: 10px;">Drop Multiple Images</h2>
+                <p style="color: #888; font-size: 12px;">Up to 50 images for batch evaluation</p>
+            </div>
+            <input type="file" id="batchFileInput" multiple accept="image/*">
+
+            <div class="progress-bar" id="batchProgress">
+                <div class="progress-fill" id="batchProgressFill"></div>
+            </div>
+            <div style="text-align: center; margin: 10px 0;">
+                <span id="batchProgressText" style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px;"></span>
+            </div>
+
+            <div id="batchStats" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTotal">0</div>
+                        <div class="stat-label">Total Images</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statInclude" style="color: #4CAF50;">0</div>
+                        <div class="stat-label">Include</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statMaybe" style="color: #FF9800;">0</div>
+                        <div class="stat-label">Maybe</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statExclude" style="color: #f44336;">0</div>
+                        <div class="stat-label">Exclude</div>
+                    </div>
+                </div>
+
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterBatch('all')">All</button>
+                    <button class="filter-btn" onclick="filterBatch('include')">Include Only</button>
+                    <button class="filter-btn" onclick="filterBatch('maybe')">Maybe</button>
+                    <button class="filter-btn" onclick="filterBatch('exclude')">Exclude</button>
+                </div>
+            </div>
+
+            <div class="results-grid" id="batchResults"></div>
+
+            <div class="controls" id="batchControls" style="display: none;">
+                <button class="btn" onclick="exportBatch()">Export Results</button>
+                <button class="btn secondary" onclick="clearBatch()">Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Playoff Mode -->
+    <div id="playoffMode" class="content-area">
+        <div class="playoff-container">
+            <div class="batch-upload-area" id="playoffUploadArea">
+                <h2 style="margin-bottom: 10px;">Drop Images for Playoff</h2>
+                <p style="color: #888; font-size: 12px;">20-40 images for pairwise comparison</p>
+            </div>
+            <input type="file" id="playoffFileInput" multiple accept="image/*">
+
+            <div class="progress-bar" id="playoffProgress">
+                <div class="progress-fill" id="playoffProgressFill"></div>
+            </div>
+            <div style="text-align: center; margin: 10px 0;">
+                <span id="playoffProgressText" style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px;"></span>
+            </div>
+
+            <div class="comparison-area" id="comparisonArea" style="display: none;">
+                <div class="image-panel">
+                    <div class="image-frame" id="imageA" onclick="selectImage('A')">
+                        <img id="imgA" src="" alt="Image A">
+                    </div>
+                    <div class="i-see-text" id="seeA"></div>
+                    <div style="margin-top: 10px;">
+                        <div class="dimension-mini">
+                            <span>Paris Photo</span>
+                            <span class="dimension-mini-score" id="scoreA1">0</span>
+                        </div>
+                        <div class="dimension-mini">
+                            <span>AI-Critical</span>
+                            <span class="dimension-mini-score" id="scoreA2">0</span>
+                        </div>
+                        <div class="dimension-mini">
+                            <span>Conceptual</span>
+                            <span class="dimension-mini-score" id="scoreA3">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vs-divider">VS</div>
+
+                <div class="image-panel">
+                    <div class="image-frame" id="imageB" onclick="selectImage('B')">
+                        <img id="imgB" src="" alt="Image B">
+                    </div>
+                    <div class="i-see-text" id="seeB"></div>
+                    <div style="margin-top: 10px;">
+                        <div class="dimension-mini">
+                            <span>Paris Photo</span>
+                            <span class="dimension-mini-score" id="scoreB1">0</span>
+                        </div>
+                        <div class="dimension-mini">
+                            <span>AI-Critical</span>
+                            <span class="dimension-mini-score" id="scoreB2">0</span>
+                        </div>
+                        <div class="dimension-mini">
+                            <span>Conceptual</span>
+                            <span class="dimension-mini-score" id="scoreB3">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls" id="playoffControls" style="display: none;">
+                <button class="btn secondary" onclick="skipComparison()">Skip</button>
+                <button class="btn" onclick="confirmSelection()" id="confirmBtn" disabled>Confirm Winner</button>
+            </div>
+
+            <div id="playoffResults" style="display: none;">
+                <h2 style="text-align: center; margin: 30px 0;">PLAYOFF RESULTS</h2>
+                <div class="results-grid" id="playoffResultsGrid"></div>
+                <div class="controls">
+                    <button class="btn" onclick="exportPlayoff()">Export Top 20</button>
+                    <button class="btn secondary" onclick="clearPlayoff()">New Playoff</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Algorithm Modal
+        function showAlgorithmModal() {
+            document.getElementById('algorithmModal').classList.add('active');
+        }
+        
+        function closeAlgorithmModal() {
+            document.getElementById('algorithmModal').classList.remove('active');
+        }
+        
+        // Close modal on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAlgorithmModal();
+            }
+        });
+        
+        // Mode switching
+        function switchMode(mode) {
+            // Update tabs
+            document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.closest('.mode-tab').classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+            document.getElementById(mode + 'Mode').classList.add('active');
+        }
+
+        // Shared utilities
+        async function compressImage(dataUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const maxSize = 1024;
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height && width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        async function evaluateImage(imageData) {
+            const response = await fetch('http://localhost:3001/api/nina-curator-v2', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    imageData: imageData.split(',')[1],
+                    mode: 'single'
+                })
+            });
+            
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Evaluation failed');
+            return data.evaluation;
+        }
+
+        // SINGLE MODE
+        let currentImage = null;
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImg = document.getElementById('previewImg');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragging');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragging');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragging');
+            if (e.dataTransfer.files.length > 0) {
+                handleSingleFile(e.dataTransfer.files[0]);
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleSingleFile(e.target.files[0]);
+            }
+        });
+
+        function handleSingleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImage = e.target.result;
+                previewImg.src = currentImage;
+                previewContainer.classList.add('active');
+                submitBtn.classList.add('active');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        submitBtn.addEventListener('click', async () => {
+            if (!currentImage) return;
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'ANALYZING...';
+            
+            document.getElementById('singleResults').innerHTML = `
+                <div class="loading">
+                    <div class="loading-text">Nina is evaluating...</div>
+                </div>
+            `;
+            
+            try {
+                const compressed = await compressImage(currentImage);
+                const evaluation = await evaluateImage(compressed);
+                displaySingleResult(evaluation);
+            } catch (error) {
+                document.getElementById('singleResults').innerHTML = `
+                    <div style="padding: 20px; color: #f44336;">
+                        Error: ${error.message}
+                    </div>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'ANALYZE IMAGE';
+            }
+        });
+
+        function displaySingleResult(evaluation) {
+            let html = `
+                <div style="padding: 20px;">
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 20px; margin-bottom: 20px;">
+                        <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">I SEE</div>
+                        <div style="font-size: 14px; line-height: 1.6; color: #fff; font-style: italic;">${evaluation.i_see}</div>
+                    </div>
+            `;
+            
+            // Gate checks
+            if (evaluation.gate) {
+                html += `
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                        <div style="flex: 1; padding: 15px; background: rgba(255,255,255,0.03); border: 1px solid ${evaluation.gate.print_integrity ? '#4CAF50' : '#f44336'};">
+                            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">PRINT INTEGRITY</div>
+                            <div style="font-size: 14px; font-weight: bold; color: ${evaluation.gate.print_integrity ? '#4CAF50' : '#f44336'};">
+                                ${evaluation.gate.print_integrity ? 'PASS' : 'FAIL'}
+                            </div>
+                        </div>
+                        <div style="flex: 1; padding: 15px; background: rgba(255,255,255,0.03); border: 1px solid ${evaluation.gate.artifact_control ? '#4CAF50' : '#f44336'};">
+                            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ARTIFACT CONTROL</div>
+                            <div style="font-size: 14px; font-weight: bold; color: ${evaluation.gate.artifact_control ? '#4CAF50' : '#f44336'};">
+                                ${evaluation.gate.artifact_control ? 'PASS' : 'FAIL'}
+                            </div>
+                        </div>
+                        <div style="flex: 1; padding: 15px; background: rgba(255,255,255,0.03); border: 1px solid ${evaluation.gate.ethics_process === 'present' ? '#4CAF50' : evaluation.gate.ethics_process === 'todo' ? '#FF9800' : '#f44336'};">
+                            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ETHICS PROCESS</div>
+                            <div style="font-size: 14px; font-weight: bold; color: ${evaluation.gate.ethics_process === 'present' ? '#4CAF50' : evaluation.gate.ethics_process === 'todo' ? '#FF9800' : '#f44336'};">
+                                ${evaluation.gate.ethics_process.toUpperCase()}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Dimensions
+            if (evaluation.scores_raw) {
+                const dimensions = [
+                    { key: 'paris_photo_ready', name: 'Paris Photo Readiness', weight: '30%' },
+                    { key: 'ai_criticality', name: 'AI-Criticality', weight: '25%' },
+                    { key: 'conceptual_strength', name: 'Conceptual Strength', weight: '20%' },
+                    { key: 'technical_excellence', name: 'Technical Excellence', weight: '15%' },
+                    { key: 'cultural_dialogue', name: 'Cultural Dialogue', weight: '10%' }
+                ];
+                
+                dimensions.forEach(dim => {
+                    const score = evaluation.scores_raw[dim.key] || 0;
+                    const rationale = evaluation.rationales?.[dim.key] || '';
+                    
+                    html += `
+                        <div style="border-left: 3px solid #444; padding-left: 20px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+                                <div>
+                                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888;">${dim.name}</span>
+                                    <span style="font-size: 10px; color: #666; margin-left: 8px;">${dim.weight}</span>
+                                </div>
+                                <div style="font-size: 24px; font-weight: bold;">${score}</div>
+                            </div>
+                            <div style="height: 4px; background: #222; margin-bottom: 10px; position: relative;">
+                                <div style="height: 100%; background: linear-gradient(90deg, ${score < 50 ? '#f44336' : score < 70 ? '#FF9800' : '#4CAF50'}, #888); width: ${score}%;"></div>
+                            </div>
+                            <div style="font-size: 13px; color: #bbb; line-height: 1.8;">${rationale}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Verdict
+            const verdictColors = {
+                'INCLUDE': '#4CAF50',
+                'MAYBE': '#FF9800',
+                'EXCLUDE': '#f44336'
+            };
+            
+            html += `
+                <div style="text-align: center; padding: 30px; border: 2px solid ${verdictColors[evaluation.verdict]}; background: rgba(${evaluation.verdict === 'INCLUDE' ? '76, 175, 80' : evaluation.verdict === 'MAYBE' ? '255, 152, 0' : '244, 67, 54'}, 0.1); margin: 20px 0;">
+                    <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 10px;">VERDICT</div>
+                    <div style="font-size: 28px; font-weight: bold; letter-spacing: 3px; color: ${verdictColors[evaluation.verdict]};">${evaluation.verdict}</div>
+                    <div style="font-size: 14px; color: #888; margin-top: 10px;">Weighted Score: ${Math.round((evaluation.weighted_total || 0) * 100)}/100</div>
+                </div>
+            `;
+            
+            // Flags
+            if (evaluation.flags && evaluation.flags.length > 0) {
+                html += '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;">';
+                evaluation.flags.forEach(flag => {
+                    html += `<span style="padding: 4px 12px; background: rgba(244, 67, 54, 0.2); border: 1px solid #f44336; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #f44336;">${flag.replace(/_/g, ' ')}</span>`;
+                });
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            document.getElementById('singleResults').innerHTML = html;
+        }
+
+        // BATCH MODE
+        let batchResults = [];
+        let currentFilter = 'all';
+        const batchUploadArea = document.getElementById('batchUploadArea');
+        const batchFileInput = document.getElementById('batchFileInput');
+
+        batchUploadArea.addEventListener('click', () => batchFileInput.click());
+        batchUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            batchUploadArea.classList.add('dragging');
+        });
+        batchUploadArea.addEventListener('dragleave', () => {
+            batchUploadArea.classList.remove('dragging');
+        });
+        batchUploadArea.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            batchUploadArea.classList.remove('dragging');
+            await handleBatchFiles(e.dataTransfer.files);
+        });
+        batchFileInput.addEventListener('change', async (e) => {
+            await handleBatchFiles(e.target.files);
+        });
+
+        async function handleBatchFiles(files) {
+            if (files.length < 1) return;
+            
+            batchUploadArea.style.display = 'none';
+            document.getElementById('batchProgress').classList.add('active');
+            batchResults = [];
+            
+            for (let i = 0; i < files.length; i++) {
+                const progress = ((i + 1) / files.length) * 100;
+                document.getElementById('batchProgressFill').style.width = `${progress}%`;
+                document.getElementById('batchProgressText').textContent = `Evaluating ${i + 1} of ${files.length}`;
+                
+                try {
+                    const reader = new FileReader();
+                    const dataUrl = await new Promise((resolve) => {
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(files[i]);
+                    });
+                    
+                    const compressed = await compressImage(dataUrl);
+                    const evaluation = await evaluateImage(compressed);
+                    
+                    batchResults.push({
+                        filename: files[i].name,
+                        dataUrl: dataUrl,
+                        ...evaluation
+                    });
+                } catch (error) {
+                    console.error(`Failed to evaluate ${files[i].name}:`, error);
+                }
+            }
+            
+            document.getElementById('batchProgress').classList.remove('active');
+            document.getElementById('batchStats').style.display = 'block';
+            document.getElementById('batchControls').style.display = 'flex';
+            
+            updateBatchStats();
+            displayBatchResults();
+        }
+
+        function updateBatchStats() {
+            const total = batchResults.length;
+            const include = batchResults.filter(r => r.verdict === 'INCLUDE').length;
+            const maybe = batchResults.filter(r => r.verdict === 'MAYBE').length;
+            const exclude = batchResults.filter(r => r.verdict === 'EXCLUDE').length;
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statInclude').textContent = include;
+            document.getElementById('statMaybe').textContent = maybe;
+            document.getElementById('statExclude').textContent = exclude;
+        }
+
+        function filterBatch(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            displayBatchResults();
+        }
+
+        function displayBatchResults() {
+            let results = batchResults;
+            
+            if (currentFilter !== 'all') {
+                results = batchResults.filter(r => r.verdict.toLowerCase() === currentFilter);
+            }
+            
+            // Sort by score
+            results.sort((a, b) => (b.weighted_total || 0) - (a.weighted_total || 0));
+            
+            const grid = document.getElementById('batchResults');
+            grid.innerHTML = '';
+            
+            results.forEach((result, index) => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                
+                let rankBadgeClass = '';
+                if (index === 0) rankBadgeClass = 'gold';
+                else if (index === 1) rankBadgeClass = 'silver';
+                else if (index === 2) rankBadgeClass = 'bronze';
+                
+                const verdictClass = result.verdict.toLowerCase();
+                
+                card.innerHTML = `
+                    <div class="rank-badge ${rankBadgeClass}">#${index + 1}</div>
+                    <div class="image-container">
+                        <img src="${result.dataUrl}" alt="${result.filename}">
+                    </div>
+                    <div class="card-info">
+                        <div class="card-filename" title="${result.filename}">${result.filename}</div>
+                        <div class="card-score">${Math.round((result.weighted_total || 0) * 100)}</div>
+                        <div class="card-hint ${verdictClass}">${result.verdict}</div>
+                        ${result.i_see ? `<div style="font-size: 10px; color: #aaa; margin-top: 5px; font-style: italic;">${result.i_see.substring(0, 80)}...</div>` : ''}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function exportBatch() {
+            const exportData = {
+                date: new Date().toISOString(),
+                total: batchResults.length,
+                results: batchResults.map(r => ({
+                    filename: r.filename,
+                    verdict: r.verdict,
+                    weighted_total: r.weighted_total,
+                    scores: r.scores_raw,
+                    i_see: r.i_see,
+                    flags: r.flags
+                }))
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nina-batch-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function clearBatch() {
+            batchResults = [];
+            currentFilter = 'all';
+            document.getElementById('batchUploadArea').style.display = 'block';
+            document.getElementById('batchStats').style.display = 'none';
+            document.getElementById('batchControls').style.display = 'none';
+            document.getElementById('batchResults').innerHTML = '';
+        }
+
+        // PLAYOFF MODE
+        let playoffImages = [];
+        let playoffEvaluations = [];
+        let comparisons = [];
+        let currentComparison = 0;
+        let currentSelection = null;
+        const playoffUploadArea = document.getElementById('playoffUploadArea');
+        const playoffFileInput = document.getElementById('playoffFileInput');
+
+        playoffUploadArea.addEventListener('click', () => playoffFileInput.click());
+        playoffUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            playoffUploadArea.classList.add('dragging');
+        });
+        playoffUploadArea.addEventListener('dragleave', () => {
+            playoffUploadArea.classList.remove('dragging');
+        });
+        playoffUploadArea.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            playoffUploadArea.classList.remove('dragging');
+            await handlePlayoffFiles(e.dataTransfer.files);
+        });
+        playoffFileInput.addEventListener('change', async (e) => {
+            await handlePlayoffFiles(e.target.files);
+        });
+
+        async function handlePlayoffFiles(files) {
+            if (files.length < 2) {
+                alert('Please upload at least 2 images for comparison');
+                return;
+            }
+            
+            playoffUploadArea.style.display = 'none';
+            document.getElementById('playoffProgress').classList.add('active');
+            playoffImages = [];
+            playoffEvaluations = [];
+            
+            // Evaluate all images first
+            for (let i = 0; i < files.length; i++) {
+                const progress = ((i + 1) / files.length) * 100;
+                document.getElementById('playoffProgressFill').style.width = `${progress}%`;
+                document.getElementById('playoffProgressText').textContent = `Evaluating ${i + 1} of ${files.length}`;
+                
+                try {
+                    const reader = new FileReader();
+                    const dataUrl = await new Promise((resolve) => {
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(files[i]);
+                    });
+                    
+                    const compressed = await compressImage(dataUrl);
+                    const evaluation = await evaluateImage(compressed);
+                    
+                    playoffEvaluations.push({
+                        filename: files[i].name,
+                        dataUrl: dataUrl,
+                        ...evaluation,
+                        wins: 0,
+                        losses: 0
+                    });
+                } catch (error) {
+                    console.error(`Failed to evaluate ${files[i].name}:`, error);
+                }
+            }
+            
+            // Generate comparisons
+            comparisons = [];
+            for (let i = 0; i < playoffEvaluations.length - 1; i++) {
+                for (let j = i + 1; j < playoffEvaluations.length; j++) {
+                    comparisons.push([i, j]);
+                }
+            }
+            
+            // Limit comparisons
+            const maxComparisons = Math.min(comparisons.length, playoffEvaluations.length * 3);
+            comparisons = comparisons.sort(() => Math.random() - 0.5).slice(0, maxComparisons);
+            
+            document.getElementById('playoffProgress').classList.remove('active');
+            document.getElementById('comparisonArea').style.display = 'flex';
+            document.getElementById('playoffControls').style.display = 'flex';
+            
+            currentComparison = 0;
+            showNextComparison();
+        }
+
+        function showNextComparison() {
+            if (currentComparison >= comparisons.length) {
+                showPlayoffResults();
+                return;
+            }
+            
+            const [indexA, indexB] = comparisons[currentComparison];
+            const evalA = playoffEvaluations[indexA];
+            const evalB = playoffEvaluations[indexB];
+            
+            document.getElementById('imgA').src = evalA.dataUrl;
+            document.getElementById('imgB').src = evalB.dataUrl;
+            
+            document.getElementById('seeA').textContent = evalA.i_see || 'No description';
+            document.getElementById('seeB').textContent = evalB.i_see || 'No description';
+            
+            document.getElementById('scoreA1').textContent = evalA.scores_raw?.paris_photo_ready || 0;
+            document.getElementById('scoreA2').textContent = evalA.scores_raw?.ai_criticality || 0;
+            document.getElementById('scoreA3').textContent = evalA.scores_raw?.conceptual_strength || 0;
+            
+            document.getElementById('scoreB1').textContent = evalB.scores_raw?.paris_photo_ready || 0;
+            document.getElementById('scoreB2').textContent = evalB.scores_raw?.ai_criticality || 0;
+            document.getElementById('scoreB3').textContent = evalB.scores_raw?.conceptual_strength || 0;
+            
+            document.getElementById('imageA').classList.remove('selected');
+            document.getElementById('imageB').classList.remove('selected');
+            document.getElementById('confirmBtn').disabled = true;
+            currentSelection = null;
+            
+            document.getElementById('playoffProgressText').textContent = `Comparison ${currentComparison + 1} of ${comparisons.length}`;
+        }
+
+        function selectImage(side) {
+            currentSelection = side;
+            document.getElementById('imageA').classList.toggle('selected', side === 'A');
+            document.getElementById('imageB').classList.toggle('selected', side === 'B');
+            document.getElementById('confirmBtn').disabled = false;
+        }
+
+        function confirmSelection() {
+            if (!currentSelection) return;
+            
+            const [indexA, indexB] = comparisons[currentComparison];
+            
+            if (currentSelection === 'A') {
+                playoffEvaluations[indexA].wins++;
+                playoffEvaluations[indexB].losses++;
+            } else {
+                playoffEvaluations[indexB].wins++;
+                playoffEvaluations[indexA].losses++;
+            }
+            
+            currentComparison++;
+            showNextComparison();
+        }
+
+        function skipComparison() {
+            currentComparison++;
+            showNextComparison();
+        }
+
+        function showPlayoffResults() {
+            document.getElementById('comparisonArea').style.display = 'none';
+            document.getElementById('playoffControls').style.display = 'none';
+            document.getElementById('playoffResults').style.display = 'block';
+            
+            // Calculate scores and sort
+            playoffEvaluations.forEach(eval => {
+                eval.playoffScore = eval.wins - eval.losses;
+            });
+            
+            playoffEvaluations.sort((a, b) => {
+                if (b.playoffScore !== a.playoffScore) {
+                    return b.playoffScore - a.playoffScore;
+                }
+                return (b.weighted_total || 0) - (a.weighted_total || 0);
+            });
+            
+            // Display results
+            const grid = document.getElementById('playoffResultsGrid');
+            grid.innerHTML = '';
+            
+            playoffEvaluations.slice(0, 20).forEach((eval, index) => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                
+                let rankBadgeClass = '';
+                if (index === 0) rankBadgeClass = 'gold';
+                else if (index === 1) rankBadgeClass = 'silver';
+                else if (index === 2) rankBadgeClass = 'bronze';
+                
+                card.innerHTML = `
+                    <div class="rank-badge ${rankBadgeClass}">#${index + 1}</div>
+                    <div class="image-container">
+                        <img src="${eval.dataUrl}" alt="${eval.filename}">
+                    </div>
+                    <div class="card-info">
+                        <div class="card-filename">${eval.filename}</div>
+                        <div style="font-size: 14px; margin: 5px 0;">${eval.wins}W - ${eval.losses}L</div>
+                        <div class="card-hint ${eval.verdict.toLowerCase()}">${eval.verdict}</div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function exportPlayoff() {
+            const top20 = playoffEvaluations.slice(0, 20);
+            const exportData = {
+                playoff_date: new Date().toISOString(),
+                total_images: playoffEvaluations.length,
+                total_comparisons: comparisons.length,
+                top_20: top20.map((eval, index) => ({
+                    rank: index + 1,
+                    filename: eval.filename,
+                    wins: eval.wins,
+                    losses: eval.losses,
+                    playoff_score: eval.playoffScore,
+                    verdict: eval.verdict
+                }))
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nina-playoff-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function clearPlayoff() {
+            playoffEvaluations = [];
+            comparisons = [];
+            currentComparison = 0;
+            currentSelection = null;
+            document.getElementById('playoffUploadArea').style.display = 'block';
+            document.getElementById('playoffResults').style.display = 'none';
+            document.getElementById('playoffResultsGrid').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

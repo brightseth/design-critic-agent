@@ -38,14 +38,36 @@ const upload = multer({
 });
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
+
+// CORS for local development
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 
 // Serve the main HTML file
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
+
+// Load API handlers
+const ninaCuratorV2 = require('./api/nina-curator-v2');
+const ninaCurator = require('./api/nina-curator');
+const analyzeSimple = require('./api/analyze-simple');
+
+// API routes
+app.post('/api/nina-curator-v2', ninaCuratorV2);
+app.post('/api/nina-curator', ninaCurator);
+app.post('/api/analyze-simple', analyzeSimple);
+app.post('/api/analyze', analyzeSimple);
 
 // API endpoint for design analysis
 app.post('/api/analyze', upload.single('design'), async (req, res) => {

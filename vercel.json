@@ -5,6 +5,12 @@
     },
     "api/analyze-simple.js": {
       "maxDuration": 30
+    },
+    "api/nina-curator.js": {
+      "maxDuration": 30
+    },
+    "api/nina-curator-v2.js": {
+      "maxDuration": 30
     }
   },
   "routes": [
@@ -19,6 +25,14 @@
     {
       "src": "/api/analyze",
       "dest": "/api/analyze-simple.js"
+    },
+    {
+      "src": "/api/nina-curator",
+      "dest": "/api/nina-curator.js"
+    },
+    {
+      "src": "/api/nina-curator-v2",
+      "dest": "/api/nina-curator-v2.js"
     }
   ]
 }

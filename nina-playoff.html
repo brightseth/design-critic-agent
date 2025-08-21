@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NINA ROEHRS | PAIRWISE PLAYOFF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 40px;
+            border-bottom: 1px solid #333;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: #888;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .progress-bar {
+            margin: 20px 40px;
+            height: 4px;
+            background: #222;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .comparison-container {
+            flex: 1;
+            display: flex;
+            padding: 40px;
+            gap: 40px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-panel {
+            flex: 1;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .image-frame {
+            position: relative;
+            border: 2px solid #333;
+            padding: 20px;
+            background: #111;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-frame:hover {
+            border-color: #666;
+            transform: scale(1.02);
+        }
+
+        .image-frame.selected {
+            border-color: #4CAF50;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.3);
+        }
+
+        .image-frame img {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: contain;
+        }
+
+        .image-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .image-score {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+            font-size: 12px;
+        }
+
+        .score-row:last-child {
+            border-bottom: none;
+        }
+
+        .score-label {
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-value {
+            font-weight: bold;
+        }
+
+        .vs-divider {
+            width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        .action-buttons {
+            padding: 40px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            border-top: 1px solid #333;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            background: #fff;
+            color: #000;
+            border: none;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: #fff;
+            border: 2px solid #666;
+        }
+
+        .btn.secondary:hover {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results-panel {
+            display: none;
+            padding: 40px;
+            background: #111;
+            border-top: 1px solid #333;
+        }
+
+        .results-panel.visible {
+            display: block;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 15px;
+            background: #222;
+            border: 1px solid #444;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .result-card:hover {
+            border-color: #666;
+            transform: translateY(-2px);
+        }
+
+        .result-card.winner {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        .result-rank {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-wins {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .i-see-text {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 2px solid #666;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #aaa;
+            font-style: italic;
+            text-align: left;
+        }
+
+        .key-dimensions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .dimension-box {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #333;
+        }
+
+        .dimension-name {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .dimension-score {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .upload-area {
+            margin: 40px;
+            padding: 60px;
+            border: 2px dashed #444;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #666;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .upload-area.dragging {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>NINA ROEHRS — PAIRWISE PLAYOFF</h1>
+        <div class="subtitle">Bradley-Terry Tournament Selection for Paris Photo</div>
+    </div>
+
+    <!-- Upload Area (Initial State) -->
+    <div class="upload-area" id="uploadArea">
+        <h2 style="margin-bottom: 10px;">Drop Images for Playoff</h2>
+        <p style="color: #888; font-size: 12px;">Upload 20-40 images for pairwise comparison</p>
+    </div>
+    <input type="file" id="fileInput" multiple accept="image/*">
+
+    <!-- Progress Bar -->
+    <div id="progressContainer" style="display: none;">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">Comparison 0 of 0</div>
+    </div>
+
+    <!-- Comparison Container -->
+    <div class="comparison-container" id="comparisonContainer" style="display: none;">
+        <div class="image-panel">
+            <div class="image-frame" id="imageA" onclick="selectImage('A')">
+                <div class="image-label">A</div>
+                <img id="imgA" src="" alt="Image A">
+            </div>
+            <div class="i-see-text" id="seeA"></div>
+            <div class="key-dimensions">
+                <div class="dimension-box">
+                    <div class="dimension-name">Paris Photo</div>
+                    <div class="dimension-score" id="scoreA1">0</div>
+                </div>
+                <div class="dimension-box">
+                    <div class="dimension-name">AI-Critical</div>
+                    <div class="dimension-score" id="scoreA2">0</div>
+                </div>
+                <div class="dimension-box">
+                    <div class="dimension-name">Conceptual</div>
+                    <div class="dimension-score" id="scoreA3">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="vs-divider">VS</div>
+
+        <div class="image-panel">
+            <div class="image-frame" id="imageB" onclick="selectImage('B')">
+                <div class="image-label">B</div>
+                <img id="imgB" src="" alt="Image B">
+            </div>
+            <div class="i-see-text" id="seeB"></div>
+            <div class="key-dimensions">
+                <div class="dimension-box">
+                    <div class="dimension-name">Paris Photo</div>
+                    <div class="dimension-score" id="scoreB1">0</div>
+                </div>
+                <div class="dimension-box">
+                    <div class="dimension-name">AI-Critical</div>
+                    <div class="dimension-score" id="scoreB2">0</div>
+                </div>
+                <div class="dimension-box">
+                    <div class="dimension-name">Conceptual</div>
+                    <div class="dimension-score" id="scoreB3">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons" id="actionButtons" style="display: none;">
+        <button class="btn secondary" onclick="skipComparison()">Skip</button>
+        <button class="btn" onclick="confirmSelection()" id="confirmBtn" disabled>Confirm Selection</button>
+        <button class="btn secondary" onclick="undoLast()">Undo Last</button>
+    </div>
+
+    <!-- Results Panel -->
+    <div class="results-panel" id="resultsPanel">
+        <h2 style="margin-bottom: 20px;">PLAYOFF RESULTS</h2>
+        <div class="results-grid" id="resultsGrid"></div>
+        <div style="margin-top: 40px; text-align: center;">
+            <button class="btn" onclick="exportResults()">Export Top 20</button>
+            <button class="btn secondary" onclick="restartPlayoff()">New Playoff</button>
+        </div>
+    </div>
+
+    <script>
+        let images = [];
+        let evaluations = [];
+        let comparisons = [];
+        let currentPair = null;
+        let currentSelection = null;
+        let totalComparisons = 0;
+        let completedComparisons = 0;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const comparisonContainer = document.getElementById('comparisonContainer');
+        const actionButtons = document.getElementById('actionButtons');
+        const resultsPanel = document.getElementById('resultsPanel');
+
+        // File upload handling
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+        uploadArea.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            await handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', async (e) => {
+            await handleFiles(e.target.files);
+        });
+
+        async function handleFiles(files) {
+            if (files.length < 2) {
+                alert('Please upload at least 2 images for comparison');
+                return;
+            }
+
+            uploadArea.style.display = 'none';
+            progressContainer.style.display = 'block';
+            
+            images = Array.from(files);
+            evaluations = [];
+            
+            // First, evaluate all images
+            for (let i = 0; i < images.length; i++) {
+                const progress = ((i + 1) / images.length) * 100;
+                document.getElementById('progressFill').style.width = `${progress}%`;
+                document.getElementById('progressText').textContent = `Evaluating image ${i + 1} of ${images.length}`;
+                
+                const evaluation = await evaluateImage(images[i]);
+                evaluations.push(evaluation);
+            }
+            
+            // Start pairwise comparisons
+            startPlayoff();
+        }
+
+        async function evaluateImage(file) {
+            try {
+                const dataUrl = await readFileAsDataUrl(file);
+                const compressed = await compressImage(dataUrl);
+                
+                const response = await fetch('http://localhost:3001/api/nina-curator-v2', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        imageData: compressed.split(',')[1],
+                        mode: 'single'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.evaluation) {
+                    return {
+                        filename: file.name,
+                        dataUrl: dataUrl,
+                        ...result.evaluation
+                    };
+                }
+                
+                return {
+                    filename: file.name,
+                    dataUrl: dataUrl,
+                    i_see: 'Unable to evaluate',
+                    scores_raw: {
+                        paris_photo_ready: 50,
+                        ai_criticality: 50,
+                        conceptual_strength: 50
+                    }
+                };
+            } catch (error) {
+                console.error('Evaluation failed:', error);
+                return {
+                    filename: file.name,
+                    dataUrl: await readFileAsDataUrl(file),
+                    i_see: 'Evaluation failed',
+                    scores_raw: {
+                        paris_photo_ready: 50,
+                        ai_criticality: 50,
+                        conceptual_strength: 50
+                    }
+                };
+            }
+        }
+
+        function readFileAsDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function compressImage(dataUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const maxSize = 1024;
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height && width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        function startPlayoff() {
+            // Generate all pairwise comparisons
+            comparisons = [];
+            for (let i = 0; i < evaluations.length - 1; i++) {
+                for (let j = i + 1; j < evaluations.length; j++) {
+                    comparisons.push([i, j]);
+                }
+            }
+            
+            // Shuffle comparisons for variety
+            comparisons.sort(() => Math.random() - 0.5);
+            
+            // Limit to reasonable number of comparisons
+            const maxComparisons = Math.min(comparisons.length, evaluations.length * 3);
+            comparisons = comparisons.slice(0, maxComparisons);
+            
+            totalComparisons = comparisons.length;
+            completedComparisons = 0;
+            
+            // Initialize win/loss tracking
+            evaluations.forEach(eval => {
+                eval.wins = 0;
+                eval.losses = 0;
+                eval.comparisons = [];
+            });
+            
+            comparisonContainer.style.display = 'flex';
+            actionButtons.style.display = 'flex';
+            
+            showNextComparison();
+        }
+
+        function showNextComparison() {
+            if (completedComparisons >= totalComparisons) {
+                showResults();
+                return;
+            }
+            
+            currentPair = comparisons[completedComparisons];
+            currentSelection = null;
+            
+            const evalA = evaluations[currentPair[0]];
+            const evalB = evaluations[currentPair[1]];
+            
+            // Update images
+            document.getElementById('imgA').src = evalA.dataUrl;
+            document.getElementById('imgB').src = evalB.dataUrl;
+            
+            // Update "I see" descriptions
+            document.getElementById('seeA').textContent = evalA.i_see || 'No description available';
+            document.getElementById('seeB').textContent = evalB.i_see || 'No description available';
+            
+            // Update scores
+            document.getElementById('scoreA1').textContent = evalA.scores_raw?.paris_photo_ready || 0;
+            document.getElementById('scoreA2').textContent = evalA.scores_raw?.ai_criticality || 0;
+            document.getElementById('scoreA3').textContent = evalA.scores_raw?.conceptual_strength || 0;
+            
+            document.getElementById('scoreB1').textContent = evalB.scores_raw?.paris_photo_ready || 0;
+            document.getElementById('scoreB2').textContent = evalB.scores_raw?.ai_criticality || 0;
+            document.getElementById('scoreB3').textContent = evalB.scores_raw?.conceptual_strength || 0;
+            
+            // Reset selection state
+            document.getElementById('imageA').classList.remove('selected');
+            document.getElementById('imageB').classList.remove('selected');
+            document.getElementById('confirmBtn').disabled = true;
+            
+            // Update progress
+            const progress = (completedComparisons / totalComparisons) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `Comparison ${completedComparisons + 1} of ${totalComparisons}`;
+        }
+
+        function selectImage(side) {
+            currentSelection = side;
+            document.getElementById('imageA').classList.toggle('selected', side === 'A');
+            document.getElementById('imageB').classList.toggle('selected', side === 'B');
+            document.getElementById('confirmBtn').disabled = false;
+        }
+
+        function confirmSelection() {
+            if (!currentSelection) return;
+            
+            const winnerIdx = currentSelection === 'A' ? currentPair[0] : currentPair[1];
+            const loserIdx = currentSelection === 'A' ? currentPair[1] : currentPair[0];
+            
+            evaluations[winnerIdx].wins++;
+            evaluations[loserIdx].losses++;
+            
+            evaluations[winnerIdx].comparisons.push({
+                opponent: loserIdx,
+                result: 'win'
+            });
+            evaluations[loserIdx].comparisons.push({
+                opponent: winnerIdx,
+                result: 'loss'
+            });
+            
+            completedComparisons++;
+            showNextComparison();
+        }
+
+        function skipComparison() {
+            completedComparisons++;
+            showNextComparison();
+        }
+
+        function undoLast() {
+            if (completedComparisons > 0) {
+                completedComparisons--;
+                // TODO: Implement undo logic for wins/losses
+                showNextComparison();
+            }
+        }
+
+        function showResults() {
+            comparisonContainer.style.display = 'none';
+            actionButtons.style.display = 'none';
+            resultsPanel.classList.add('visible');
+            
+            // Calculate playoff scores
+            evaluations.forEach(eval => {
+                eval.playoffScore = eval.wins - eval.losses;
+                eval.winRate = eval.wins / (eval.wins + eval.losses) || 0;
+            });
+            
+            // Sort by playoff score
+            evaluations.sort((a, b) => {
+                if (b.playoffScore !== a.playoffScore) {
+                    return b.playoffScore - a.playoffScore;
+                }
+                return b.winRate - a.winRate;
+            });
+            
+            // Display results
+            const resultsGrid = document.getElementById('resultsGrid');
+            resultsGrid.innerHTML = '';
+            
+            evaluations.forEach((eval, index) => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                if (index < 20) card.classList.add('winner');
+                
+                card.innerHTML = `
+                    <img src="${eval.dataUrl}" alt="${eval.filename}">
+                    <div class="result-rank">#${index + 1}</div>
+                    <div class="result-wins">${eval.wins}W - ${eval.losses}L</div>
+                `;
+                
+                resultsGrid.appendChild(card);
+            });
+        }
+
+        function exportResults() {
+            const top20 = evaluations.slice(0, 20);
+            const exportData = {
+                playoff_date: new Date().toISOString(),
+                total_images: evaluations.length,
+                total_comparisons: totalComparisons,
+                top_20: top20.map((eval, index) => ({
+                    rank: index + 1,
+                    filename: eval.filename,
+                    wins: eval.wins,
+                    losses: eval.losses,
+                    playoff_score: eval.playoffScore,
+                    win_rate: eval.winRate,
+                    scores: eval.scores_raw,
+                    i_see: eval.i_see,
+                    verdict: eval.verdict
+                }))
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nina-playoff-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function restartPlayoff() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>

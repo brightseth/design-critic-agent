@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NINA ROEHRS — PARIS PHOTO DIGITAL CURATOR V3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .header {
+            padding: 40px;
+            border-bottom: 1px solid #333;
+        }
+
+        .header h1 {
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 11px;
+            color: #888;
+            letter-spacing: 1px;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+        }
+
+        .upload-section {
+            width: 400px;
+            padding: 40px;
+            border-right: 1px solid #333;
+        }
+
+        .drop-zone {
+            border: 2px dashed #444;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone:hover {
+            border-color: #666;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .drop-zone.dragging {
+            border-color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .drop-zone p {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: #fff;
+            color: #000;
+            border: none;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            display: none;
+        }
+
+        .submit-btn.active {
+            display: block;
+        }
+
+        .submit-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+        }
+
+        .preview-img {
+            width: 100%;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .preview-info {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .results-section {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            max-height: calc(100vh - 100px);
+        }
+
+        .i-see-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #333;
+            padding: 20px;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .i-see-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .i-see-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #fff;
+            font-style: italic;
+        }
+
+        .gates-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .gate-item {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid #333;
+        }
+
+        .gate-item.pass {
+            border-color: #4CAF50;
+        }
+
+        .gate-item.fail {
+            border-color: #f44336;
+        }
+
+        .gate-item.todo {
+            border-color: #FF9800;
+        }
+
+        .gate-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .gate-status {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .dimensions-grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dimension-item {
+            border-left: 3px solid #444;
+            padding-left: 20px;
+        }
+
+        .dimension-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .dimension-name {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        .dimension-score {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .dimension-weight {
+            font-size: 10px;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        .dimension-bar {
+            height: 4px;
+            background: #222;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dimension-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #444, #888);
+            transition: width 0.6s ease;
+        }
+
+        .dimension-rationale {
+            font-size: 11px;
+            color: #aaa;
+            line-height: 1.5;
+        }
+
+        .verdict-box {
+            padding: 30px;
+            text-align: center;
+            border: 2px solid #444;
+            margin-bottom: 30px;
+        }
+
+        .verdict-box.include {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .verdict-box.maybe {
+            border-color: #FF9800;
+            background: rgba(255, 152, 0, 0.1);
+        }
+
+        .verdict-box.exclude {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .verdict-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .verdict-text {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        .weighted-score {
+            font-size: 14px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .flags-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .flag-item {
+            padding: 4px 12px;
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #f44336;
+        }
+
+        .confidence-meter {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .confidence-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .confidence-bar {
+            height: 4px;
+            background: #222;
+            position: relative;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: #888;
+            transition: width 0.6s ease;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-text {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .error-msg {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid #f44336;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 11px;
+            color: #f44336;
+        }
+
+        .batch-toggle {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .toggle-btn {
+            padding: 10px;
+            background: transparent;
+            border: 1px solid #444;
+            color: #888;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn:hover {
+            border-color: #666;
+            color: #fff;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .print-mock-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #222;
+            border: 1px solid #444;
+            color: #888;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .print-mock-toggle:hover {
+            border-color: #666;
+            color: #fff;
+        }
+
+        .print-mock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .print-mock-overlay.active {
+            display: flex;
+        }
+
+        .print-mock-frame {
+            width: 80%;
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        .print-mock-img {
+            width: 100%;
+            height: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .print-mock-info {
+            margin-top: 20px;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nina-pick-box {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            border: 1px solid #666;
+            padding: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .nina-pick-box.active {
+            display: block;
+        }
+
+        .nina-pick-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .nina-pick-note {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #fff;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>NINA ROEHRS — PARIS PHOTO DIGITAL CURATOR V3</h1>
+        <div class="subtitle">PRODUCTION-READY AI PHOTOGRAPHY SELECTION SYSTEM</div>
+        <div id="modeIndicator" style="margin-top: 10px; padding: 5px 10px; background: rgba(76, 175, 80, 0.2); border: 1px solid #4CAF50; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #4CAF50; display: inline-block;">
+            AI VISION ACTIVE - Brutally Selective Mode
+        </div>
+        
+        <!-- Nina's Presence -->
+        <div class="curator-presence" style="position: absolute; top: 20px; right: 20px;">
+            <div class="curator-avatar-container" style="position: relative;">
+                <div class="curator-avatar" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #333, #111); border: 2px solid #666; cursor: help; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; color: #fff;">
+                    NR
+                </div>
+                <div class="curator-tooltip" style="display: none; position: absolute; top: 70px; right: 0; width: 300px; padding: 15px; background: rgba(0, 0, 0, 0.95); border: 1px solid #444; z-index: 1000;">
+                    <strong style="color: #fff; font-size: 14px;">Dr. Nina Roehrs</strong><br>
+                    <span style="color: #888; font-size: 11px; line-height: 1.5; display: block; margin-top: 8px;">
+                        Curator of Paris Photo Digital Sector. Expert in digital art, blockchain, and AI photography. 
+                        Her scoring reflects priorities: print presence for fair-floor legitimacy, AI-critical posture over digital novelty, 
+                        conceptual rigor rooted in feminist/posthuman critique.
+                    </span>
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #333; font-size: 10px; color: #666;">
+                        <strong>Calibration:</strong> Only top 15-25% get INCLUDE<br>
+                        <strong>Benchmark:</strong> Sherman, Tillmans, Paglen level
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .curator-avatar-container:hover .curator-tooltip {
+                display: block !important;
+            }
+        </style>
+    </div>
+
+    <div class="main-container">
+        <div class="upload-section">
+            <div class="drop-zone" id="dropZone">
+                <p>Drop Image or Click to Select</p>
+            </div>
+            <input type="file" id="fileInput" accept="image/*">
+            
+            <button class="submit-btn" id="submitBtn">ANALYZE IMAGE</button>
+
+            <div class="preview-container" id="previewContainer">
+                <img class="preview-img" id="previewImg" alt="Preview">
+                <div class="preview-info" id="previewInfo"></div>
+            </div>
+
+            <div class="batch-toggle">
+                <button class="toggle-btn" onclick="window.location.href='nina-batch.html'">
+                    BATCH MODE →
+                </button>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div style="text-align: center; padding: 100px 20px; color: #444;">
+                <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">
+                    Upload an image to begin evaluation
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <button class="print-mock-toggle" id="printMockToggle">PRINT MOCK (120CM)</button>
+
+    <div class="print-mock-overlay" id="printMockOverlay">
+        <div class="print-mock-frame">
+            <img class="print-mock-img" id="printMockImg" alt="Print mock">
+            <div class="print-mock-info">
+                Simulating 120cm print at 2.5m viewing distance — Click anywhere to close
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentImage = null;
+        let currentEvaluation = null;
+
+        // Drag and drop handling
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImg = document.getElementById('previewImg');
+        const previewInfo = document.getElementById('previewInfo');
+        const resultsSection = document.getElementById('resultsSection');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragging');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragging');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragging');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImage = e.target.result;
+                previewImg.src = currentImage;
+                previewContainer.classList.add('active');
+                submitBtn.classList.add('active');
+                
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                previewInfo.textContent = `${file.name} — ${sizeMB}MB`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        submitBtn.addEventListener('click', async () => {
+            if (!currentImage) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'ANALYZING...';
+
+            resultsSection.innerHTML = `
+                <div class="loading">
+                    <div class="loading-text">Nina is evaluating the image...</div>
+                </div>
+            `;
+
+            try {
+                // Compress image if needed
+                const compressedImage = await compressImage(currentImage);
+
+                const response = await fetch('http://localhost:3001/api/nina-curator-v2', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        imageData: compressedImage.split(',')[1],
+                        mode: 'single'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Evaluation failed');
+                }
+
+                currentEvaluation = data.evaluation;
+                displayResults(data.evaluation);
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultsSection.innerHTML = `
+                    <div class="error-msg">
+                        Error: ${error.message}
+                    </div>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'ANALYZE IMAGE';
+            }
+        });
+
+        function displayResults(evaluation) {
+            let html = '';
+
+            // I SEE section - immediate description
+            if (evaluation.i_see) {
+                html += `
+                    <div class="i-see-box">
+                        <div class="i-see-label">I SEE</div>
+                        <div class="i-see-text">${evaluation.i_see}</div>
+                    </div>
+                `;
+            }
+
+            // Gates
+            if (evaluation.gate) {
+                html += `
+                    <div class="gates-container">
+                        <div class="gate-item ${evaluation.gate.print_integrity ? 'pass' : 'fail'}">
+                            <div class="gate-label">Print Integrity</div>
+                            <div class="gate-status">${evaluation.gate.print_integrity ? 'PASS' : 'FAIL'}</div>
+                        </div>
+                        <div class="gate-item ${evaluation.gate.artifact_control ? 'pass' : 'fail'}">
+                            <div class="gate-label">Artifact Control</div>
+                            <div class="gate-status">${evaluation.gate.artifact_control ? 'PASS' : 'FAIL'}</div>
+                        </div>
+                        <div class="gate-item ${evaluation.gate.ethics_process === 'present' ? 'pass' : evaluation.gate.ethics_process === 'todo' ? 'todo' : 'fail'}">
+                            <div class="gate-label">Ethics Process</div>
+                            <div class="gate-status">${evaluation.gate.ethics_process.toUpperCase()}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Dimensions
+            if (evaluation.scores_raw) {
+                const dimensions = [
+                    { key: 'paris_photo_ready', name: 'Paris Photo Readiness', weight: '30%' },
+                    { key: 'ai_criticality', name: 'AI-Criticality', weight: '25%' },
+                    { key: 'conceptual_strength', name: 'Conceptual Strength', weight: '20%' },
+                    { key: 'technical_excellence', name: 'Technical Excellence', weight: '15%' },
+                    { key: 'cultural_dialogue', name: 'Cultural Dialogue', weight: '10%' }
+                ];
+
+                html += '<div class="dimensions-grid">';
+                dimensions.forEach(dim => {
+                    const score = evaluation.scores_raw[dim.key] || 0;
+                    const rationale = evaluation.rationales?.[dim.key] || '';
+                    
+                    html += `
+                        <div class="dimension-item">
+                            <div class="dimension-header">
+                                <div>
+                                    <span class="dimension-name">${dim.name}</span>
+                                    <span class="dimension-weight">${dim.weight}</span>
+                                </div>
+                                <div class="dimension-score">${score}</div>
+                            </div>
+                            <div class="dimension-bar">
+                                <div class="dimension-fill" style="width: ${score}%"></div>
+                            </div>
+                            <div class="dimension-rationale">${rationale}</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Verdict
+            if (evaluation.verdict) {
+                const verdictClass = evaluation.verdict.toLowerCase();
+                const weightedScore = Math.round((evaluation.weighted_total || 0) * 100);
+                
+                html += `
+                    <div class="verdict-box ${verdictClass}">
+                        <div class="verdict-label">Verdict</div>
+                        <div class="verdict-text">${evaluation.verdict}</div>
+                        <div class="weighted-score">Weighted Score: ${weightedScore}/100</div>
+                    </div>
+                `;
+            }
+
+            // Flags
+            if (evaluation.flags && evaluation.flags.length > 0) {
+                html += '<div class="flags-container">';
+                evaluation.flags.forEach(flag => {
+                    html += `<div class="flag-item">${flag.replace(/_/g, ' ')}</div>`;
+                });
+                html += '</div>';
+            }
+
+            // Nina's Pick (if promoted)
+            if (evaluation.nina_pick && evaluation.nina_pick.promote) {
+                html += `
+                    <div class="nina-pick-box active">
+                        <div class="nina-pick-label">Nina's Curatorial Note</div>
+                        <div class="nina-pick-note">${evaluation.nina_pick.note}</div>
+                    </div>
+                `;
+            }
+
+            // Confidence
+            if (evaluation.confidence !== undefined) {
+                const confidencePercent = Math.round(evaluation.confidence * 100);
+                html += `
+                    <div class="confidence-meter">
+                        <div class="confidence-label">Evaluation Confidence: ${confidencePercent}%</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${confidencePercent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultsSection.innerHTML = html;
+
+            // Animate dimension bars
+            setTimeout(() => {
+                document.querySelectorAll('.dimension-fill').forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 100);
+                });
+            }, 100);
+        }
+
+        // Image compression
+        async function compressImage(dataUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const maxSize = 1024;
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height && width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        // Print mock functionality
+        const printMockToggle = document.getElementById('printMockToggle');
+        const printMockOverlay = document.getElementById('printMockOverlay');
+        const printMockImg = document.getElementById('printMockImg');
+
+        printMockToggle.addEventListener('click', () => {
+            if (currentImage) {
+                printMockImg.src = currentImage;
+                printMockOverlay.classList.add('active');
+            }
+        });
+
+        printMockOverlay.addEventListener('click', () => {
+            printMockOverlay.classList.remove('active');
+        });
+    </script>
+</body>
+</html>

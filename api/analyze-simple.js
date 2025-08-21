@@ -151,8 +151,10 @@ function getPhotographyCritics(imageBase64) {
     }
   ];
   
-  // Return 5 random critics
-  return critics.sort(() => 0.5 - Math.random()).slice(0, 5);
+  // Always include Nina Roehrs first, then add 4 random others
+  const nina = critics.find(c => c.name === 'Nina Roehrs');
+  const others = critics.filter(c => c.name !== 'Nina Roehrs').sort(() => 0.5 - Math.random()).slice(0, 4);
+  return [nina, ...others];
 }
 
 // Art Critics & Curators Panel (Past 50 years)
@@ -558,7 +560,7 @@ THEN provide:
 3. Strengths and weaknesses
 4. Specific improvement suggestions
 Format as JSON with: description (detailed description of what's visible in the image), observations (array of 3 specific things about THIS image), strengths (array), weaknesses (array), suggestions (array)`;
-      experts = ['Henri Cartier-Bresson', 'Annie Leibovitz', 'Sebastião Salgado'];
+      experts = ['Nina Roehrs', 'Henri Cartier-Bresson', 'Annie Leibovitz'];
     } else if (detectedMode === 'art') {
       systemPrompt = `You are a panel of art critics analyzing an artwork.
 FIRST, describe exactly what you see - the medium, subject matter, visual elements, colors, style, technique.

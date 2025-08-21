@@ -895,6 +895,17 @@ module.exports = async (req, res) => {
   console.log('API endpoint called:', req.method);
   console.log('Request size (approx):', JSON.stringify(req.body).length);
   
+  // Check payload size
+  const payloadSize = JSON.stringify(req.body).length;
+  if (payloadSize > 4500000) { // ~4.5MB limit
+    console.log('Payload too large:', payloadSize);
+    return res.status(413).json({ 
+      error: 'Image too large. Please use a smaller image or reduce quality.',
+      maxSize: '4.5MB',
+      currentSize: `${(payloadSize / 1000000).toFixed(1)}MB`
+    });
+  }
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

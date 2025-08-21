@@ -468,7 +468,11 @@
                 }
 
                 const aiResult = await response.json();
-                console.log('Analysis result:', aiResult);
+                console.log('=== Analysis Result ===');
+                console.log('Full result:', aiResult);
+                console.log('AI Powered?', aiResult.aiPowered);
+                console.log('Image description:', aiResult.imageAnalysis?.description);
+                console.log('First critic:', aiResult.critique?.[0]?.name);
                 
                 displayResults(aiResult);
                 

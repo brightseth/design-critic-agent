@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eden Academy Curator System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            font-size: 18px;
+            color: #888;
+        }
+        
+        .curator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .curator-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border-radius: 16px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .curator-card:hover {
+            transform: translateY(-5px);
+            border-color: #4CAF50;
+        }
+        
+        .curator-card.active {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #1a2f1a 0%, #2a3a2a 100%);
+        }
+        
+        .curator-card.active::before {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #4CAF50;
+            font-size: 24px;
+        }
+        
+        .curator-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        
+        .curator-card.nina .curator-avatar { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); }
+        .curator-card.alejandro .curator-avatar { background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%); }
+        .curator-card.abraham .curator-avatar { background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%); }
+        .curator-card.geppetto .curator-avatar { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); }
+        
+        .curator-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .curator-role {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+        
+        .curator-venue {
+            font-size: 16px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        
+        .curator-description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        
+        .curator-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4CAF50;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .launch-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin: 40px auto;
+            display: block;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .launch-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .launch-btn.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+        }
+        
+        .coming-soon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: #888;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Eden Academy Curators</h1>
+            <p>Select a curator for your creative review</p>
+        </div>
+        
+        <div class="curator-grid">
+            <div class="curator-card nina active" data-curator="nina">
+                <div class="curator-avatar">📸</div>
+                <div class="curator-name">Nina Roehrs</div>
+                <div class="curator-role">Photography Curator</div>
+                <div class="curator-venue">→ Paris Photo Digital</div>
+                <div class="curator-description">
+                    Brutally selective institutional curator. Only the top 15-25% make the cut for Paris Photo Digital Sector.
+                </div>
+                <div class="curator-stats">
+                    <div class="stat">
+                        <div class="stat-value">15-25%</div>
+                        <div class="stat-label">Accept Rate</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">50</div>
+                        <div class="stat-label">Start Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">5D</div>
+                        <div class="stat-label">Criteria</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="curator-card alejandro" data-curator="alejandro">
+                <div class="coming-soon">Coming Soon</div>
+                <div class="curator-avatar">🎨</div>
+                <div class="curator-name">Alejandro Cartagena</div>
+                <div class="curator-role">Fellowship Curator</div>
+                <div class="curator-venue">→ Fellowship Gallery</div>
+                <div class="curator-description">
+                    Documentary power and social narrative. Focus on authentic storytelling and cultural impact.
+                </div>
+                <div class="curator-stats">
+                    <div class="stat">
+                        <div class="stat-value">20-30%</div>
+                        <div class="stat-label">Accept Rate</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">50</div>
+                        <div class="stat-label">Start Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">5D</div>
+                        <div class="stat-label">Criteria</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="curator-card abraham" data-curator="abraham">
+                <div class="coming-soon">Coming Soon</div>
+                <div class="curator-avatar">🤖</div>
+                <div class="curator-name">Abraham</div>
+                <div class="curator-role">AI Art Critic</div>
+                <div class="curator-venue">→ Abraham's Collection</div>
+                <div class="curator-description">
+                    Computational aesthetics and algorithmic poetry. Evaluates conceptual depth in AI art.
+                </div>
+                <div class="curator-stats">
+                    <div class="stat">
+                        <div class="stat-value">10-20%</div>
+                        <div class="stat-label">Accept Rate</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">50</div>
+                        <div class="stat-label">Start Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">5D</div>
+                        <div class="stat-label">Criteria</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="curator-card geppetto" data-curator="geppetto">
+                <div class="coming-soon">Coming Soon</div>
+                <div class="curator-avatar">🎭</div>
+                <div class="curator-name">Geppetto</div>
+                <div class="curator-role">Toy & Drop Curator</div>
+                <div class="curator-venue">→ Geppetto's Workshop</div>
+                <div class="curator-description">
+                    Playful sophistication. Evaluates collectibility, craft quality, and drop potential.
+                </div>
+                <div class="curator-stats">
+                    <div class="stat">
+                        <div class="stat-value">30-40%</div>
+                        <div class="stat-label">Accept Rate</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">55</div>
+                        <div class="stat-label">Start Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">5D</div>
+                        <div class="stat-label">Criteria</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="launch-btn active" id="launchBtn">
+            Launch NINABOT →
+        </button>
+    </div>
+    
+    <script>
+        let selectedCurator = 'nina';
+        
+        document.querySelectorAll('.curator-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const curator = card.dataset.curator;
+                
+                // Only allow selecting Nina for now
+                if (curator !== 'nina') {
+                    return;
+                }
+                
+                document.querySelectorAll('.curator-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                selectedCurator = curator;
+                
+                // Update button
+                const btn = document.getElementById('launchBtn');
+                if (curator === 'nina') {
+                    btn.textContent = 'Launch NINABOT →';
+                    btn.classList.add('active');
+                } else {
+                    btn.textContent = `Launch ${card.querySelector('.curator-name').textContent} (Coming Soon)`;
+                    btn.classList.remove('active');
+                }
+            });
+        });
+        
+        document.getElementById('launchBtn').addEventListener('click', () => {
+            if (selectedCurator === 'nina') {
+                // For Eden Academy integration, you might want to pass curator selection
+                window.location.href = `nina-unified.html?curator=${selectedCurator}`;
+            }
+        });
+    </script>
+</body>
+</html>

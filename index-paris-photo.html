@@ -737,20 +737,8 @@
                 <img id="previewImage" class="preview-image" alt="SOLIENNE work">
                 <div class="image-metadata">
                     <div class="metadata-item">
-                        <span class="metadata-label">Format</span>
-                        <span class="metadata-value" id="metaFormat">-</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Dimensions</span>
-                        <span class="metadata-value" id="metaDimensions">-</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Print Size</span>
-                        <span class="metadata-value" id="metaPrintSize">-</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">DPI Quality</span>
-                        <span class="metadata-value" id="metaDPI">-</span>
+                        <span class="metadata-label">Status</span>
+                        <span class="metadata-value" id="metaStatus">Ready for Analysis</span>
                     </div>
                 </div>
             </div>
@@ -768,9 +756,16 @@
                 </div>
 
                 <!-- AI Vision Description -->
-                <div id="aiDescription" style="display: none; margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--noir); border-radius: var(--radius); border-left: 3px solid var(--gold);">
-                    <div style="font-size: var(--font-sm); color: var(--gold); margin-bottom: var(--spacing-xs); text-transform: uppercase; letter-spacing: 1px;">What AI Sees</div>
-                    <div id="aiDescriptionText" style="color: var(--gris-clair); line-height: 1.5;"></div>
+                <div id="aiDescription" style="display: none; margin-bottom: var(--spacing-lg); padding: var(--spacing-lg); background: linear-gradient(135deg, var(--noir), var(--gris-fonce)); border-radius: var(--radius-lg); border: 2px solid var(--gold); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--gold), var(--accent));"></div>
+                    <div style="font-size: var(--font-base); color: var(--gold); margin-bottom: var(--spacing-sm); text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">
+                        🔍 AI Vision Analysis
+                    </div>
+                    <div id="aiDescriptionText" style="color: var(--blanc); line-height: 1.8; font-size: var(--font-base); font-weight: 400;"></div>
+                    <div id="aiObservations" style="margin-top: var(--spacing-md); display: none;">
+                        <div style="font-size: var(--font-sm); color: var(--accent); margin-bottom: var(--spacing-xs); text-transform: uppercase; letter-spacing: 1px;">Key Observations</div>
+                        <ul id="aiObservationsList" style="list-style: none; padding: 0; margin: 0;"></ul>
+                    </div>
                 </div>
 
                 <!-- Paris Photo Specific Scores -->
@@ -1013,50 +1008,14 @@
             previewSection.classList.add('visible');
             previewImage.src = uploadedImage;
             
-            // Calculate metadata
-            const img = new Image();
-            img.onload = () => {
-                imageMetadata = {
-                    width: img.width,
-                    height: img.height,
-                    aspectRatio: (img.width / img.height).toFixed(2),
-                    megapixels: ((img.width * img.height) / 1000000).toFixed(1),
-                    printSize: calculatePrintSize(img.width, img.height),
-                    dpi: calculateDPI(img.width, img.height)
-                };
-                
-                // Update metadata display
-                document.getElementById('metaFormat').textContent = file.type.replace('image/', '').toUpperCase();
-                document.getElementById('metaDimensions').textContent = `${img.width} × ${img.height}`;
-                document.getElementById('metaPrintSize').textContent = imageMetadata.printSize;
-                document.getElementById('metaDPI').textContent = imageMetadata.dpi;
-                
-                // Start analysis
-                performAnalysis();
-            };
-            img.src = uploadedImage;
-        }
-
-        function calculatePrintSize(width, height) {
-            const dpi = 300;
-            const widthInches = width / dpi;
-            const heightInches = height / dpi;
-            const widthCm = widthInches * 2.54;
-            const heightCm = heightInches * 2.54;
-            return `${widthCm.toFixed(0)} × ${heightCm.toFixed(0)} cm @ 300dpi`;
-        }
-
-        function calculateDPI(width, height) {
-            // Assume standard exhibition print size of 60cm wide
-            const targetWidthCm = 60;
-            const targetWidthInches = targetWidthCm / 2.54;
-            const dpi = Math.round(width / targetWidthInches);
+            // Update status
+            document.getElementById('metaStatus').textContent = 'Analyzing...';
+            document.getElementById('metaStatus').style.color = 'var(--gold)';
             
-            if (dpi >= 300) return `${dpi} (Excellent)`;
-            if (dpi >= 200) return `${dpi} (Good)`;
-            if (dpi >= 150) return `${dpi} (Acceptable)`;
-            return `${dpi} (Low - needs higher resolution)`;
+            // Start analysis immediately
+            performAnalysis();
         }
+
 
         async function performAnalysis() {
             // Show loading states
@@ -1092,6 +1051,8 @@
                         <span class="status-dot" style="background: var(--success)"></span>
                         <span>AI Analysis Complete</span>
                     `;
+                    document.getElementById('metaStatus').textContent = 'AI Vision Active';
+                    document.getElementById('metaStatus').style.color = 'var(--success)';
                     actionBar.style.display = 'flex';
                 }, 3000);
                 
@@ -1099,14 +1060,17 @@
                 console.error('Analysis failed:', error);
                 
                 // Fallback to simulated analysis
-                setTimeout(() => updateScores(), 500);
-                setTimeout(() => showCritics(), 1500);
-                setTimeout(() => showGalleryRecommendations(), 2500);
+                setTimeout(() => showAIDescription(null), 300);
+                setTimeout(() => updateScores(), 800);
+                setTimeout(() => showCritics(), 1800);
+                setTimeout(() => showGalleryRecommendations(), 2800);
                 setTimeout(() => {
                     document.querySelector('.analysis-status').innerHTML = `
                         <span class="status-dot" style="background: var(--warning)"></span>
                         <span>Demo Analysis Complete</span>
                     `;
+                    document.getElementById('metaStatus').textContent = 'Demo Mode';
+                    document.getElementById('metaStatus').style.color = 'var(--warning)';
                     actionBar.style.display = 'flex';
                 }, 3000);
             }
@@ -1115,11 +1079,40 @@
         function showAIDescription(aiResult) {
             const aiDescDiv = document.getElementById('aiDescription');
             const aiDescText = document.getElementById('aiDescriptionText');
+            const aiObsDiv = document.getElementById('aiObservations');
+            const aiObsList = document.getElementById('aiObservationsList');
             
-            if (aiResult && aiResult.imageAnalysis && aiResult.imageAnalysis.description) {
-                aiDescText.textContent = aiResult.imageAnalysis.description;
+            if (aiResult && aiResult.aiPowered) {
+                // This is real AI analysis
+                let description = "I see ";
+                
+                if (aiResult.imageAnalysis && aiResult.imageAnalysis.description) {
+                    description = "I see " + aiResult.imageAnalysis.description;
+                } else if (aiResult.observations && aiResult.observations.length > 0) {
+                    description = "I observe " + aiResult.observations[0];
+                }
+                
+                aiDescText.innerHTML = `<strong style="color: var(--gold);">This is what I see:</strong><br>${description}`;
+                
+                // Show observations if available
+                if (aiResult.observations && aiResult.observations.length > 1) {
+                    aiObsList.innerHTML = '';
+                    aiResult.observations.slice(1).forEach(obs => {
+                        const li = document.createElement('li');
+                        li.style.cssText = 'padding: var(--spacing-xs) 0; color: var(--gris-clair); border-bottom: 1px solid var(--gris);';
+                        li.innerHTML = `<span style="color: var(--accent); margin-right: 8px;">▸</span> ${obs}`;
+                        aiObsList.appendChild(li);
+                    });
+                    aiObsDiv.style.display = 'block';
+                }
+                
                 aiDescDiv.style.display = 'block';
                 aiDescDiv.style.animation = 'fadeIn 0.5s';
+            } else {
+                // Fallback demo mode
+                aiDescText.innerHTML = `<strong style="color: var(--warning);">Demo Mode:</strong><br>Upload an image to see real AI vision analysis. The system will describe exactly what it sees in your photograph.`;
+                aiDescDiv.style.display = 'block';
+                aiDescDiv.style.borderColor = 'var(--warning)';
             }
         }
 

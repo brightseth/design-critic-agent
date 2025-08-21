@@ -134,6 +134,20 @@ function getPhotographyCritics(imageBase64) {
         { type: 'negative', text: 'Spectacle without critique becomes complicit.' },
         { type: 'suggestion', text: 'Use scale to reveal systems, not just to impress.' }
       ]
+    },
+    {
+      name: 'Nina Roehrs',
+      avatar: 'NR',
+      title: 'Paris Photo Digital Curator',
+      focus: 'Digital transformation, blockchain authentication, Web3 community',
+      score: Math.floor(Math.random() * 20) + 75,
+      acknowledgment: 'Looking at your work, I\'m considering its potential beyond physical display - its digital life and community.',
+      hotTake: 'Strong traditional photography, but where\'s the consideration for digital provenance and Web3 distribution?',
+      points: [
+        { type: 'strength', text: 'The work has strong visual presence that could translate well to digital formats.' },
+        { type: 'weakness', text: 'Missing opportunity to engage with blockchain for authenticity and royalties.' },
+        { type: 'suggestion', text: 'Consider how this exists as both physical print and NFT - dual presence strengthens market position.' }
+      ]
     }
   ];
   
@@ -678,6 +692,7 @@ function getExpertTitle(name) {
     'Henri Cartier-Bresson': 'Decisive Moment',
     'Annie Leibovitz': 'Environmental Portrait',
     'Sebastião Salgado': 'Epic Documentation',
+    'Nina Roehrs': 'Digital Transformation',
     'Jerry Saltz': 'Democratic Critique',
     'Roberta Smith': 'Formalist Eye',
     'Hans Ulrich Obrist': 'Global Dialogue'

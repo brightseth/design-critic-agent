@@ -448,25 +448,37 @@ function generateVariedCritiques() {
 }
 
 async function generateSimpleCritique(imageBase64, imageUrl, mode = 'design') {
+  console.log('=== generateSimpleCritique called ===');
   console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
+  console.log('API Key preview:', process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.substring(0, 20) + '...' : 'none');
   console.log('Critique mode:', mode);
   console.log('Image data length:', imageBase64 ? imageBase64.length : 0);
+  console.log('Image data starts with:', imageBase64 ? imageBase64.substring(0, 50) : 'none');
   
   // Try to use real AI vision if we have image data
   if (process.env.ANTHROPIC_API_KEY && imageBase64 && imageBase64.length > 100) {
+    console.log('✓ Conditions met for AI vision');
     console.log('Attempting real AI vision analysis...');
     try {
       const realCritique = await getRealAICritique(imageBase64, mode);
       if (realCritique) {
-        console.log('Real AI critique generated successfully');
+        console.log('✓ Real AI critique generated successfully');
+        console.log('AI critique has aiPowered:', realCritique.aiPowered);
         return realCritique;
       }
     } catch (error) {
-      console.error('AI Vision failed, using fallback:', error.message);
-      console.error('Error details:', error);
+      console.error('✗ AI Vision failed, using fallback:', error.message);
+      console.error('Error type:', error.name);
+      console.error('Error status:', error.status);
+      if (error.response) {
+        console.error('Error response:', error.response);
+      }
     }
   } else {
-    console.log('Skipping AI vision - no API key or image data');
+    console.log('✗ Skipping AI vision - conditions not met');
+    if (!process.env.ANTHROPIC_API_KEY) console.log('  - Missing API key');
+    if (!imageBase64) console.log('  - No image data');
+    if (imageBase64 && imageBase64.length <= 100) console.log('  - Image too small:', imageBase64.length);
   }
   
   // Continue with fallback

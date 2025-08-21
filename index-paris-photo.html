@@ -1048,6 +1048,8 @@
                 
                 const aiResult = await response.json();
                 console.log('AI analysis received:', aiResult);
+                console.log('AI Powered?', aiResult.aiPowered);
+                console.log('Image description:', aiResult.imageAnalysis?.description);
                 
                 // Progressive reveal with real data
                 setTimeout(() => showAIDescription(aiResult), 300);

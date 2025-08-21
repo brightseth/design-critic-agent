@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Testing Design Critic API</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="testAPI()">Test API</button>
+    <pre id="result"></pre>
+    
+    <script>
+        async function testAPI() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const imageData = e.target.result;
+                console.log('Image data length:', imageData.length);
+                
+                try {
+                    const response = await fetch('https://design-critic-agent.vercel.app/api/analyze-simple', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            imageData: imageData,
+                            mode: 'photo'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    console.log('API Response:', result);
+                    document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+                    
+                    // Check if AI powered
+                    if (result.aiPowered) {
+                        alert('SUCCESS: AI Vision is working!');
+                    } else {
+                        alert('FALLBACK: Using demo mode. Check console for details.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error calling API: ' + error.message);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>

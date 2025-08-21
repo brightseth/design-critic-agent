@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Real AI</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #000; color: #fff; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        #result { white-space: pre-wrap; margin-top: 20px; background: #111; padding: 20px; }
+        .success { color: #0f0; }
+        .fail { color: #f00; }
+    </style>
+</head>
+<body>
+    <h1>Testing Real AI Vision</h1>
+    <button onclick="testWithRealImage()">Test with Real Image</button>
+    <button onclick="testWithTinyImage()">Test with Tiny Image</button>
+    <div id="result"></div>
+
+    <script>
+        // Create a real base64 image (small red square)
+        function createRealImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw something
+            ctx.fillStyle = 'red';
+            ctx.fillRect(0, 0, 100, 100);
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.fillText('TEST', 20, 50);
+            
+            return canvas.toDataURL('image/jpeg');
+        }
+
+        async function testWithRealImage() {
+            const result = document.getElementById('result');
+            result.textContent = 'Testing with real image...';
+            
+            const imageData = createRealImage();
+            console.log('Image data length:', imageData.length);
+            
+            try {
+                const response = await fetch('https://design-critic-agent.vercel.app/api/analyze-simple', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        imageData: imageData,
+                        mode: 'photo'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Response:', data);
+                
+                result.innerHTML = `
+<span class="${data.aiPowered ? 'success' : 'fail'}">AI Powered: ${data.aiPowered}</span>
+
+Image Analysis:
+${JSON.stringify(data.imageAnalysis, null, 2)}
+
+First Critic:
+${data.critique?.[0]?.name || 'None'}
+${data.critique?.[0]?.acknowledgment || 'No acknowledgment'}
+
+Scores:
+${JSON.stringify(data.scores, null, 2)}
+                `;
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testWithTinyImage() {
+            const result = document.getElementById('result');
+            result.textContent = 'Testing with tiny image...';
+            
+            // Tiny base64 image (should trigger fallback)
+            const imageData = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD//Z';
+            
+            try {
+                const response = await fetch('https://design-critic-agent.vercel.app/api/analyze-simple', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        imageData: imageData,
+                        mode: 'photo'
+                    })
+                });
+                
+                const data = await response.json();
+                result.innerHTML = `
+<span class="${data.aiPowered ? 'success' : 'fail'}">AI Powered: ${data.aiPowered}</span>
+(Should be false for tiny image)
+                `;
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

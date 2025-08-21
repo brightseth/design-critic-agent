@@ -487,9 +487,15 @@
         function displayResults(aiResult) {
             // AI Description
             if (aiResult && aiResult.imageAnalysis) {
-                aiText.textContent = aiResult.aiPowered ? 
-                    `I see: ${aiResult.imageAnalysis.description}` : 
-                    'Demo Mode: Upload a real image to see AI vision analysis';
+                // Check if this is real AI or fallback
+                const isRealAI = aiResult.aiPowered === true;
+                console.log('AI Powered?', isRealAI);
+                
+                if (isRealAI) {
+                    aiText.textContent = `This is what I see: ${aiResult.imageAnalysis.description}`;
+                } else {
+                    aiText.textContent = 'Analyzing image with fallback mode (AI vision not available for this image)';
+                }
                 aiDescription.style.display = 'block';
             }
 
@@ -503,10 +509,14 @@
             };
 
             scores.innerHTML = '';
-            Object.entries(scoringCriteria).forEach(([label, desc]) => {
-                const score = aiResult?.scores ? 
-                    (Object.values(aiResult.scores)[0] || Math.floor(Math.random() * 20) + 70) :
-                    Math.floor(Math.random() * 20) + 70;
+            Object.entries(scoringCriteria).forEach(([label, desc], index) => {
+                let score;
+                if (aiResult?.scores) {
+                    const scoreKeys = Object.keys(aiResult.scores);
+                    score = aiResult.scores[scoreKeys[index % scoreKeys.length]] || Math.floor(Math.random() * 20) + 70;
+                } else {
+                    score = Math.floor(Math.random() * 20) + 70;
+                }
                 
                 scores.innerHTML += `
                     <div class="score-card">

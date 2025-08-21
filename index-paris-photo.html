@@ -123,42 +123,6 @@
             padding: var(--spacing-xl) var(--spacing-lg);
         }
 
-        /* Evaluation Mode Toggle */
-        .mode-toggle {
-            display: flex;
-            justify-content: center;
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-xl);
-            background: var(--gris-fonce);
-            padding: 6px;
-            border-radius: var(--radius-lg);
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .mode-btn {
-            padding: 12px 24px;
-            background: transparent;
-            border: none;
-            color: var(--gris-clair);
-            font-size: var(--font-sm);
-            font-weight: 500;
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .mode-btn.active {
-            background: var(--accent);
-            color: var(--blanc);
-            box-shadow: var(--shadow-md);
-        }
-
-        .mode-btn:not(.active):hover {
-            color: var(--blanc);
-        }
 
         /* Upload Section */
         .upload-section {
@@ -713,13 +677,6 @@
 
     <!-- Main Container -->
     <div class="container">
-        <!-- Evaluation Mode Toggle -->
-        <div class="mode-toggle">
-            <button class="mode-btn active" data-mode="gallery">Gallery Ready</button>
-            <button class="mode-btn" data-mode="collector">Collector Appeal</button>
-            <button class="mode-btn" data-mode="technical">Print Quality</button>
-            <button class="mode-btn" data-mode="narrative">Story & Context</button>
-        </div>
 
         <!-- Upload Section -->
         <div class="upload-section" id="uploadZone">
@@ -885,40 +842,16 @@
             ]
         };
 
-        // Paris Photo Scoring Criteria
+        // Paris Photo Scoring Criteria - Comprehensive
         const scoringCriteria = {
-            gallery: {
-                'Visual Impact': 'First impression from 3 meters away',
-                'Technical Excellence': 'Print quality and craftsmanship',
-                'Conceptual Depth': 'Ideas and meaning beyond surface',
-                'Market Position': 'Collector appeal and pricing potential',
-                'Exhibition Readiness': 'Professional presentation standards'
-            },
-            collector: {
-                'Investment Potential': 'Future value appreciation likelihood',
-                'Uniqueness': 'Distinctive voice in current market',
-                'Provenance Story': 'Artist narrative and exhibition history',
-                'Edition Strategy': 'Scarcity and edition management',
-                'Conservation': 'Long-term preservation considerations'
-            },
-            technical: {
-                'Resolution': 'DPI and enlargement potential',
-                'Color Accuracy': 'Gamut and calibration precision',
-                'Print Medium': 'Paper/material selection appropriateness',
-                'Archival Quality': 'Longevity and museum standards',
-                'Presentation': 'Mounting and framing decisions'
-            },
-            narrative: {
-                'Story Clarity': 'Narrative legibility and impact',
-                'Cultural Relevance': 'Contemporary discourse engagement',
-                'Emotional Resonance': 'Viewer connection and memorability',
-                'Series Coherence': 'Relationship to larger body of work',
-                'Artist Statement': 'Conceptual framework articulation'
-            }
+            'Visual Impact': 'Immediate presence and exhibition strength',
+            'Conceptual Depth': 'Ideas and artistic vision',
+            'Technical Merit': 'Execution and craftsmanship',
+            'Market Position': 'Collector appeal and value',
+            'Digital Potential': 'Web3 and blockchain opportunities'
         };
 
         // State
-        let currentMode = 'gallery';
         let uploadedImage = null;
         let imageMetadata = {};
 
@@ -933,17 +866,6 @@
         const gallerySection = document.getElementById('gallerySection');
         const actionBar = document.getElementById('actionBar');
 
-        // Mode Toggle
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentMode = btn.dataset.mode;
-                if (uploadedImage) {
-                    updateScores();
-                }
-            });
-        });
 
         // Filter Buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1128,9 +1050,8 @@
 
         function showLoadingScores() {
             scoreGrid.innerHTML = '';
-            const criteria = scoringCriteria[currentMode];
             
-            Object.entries(criteria).forEach(([label, description]) => {
+            Object.entries(scoringCriteria).forEach(([label, description]) => {
                 const card = document.createElement('div');
                 card.className = 'score-card';
                 card.innerHTML = `
@@ -1145,9 +1066,8 @@
 
         function updateScores(aiResult = null) {
             scoreGrid.innerHTML = '';
-            const criteria = scoringCriteria[currentMode];
             
-            Object.entries(criteria).forEach(([label, description], index) => {
+            Object.entries(scoringCriteria).forEach(([label, description], index) => {
                 // Use AI scores if available, otherwise generate random
                 let score;
                 if (aiResult && aiResult.scores) {

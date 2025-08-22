@@ -470,7 +470,7 @@
                 const dataUrl = await readFileAsDataUrl(file);
                 const compressed = await compressImage(dataUrl);
                 
-                const response = await fetch('http://localhost:3001/api/nina-curator-v2', {
+                const response = await fetch('/api/nina-curator-v2', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

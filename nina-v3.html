@@ -633,7 +633,7 @@
                 // Compress image if needed
                 const compressedImage = await compressImage(currentImage);
 
-                const response = await fetch('http://localhost:3001/api/nina-curator-v2', {
+                const response = await fetch('/api/nina-curator-v2', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

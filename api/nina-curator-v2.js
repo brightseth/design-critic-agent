@@ -474,6 +474,8 @@ module.exports = async (req, res) => {
 
     console.log('Processing Nina v2 evaluation...');
     console.log('Mode:', mode);
+    console.log('Image data received:', imageData ? 'Yes' : 'No');
+    console.log('Image data length:', imageData ? imageData.length : 'N/A');
 
     if (mode === 'batch' && Array.isArray(imageData)) {
       // Batch processing

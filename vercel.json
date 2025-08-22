@@ -11,6 +11,9 @@
     },
     "api/nina-curator-v2.js": {
       "maxDuration": 30
+    },
+    "api/test-timeout.js": {
+      "maxDuration": 30
     }
   },
   "routes": [

@@ -1050,7 +1050,7 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     
-                    const maxSize = 1024;
+                    const maxSize = 800; // Reduced from 1024 to 800 for faster processing
                     let width = img.width;
                     let height = img.height;
                     
@@ -1066,27 +1066,47 @@
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                    // Reduced quality from 0.85 to 0.7 for smaller file size
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
                 img.src = dataUrl;
             });
         }
 
         async function evaluateImage(imageData) {
-            const response = await fetch('/api/nina-curator-v2', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    imageData: imageData.split(',')[1],
-                    mode: 'single'
-                })
-            });
+            // Add timeout controller
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
             
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Evaluation failed');
-            return data.evaluation;
+            try {
+                const response = await fetch('/api/nina-curator-v2', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        imageData: imageData.split(',')[1],
+                        mode: 'single'
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `API Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data.evaluation;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    throw new Error('Request timeout - the analysis is taking too long. Please try with a smaller image.');
+                }
+                throw error;
+            }
         }
 
         // SINGLE MODE

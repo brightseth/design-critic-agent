@@ -1103,6 +1103,21 @@
                 
                 const data = await response.json();
                 console.log('API response data:', data);
+                
+                // Check if we got the expected structure
+                if (!data.evaluation) {
+                    console.error('Unexpected API response structure:', data);
+                    if (data.success === false) {
+                        throw new Error(data.error || 'API returned an error');
+                    }
+                    // Try to use the data directly if it looks like an evaluation
+                    if (data.i_see || data.scores_raw) {
+                        console.log('Using response data directly as evaluation');
+                        return data;
+                    }
+                    throw new Error('Invalid response structure from API');
+                }
+                
                 return data.evaluation;
             } catch (error) {
                 clearTimeout(timeoutId);

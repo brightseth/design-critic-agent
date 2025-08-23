@@ -547,3 +547,9 @@ module.exports = async (req, res) => {
     });
   }
 };
+
+// Export functions for use by other modules
+module.exports.evaluateImage = evaluateImage;
+module.exports.normalizeScores = normalizeScores;
+module.exports.pairwisePlayoff = pairwisePlayoff;
+module.exports.checkGoldStandard = checkGoldStandard;

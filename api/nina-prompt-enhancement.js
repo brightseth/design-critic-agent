@@ -17,6 +17,7 @@ class NinaPromptEnhancement {
     const suggestions = {
       timestamp: new Date().toISOString(),
       current_prompt: currentPrompt,
+      enhanced_prompt: '',
       improvements: [],
       alternatives: [],
       success_probability: 0,
@@ -26,6 +27,28 @@ class NinaPromptEnhancement {
 
     // Analyze current prompt
     const analysis = await this.analyzePrompt(currentPrompt);
+    
+    // Generate enhanced prompt with Paris Photo optimizations
+    const enhancements = [];
+    
+    // Add missing critical elements for Nina's evaluation
+    if (!analysis.has_composition) {
+      enhancements.push('architectural precision');
+    }
+    if (!analysis.has_style) {
+      enhancements.push('museum-quality composition');
+    }
+    if (!analysis.nina_criteria.has_ai_critique) {
+      enhancements.push('critical AI discourse');
+    }
+    if (!analysis.nina_criteria.has_exhibition_focus) {
+      enhancements.push('Paris Photo 2025 aesthetic');
+    }
+    
+    // Create enhanced prompt
+    suggestions.enhanced_prompt = enhancements.length > 0 
+      ? `${currentPrompt} | ${enhancements.join(', ')}`
+      : currentPrompt;
     
     // Get contextual suggestions based on what's working
     suggestions.improvements = await this.generateImprovements(analysis, context);

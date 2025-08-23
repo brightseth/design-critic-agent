@@ -5,6 +5,7 @@ const NinaPromptEnhancement = require('./nina-prompt-enhancement');
 const { evaluateImage } = require('./nina-curator-v2');
 const NinaVideoAnalyzer = require('./nina-video-analyzer');
 const ninaStorage = require('../lib/supabase');
+const registryClient = require('../lib/genesis-registry');
 
 // Initialize systems
 const learning = new NinaLearning();
@@ -133,6 +134,18 @@ async function handleEvaluation(data, res) {
     return res.status(400).json({ error: 'No image data provided' });
   }
 
+  // If agent handle provided, fetch from Registry
+  let agentData = null;
+  if (metadata.agentHandle) {
+    try {
+      agentData = await registryClient.getAgentByHandle(metadata.agentHandle);
+      metadata.agentId = agentData.id;
+      metadata.agentName = agentData.displayName;
+    } catch (error) {
+      console.error('Failed to fetch agent from Registry:', error);
+    }
+  }
+
   // Evaluate image
   const evaluation = await evaluateImage(imageData);
   
@@ -141,8 +154,8 @@ async function handleEvaluation(data, res) {
   evaluation.id = `eval_${Date.now()}`;
   evaluation.timestamp = new Date().toISOString();
   
-  // Store evaluation
-  storage.evaluations.push(evaluation);
+  // Store evaluation locally first (for UX)
+  memoryStorage.evaluations.push(evaluation);
   
   // Apply style fingerprint if artist ID provided
   if (metadata.artistId) {
@@ -156,10 +169,35 @@ async function handleEvaluation(data, res) {
     await learning.recordSuccessPattern(evaluation);
   }
   
+  // Mirror to Registry if this is for an agent
+  if (metadata.agentId && metadata.imageUrl) {
+    await registryClient.appendCreation(metadata.agentId, {
+      mediaUri: metadata.imageUrl,
+      metadata: {
+        criticScores: {
+          composition: evaluation.dimensions.technical_excellence,
+          originality: evaluation.dimensions.ai_criticality,
+          conceptual: evaluation.dimensions.conceptual_strength,
+          parisPhotoReady: evaluation.dimensions.paris_photo_ready,
+          culturalDialogue: evaluation.dimensions.cultural_dialogue,
+          overall: evaluation.weighted_total
+        },
+        notes: evaluation.recommendation,
+        ninaEvaluationId: evaluation.id,
+        timestamp: evaluation.timestamp
+      }
+    });
+  }
+  
   return res.status(200).json({
     success: true,
     evaluation,
-    recommendations: await learning.getRecommendations(evaluation)
+    recommendations: await learning.getRecommendations(evaluation),
+    agentData: agentData ? {
+      name: agentData.displayName,
+      handle: agentData.handle,
+      statement: agentData.profile?.statement
+    } : null
   });
 }
 
@@ -200,7 +238,7 @@ async function getEvaluations(data, res) {
 async function handleFeedback(data, res) {
   const { evaluationId, feedback } = data;
   
-  const evaluation = storage.evaluations.find(e => e.id === evaluationId);
+  const evaluation = memoryStorage.evaluations.find(e => e.id === evaluationId);
   if (!evaluation) {
     return res.status(404).json({ error: 'Evaluation not found' });
   }
@@ -209,7 +247,7 @@ async function handleFeedback(data, res) {
   const result = await learning.recordFeedback(evaluation, feedback);
   
   // Store feedback
-  storage.feedback.push({
+  memoryStorage.feedback.push({
     id: `feedback_${Date.now()}`,
     evaluationId,
     feedback,
@@ -234,16 +272,16 @@ async function getLearningStats(res) {
   return res.status(200).json({
     success: true,
     stats,
-    total_evaluations: storage.evaluations.length,
-    total_feedback: storage.feedback.length,
+    total_evaluations: memoryStorage.evaluations.length,
+    total_feedback: memoryStorage.feedback.length,
     success_rate: calculateSuccessRate()
   });
 }
 
 function calculateSuccessRate() {
-  if (storage.evaluations.length === 0) return 0;
-  const successful = storage.evaluations.filter(e => e.weighted_total >= 0.75).length;
-  return Math.round((successful / storage.evaluations.length) * 100);
+  if (memoryStorage.evaluations.length === 0) return 0;
+  const successful = memoryStorage.evaluations.filter(e => e.weighted_total >= 0.75).length;
+  return Math.round((successful / memoryStorage.evaluations.length) * 100);
 }
 
 // COLLECTION HANDLERS
@@ -290,13 +328,23 @@ async function createCollection(data, res) {
 }
 
 async function addToCollection(data, res) {
-  const { collectionId, evaluationId, role, tags } = data;
+  const { collectionId, evaluationId, role, tags, agentId, creationId } = data;
   
   try {
     // Add to collection in Supabase
     const result = await ninaStorage.addToCollection(collectionId, evaluationId, role, tags || []);
     
     if (result) {
+      // If this is a Registry creation, update it with curation tags
+      if (agentId && creationId) {
+        await registryClient.patchCreation(agentId, creationId, {
+          tags: tags || [],
+          collectionId: collectionId,
+          curatedAt: new Date().toISOString(),
+          role: role
+        });
+      }
+      
       return res.status(200).json({
         success: true,
         result
@@ -401,7 +449,7 @@ async function compareVariations(data, res) {
   );
   
   const comparison = await curation.createComparison(evaluatedVariations, testCriteria);
-  storage.comparisons.push(comparison);
+  memoryStorage.comparisons.push(comparison);
   
   return res.status(200).json({
     success: true,
@@ -412,7 +460,7 @@ async function compareVariations(data, res) {
 async function getComparisons(res) {
   return res.status(200).json({
     success: true,
-    comparisons: storage.comparisons
+    comparisons: memoryStorage.comparisons
   });
 }
 
@@ -429,7 +477,7 @@ async function analyzeSeries(data, res) {
   );
   
   const series = await curation.evaluateSeries(evaluatedImages, seriesName);
-  storage.series.push(series);
+  memoryStorage.series.push(series);
   
   return res.status(200).json({
     success: true,
@@ -522,7 +570,7 @@ async function getFingerprint(data, res) {
 async function updateFingerprint(data, res) {
   const { artistId } = data;
   
-  const artistEvaluations = storage.evaluations.filter(e => 
+  const artistEvaluations = memoryStorage.evaluations.filter(e => 
     e.metadata?.artistId === artistId
   );
   
@@ -531,7 +579,7 @@ async function updateFingerprint(data, res) {
   }
   
   const fingerprint = await learning.createStyleFingerprint(artistId, artistEvaluations);
-  storage.fingerprints[artistId] = fingerprint;
+  memoryStorage.fingerprints[artistId] = fingerprint;
   
   return res.status(200).json({
     success: true,

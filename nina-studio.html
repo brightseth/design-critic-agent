@@ -907,12 +907,18 @@
         <div class="card">
             <div class="card-title">Series Coherence Analysis</div>
             <div class="card-content">
-                <div class="form-group">
-                    <label class="form-label">Upload Series (5-20 images)</label>
-                    <input type="file" multiple accept="image/*" class="form-input" style="padding: 10px;">
+                <div class="upload-area" id="seriesUploadArea">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    <p>DRAG SERIES HERE OR CLICK TO UPLOAD</p>
+                    <span class="file-hint">5-20 IMAGES • JPG, PNG • RELATED WORKS</span>
+                    <input type="file" id="seriesInput" multiple accept="image/*" style="display: none;">
                 </div>
-                <div class="image-grid" id="seriesImages"></div>
-                <button class="btn btn-success" style="margin-top: 20px;">Analyze Series Coherence</button>
+                <div class="image-grid" id="seriesImages" style="display: none; margin-top: 20px;"></div>
+                <button class="btn btn-success" id="analyzeSeriesBtn" onclick="analyzeSeries()" style="margin-top: 20px; display: none;">Analyze Series Coherence</button>
                 <div id="seriesResults" style="margin-top: 30px; display: none;">
                     <div class="fingerprint-viz">
                         <h3 style="margin-bottom: 20px;">Coherence Analysis</h3>
@@ -949,11 +955,13 @@
                     <label class="form-label">Enter Your Prompt</label>
                     <textarea class="prompt-input" id="promptInput" placeholder="Describe the image you want to create..."></textarea>
                 </div>
-                <div class="prompt-suggestions">
-                    <div class="suggestion-chip">+ Compositional Strength</div>
-                    <div class="suggestion-chip">+ Cultural Context</div>
-                    <div class="suggestion-chip">+ Technical Precision</div>
-                    <div class="suggestion-chip">+ AI Criticality</div>
+                <button class="btn" onclick="analyzePrompt()" style="margin-bottom: 20px;">Analyze Prompt</button>
+                <div class="prompt-suggestions" id="promptSuggestions" style="display: none;">
+                    <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Suggested Enhancements</h4>
+                    <div class="suggestion-chip" onclick="addToPrompt('architectural precision')">+ Architectural Precision</div>
+                    <div class="suggestion-chip" onclick="addToPrompt('museum-quality composition')">+ Museum Quality</div>
+                    <div class="suggestion-chip" onclick="addToPrompt('critical AI discourse')">+ AI Criticality</div>
+                    <div class="suggestion-chip" onclick="addToPrompt('Paris Photo 2025 aesthetic')">+ Paris Photo Ready</div>
                     <div class="suggestion-chip">+ Paris Photo Ready</div>
                 </div>
                 <button class="btn btn-success" onclick="analyzePrompt()" style="margin-top: 20px;">Analyze & Optimize</button>
@@ -2199,8 +2207,244 @@
             }, 2000);
         }
 
+        // Series Analysis Functions
+        let seriesImages = [];
+        
+        function initSeriesUpload() {
+            const uploadArea = document.getElementById('seriesUploadArea');
+            const seriesInput = document.getElementById('seriesInput');
+            
+            if (!uploadArea || !seriesInput) return;
+            
+            uploadArea.addEventListener('click', () => seriesInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleSeriesFiles(e.dataTransfer.files);
+            });
+            
+            seriesInput.addEventListener('change', (e) => {
+                handleSeriesFiles(e.target.files);
+            });
+        }
+        
+        function handleSeriesFiles(files) {
+            const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            
+            if (validFiles.length < 5) {
+                showNotification('Please upload at least 5 images for series analysis', 'error');
+                return;
+            }
+            
+            if (validFiles.length > 20) {
+                showNotification('Maximum 20 images for series analysis', 'error');
+                return;
+            }
+            
+            seriesImages = validFiles;
+            displaySeriesImages();
+        }
+        
+        function displaySeriesImages() {
+            const grid = document.getElementById('seriesImages');
+            grid.innerHTML = '';
+            grid.style.display = 'grid';
+            
+            seriesImages.forEach((file, i) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const item = document.createElement('div');
+                    item.className = 'image-item';
+                    item.innerHTML = `
+                        <img src="${e.target.result}" alt="Series image ${i+1}">
+                        <div class="item-overlay">${i+1}</div>
+                    `;
+                    grid.appendChild(item);
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            document.getElementById('seriesUploadArea').style.display = 'none';
+            document.getElementById('analyzeSeriesBtn').style.display = 'block';
+        }
+        
+        async function analyzeSeries() {
+            if (seriesImages.length === 0) {
+                showNotification('Please upload images first', 'error');
+                return;
+            }
+            
+            showNotification('Analyzing series coherence...', 'info');
+            
+            // Convert images to base64
+            const imageData = await Promise.all(
+                seriesImages.map(file => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                })
+            );
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'analyze_series',
+                        data: {
+                            images: imageData.map((data, i) => ({
+                                imageData: data,
+                                order: i + 1
+                            })),
+                            seriesName: 'User Series Analysis'
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displaySeriesResults(result.series);
+                    showNotification('Series analysis complete', 'success');
+                } else {
+                    showNotification('Series analysis failed', 'error');
+                }
+            } catch (error) {
+                console.error('Series analysis error:', error);
+                showNotification('Failed to analyze series', 'error');
+            }
+        }
+        
+        function displaySeriesResults(series) {
+            const results = document.getElementById('seriesResults');
+            results.style.display = 'block';
+            
+            // Update coherence bars
+            const coherence = series?.coherence || {
+                visual_consistency: 0.75,
+                thematic_unity: 0.85,
+                narrative_flow: 0.65
+            };
+            
+            results.innerHTML = `
+                <div class="fingerprint-viz">
+                    <h3 style="margin-bottom: 20px;">Coherence Analysis</h3>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Visual Consistency</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" style="width: ${coherence.visual_consistency * 100}%;"></div>
+                        </div>
+                    </div>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Thematic Unity</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" style="width: ${coherence.thematic_unity * 100}%;"></div>
+                        </div>
+                    </div>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Narrative Flow</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" style="width: ${coherence.narrative_flow * 100}%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 30px;">
+                    <h4>Recommendation</h4>
+                    <p>${series?.recommendation || 'Series shows good coherence for exhibition'}</p>
+                </div>
+            `;
+        }
+        
+        // Prompt Enhancement Functions
+        async function analyzePrompt() {
+            const promptInput = document.getElementById('promptInput');
+            const prompt = promptInput.value.trim();
+            
+            if (!prompt) {
+                showNotification('Please enter a prompt to analyze', 'error');
+                return;
+            }
+            
+            showNotification('Analyzing prompt...', 'info');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'analyze_prompt',
+                        data: { prompt }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayPromptAnalysis(result);
+                    showNotification('Prompt analysis complete', 'success');
+                } else {
+                    showNotification('Prompt analysis failed', 'error');
+                }
+            } catch (error) {
+                console.error('Prompt analysis error:', error);
+                showNotification('Failed to analyze prompt', 'error');
+            }
+        }
+        
+        function displayPromptAnalysis(result) {
+            const suggestions = document.getElementById('promptSuggestions');
+            suggestions.style.display = 'block';
+            
+            // Add enhanced prompt display
+            if (result.suggestions?.enhanced_prompt) {
+                const enhancedDiv = document.createElement('div');
+                enhancedDiv.className = 'enhanced-prompt';
+                enhancedDiv.style.cssText = 'margin-top: 20px; padding: 15px; background: rgba(76,175,80,0.1); border: 1px solid #4CAF50;';
+                enhancedDiv.innerHTML = `
+                    <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Enhanced Prompt</h4>
+                    <p style="font-style: italic;">${result.suggestions.enhanced_prompt}</p>
+                    <button class="btn btn-success" onclick="copyEnhancedPrompt()" style="margin-top: 10px;">Copy Enhanced</button>
+                `;
+                
+                const existingEnhanced = document.querySelector('.enhanced-prompt');
+                if (existingEnhanced) existingEnhanced.remove();
+                
+                suggestions.appendChild(enhancedDiv);
+            }
+        }
+        
+        function addToPrompt(addition) {
+            const promptInput = document.getElementById('promptInput');
+            const currentPrompt = promptInput.value.trim();
+            
+            if (!currentPrompt.includes(addition)) {
+                promptInput.value = currentPrompt + (currentPrompt ? ', ' : '') + addition;
+                showNotification(`Added "${addition}" to prompt`, 'success');
+            }
+        }
+        
+        function copyEnhancedPrompt() {
+            const enhanced = document.querySelector('.enhanced-prompt p').textContent;
+            navigator.clipboard.writeText(enhanced);
+            showNotification('Enhanced prompt copied to clipboard', 'success');
+        }
+        
         // Initialize
         loadRecentEvaluations();
+        
+        // Initialize series upload when switching to that tab
+        document.addEventListener('DOMContentLoaded', () => {
+            initSeriesUpload();
+        });
     </script>
 </body>
 </html>

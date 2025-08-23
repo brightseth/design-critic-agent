@@ -775,15 +775,15 @@ class NinaCuration {
   // Describe significance of a work
   describeSignificance(image) {
     const strengths = [];
-    const eval = image.evaluation;
+    const evaluation = image.evaluation;
     
-    if (eval.scores_raw.ai_criticality >= 75) {
+    if (evaluation.scores_raw.ai_criticality >= 75) {
       strengths.push('powerful AI critique');
     }
-    if (eval.scores_raw.conceptual_strength >= 75) {
+    if (evaluation.scores_raw.conceptual_strength >= 75) {
       strengths.push('strong conceptual framework');
     }
-    if (eval.scores_raw.paris_photo_ready >= 75) {
+    if (evaluation.scores_raw.paris_photo_ready >= 75) {
       strengths.push('exceptional exhibition presence');
     }
     

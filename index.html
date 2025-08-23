@@ -102,6 +102,30 @@
             display: block;
         }
 
+        /* Studio Link */
+        .studio-link {
+            position: absolute;
+            top: 30px;
+            right: 120px;
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid #666;
+            color: #888;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .studio-link:hover {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
         /* Mode Tabs */
         .mode-tabs {
             display: flex;
@@ -831,6 +855,7 @@
         
         <!-- Nina's Presence -->
         <div class="curator-presence">
+            <a href="nina-studio.html" class="studio-link">Studio</a>
             <div class="curator-avatar-container">
                 <div class="curator-avatar" onclick="showAlgorithmModal()">NR</div>
                 <div class="curator-tooltip">

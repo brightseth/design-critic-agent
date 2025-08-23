@@ -12,6 +12,12 @@
     "api/nina-curator-v2.js": {
       "maxDuration": 30
     },
+    "api/nina-api.js": {
+      "maxDuration": 30
+    },
+    "api/nina-studio-api.js": {
+      "maxDuration": 30
+    },
     "api/test-timeout.js": {
       "maxDuration": 30
     }
@@ -36,6 +42,14 @@
     {
       "src": "/api/nina-curator-v2",
       "dest": "/api/nina-curator-v2.js"
+    },
+    {
+      "src": "/api/nina",
+      "dest": "/api/nina-api.js"
+    },
+    {
+      "src": "/api/nina-studio",
+      "dest": "/api/nina-studio-api.js"
     }
   ]
 }

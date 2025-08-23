@@ -26,7 +26,7 @@ Start every dimension at 50 and justify upward movement with specific visual evi
 
 EVALUATION PROCESS:
 1) "i_see": 2 sentences - what you literally observe, no interpretation
-2) Gates: Fail aggressively - any doubt means failure
+2) Gates: Check compositional coherence, AI artifacts, and ethics documentation
 3) Dimensions: Score harshly, most images are 40-70 range
 4) Flags: Mark every flaw you notice
 
@@ -47,7 +47,7 @@ RETURN EXACTLY THIS JSON STRUCTURE:
   "image_id": "[filename or identifier]",
   "i_see": "[2 sentences: subject/setting/form/gesture]",
   "gate": {
-    "print_integrity": [true/false],
+    "compositional_integrity": [true/false],
     "artifact_control": [true/false],
     "ethics_process": "[present/todo/missing]"
   },
@@ -192,7 +192,7 @@ function calculateWeightedTotal(scores, flags = []) {
 // Determine verdict with stricter thresholds
 function determineVerdict(evaluation) {
   const gatePassed = evaluation.gate && 
-    evaluation.gate.print_integrity && 
+    evaluation.gate.compositional_integrity && 
     evaluation.gate.artifact_control && 
     evaluation.gate.ethics_process !== 'missing';
 
@@ -343,7 +343,7 @@ function createDemoEvaluation(imageBase64) {
     image_id: `demo_${new Date().toISOString().replace(/[:.]/g, '_')}`,
     i_see: demoDescriptions[Math.floor(Math.random() * demoDescriptions.length)],
     gate: {
-      print_integrity: Math.random() > 0.2,
+      compositional_integrity: Math.random() > 0.2,
       artifact_control: Math.random() > 0.3,
       ethics_process: Math.random() > 0.5 ? "present" : Math.random() > 0.5 ? "todo" : "missing"
     },
@@ -379,7 +379,7 @@ function createFallbackEvaluation() {
     image_id: `fallback_${Date.now()}`,
     i_see: "Unable to process image - using fallback evaluation",
     gate: {
-      print_integrity: false,
+      compositional_integrity: false,
       artifact_control: false,
       ethics_process: "missing"
     },

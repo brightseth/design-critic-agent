@@ -2,10 +2,14 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Initialize storage
+const ninaStorage = require('./lib/supabase');
+console.log(`Nina Storage: ${ninaStorage.useSupabase ? 'Supabase configured ✓' : 'In-memory mode (no persistence)'}`);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({

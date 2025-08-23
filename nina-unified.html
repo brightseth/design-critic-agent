@@ -778,12 +778,36 @@
                     <li>When uncertain, lean toward EXCLUDE</li>
                 </ul>
 
-                <h3>Gate Checks (Pass/Fail)</h3>
-                <ul>
-                    <li><strong>Print Integrity:</strong> No stitching/morphological errors at exhibition scale</li>
-                    <li><strong>Artifact Control:</strong> No AI telltales (plastic skin, double irises, halo edges)</li>
-                    <li><strong>Ethics Process:</strong> Documentation of method, dataset, consent stance</li>
-                </ul>
+                <h3>Gate Checks - Quality Requirements</h3>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; margin-bottom: 15px; border-left: 3px solid #4CAF50;">
+                    <h4 style="color: #4CAF50; margin-bottom: 8px;">✓ COMPOSITIONAL INTEGRITY</h4>
+                    <ul style="font-size: 12px;">
+                        <li><strong>PASSED:</strong> Coherent composition, clear concept visible in frame, intentional aesthetic choices</li>
+                        <li><strong>FAILED:</strong> Incoherent elements, concept unclear, accidental or broken compositions</li>
+                    </ul>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; margin-bottom: 15px; border-left: 3px solid #4CAF50;">
+                    <h4 style="color: #4CAF50; margin-bottom: 8px;">✓ AI ARTIFACTS</h4>
+                    <ul style="font-size: 12px;">
+                        <li><strong>PASSED:</strong> No obvious AI telltales - natural skin, correct anatomy, clean edges</li>
+                        <li><strong>FAILED:</strong> Plastic skin texture, double irises, halo edges, impossible morphology</li>
+                    </ul>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; margin-bottom: 15px; border-left: 3px solid #FF9800;">
+                    <h4 style="color: #FF9800; margin-bottom: 8px;">⚠ ETHICS & PROCESS</h4>
+                    <ul style="font-size: 12px;">
+                        <li><strong>DOCUMENTED:</strong> Clear AI methodology, dataset sources identified, consent/bias addressed</li>
+                        <li><strong>NEEDS DOCUMENTATION:</strong> Some process info present but incomplete</li>
+                        <li><strong>NOT DOCUMENTED:</strong> No information about AI process or dataset ethics</li>
+                    </ul>
+                </div>
+                
+                <p style="color: #f44336; margin-top: 15px; font-size: 12px; padding: 10px; background: rgba(244,67,54,0.1); border: 1px solid rgba(244,67,54,0.3);">
+                    <strong>⚠ Critical:</strong> These are BINARY GATES, not scored dimensions. Any FAILED gate or NOT DOCUMENTED ethics typically prevents an INCLUDE verdict, regardless of how high the work scores in other dimensions.
+                </p>
 
                 <h3>Penalty System</h3>
                 <ul>
@@ -856,6 +880,10 @@
         <div class="mode-tab" onclick="switchMode('playoff')">
             <div class="mode-tab-title">PLAYOFF</div>
             <div class="mode-tab-desc">Pairwise Selection</div>
+        </div>
+        <div class="mode-tab" onclick="switchMode('prompt')">
+            <div class="mode-tab-title">PROMPT</div>
+            <div class="mode-tab-desc">Generate New Work</div>
         </div>
     </div>
 
@@ -1009,6 +1037,104 @@
                 <div class="controls">
                     <button class="btn" onclick="exportPlayoff()">Export Top 20</button>
                     <button class="btn secondary" onclick="clearPlayoff()">New Playoff</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt Mode -->
+    <div id="promptMode" class="content-area">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 40px;">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h2 style="font-size: 24px; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px;">CREATION GUIDANCE</h2>
+                <p style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Nina as Generative Curator — Prompting Exhibition-Worthy Work</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <!-- Input Panel -->
+                <div style="background: #111; border: 1px solid #333; padding: 30px;">
+                    <h3 style="font-size: 16px; font-weight: bold; letter-spacing: 1px; margin-bottom: 20px;">PROJECT PARAMETERS</h3>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Concept/Theme</label>
+                        <textarea id="promptConcept" placeholder="e.g., posthuman identity construction, dataset bias visualization..." 
+                                  style="width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; font-size: 13px; min-height: 80px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Style Reference</label>
+                        <select id="promptStyle" style="width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; font-size: 13px;">
+                            <option value="">Select Style Reference...</option>
+                            <option value="sherman_constructed">Cindy Sherman - Constructed Identity</option>
+                            <option value="tillmans_intimacy">Wolfgang Tillmans - Digital Intimacy</option>
+                            <option value="paglen_datasets">Trevor Paglen - Dataset Archaeology</option>
+                            <option value="dinkins_family">Stephanie Dinkins - Family AI Models</option>
+                            <option value="elwes_drag">Jake Elwes - Drag AI Performance</option>
+                            <option value="ulman_instagram">Amalia Ulman - Instagram Performance</option>
+                            <option value="custom">Custom Reference</option>
+                        </select>
+                    </div>
+
+                    <div id="customStyleDiv" style="margin-bottom: 20px; display: none;">
+                        <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Custom Artist/Style</label>
+                        <input type="text" id="customStyle" placeholder="Artist name and specific work/approach..." 
+                               style="width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; font-size: 13px;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Technical Approach</label>
+                        <select id="promptTech" style="width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; font-size: 13px;">
+                            <option value="">Select Technical Method...</option>
+                            <option value="diffusion_custom">Custom-trained Diffusion Model</option>
+                            <option value="diffusion_lora">LoRA Fine-tuning</option>
+                            <option value="gan_original">Original GAN Architecture</option>
+                            <option value="hybrid_photo">AI + Photography Hybrid</option>
+                            <option value="dataset_curation">Custom Dataset Curation</option>
+                            <option value="procedural_ai">Procedural + AI Combination</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Exhibition Context</label>
+                        <select id="promptContext" style="width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; font-size: 13px;">
+                            <option value="paris_photo">Paris Photo Digital Sector</option>
+                            <option value="biennale">Venice Biennale</option>
+                            <option value="commercial_gallery">Commercial Gallery</option>
+                            <option value="museum_acquisition">Museum Collection</option>
+                            <option value="group_show">Thematic Group Show</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 30px;">
+                        <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Output Size/Format</label>
+                        <select id="promptFormat" style="width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; font-size: 13px;">
+                            <option value="large_print">Large Print (80-120cm)</option>
+                            <option value="medium_print">Medium Print (40-60cm)</option>
+                            <option value="series_small">Small Series (20-30cm each)</option>
+                            <option value="lightbox">Lightbox Display</option>
+                            <option value="video_stills">Video Still Series</option>
+                        </select>
+                    </div>
+
+                    <button id="generatePromptBtn" onclick="generateCreationPrompt()" 
+                            style="width: 100%; padding: 15px; background: #fff; color: #000; border: none; font-size: 12px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s;">
+                        Generate Creation Prompt
+                    </button>
+                </div>
+
+                <!-- Output Panel -->
+                <div id="promptOutput" style="background: #111; border: 1px solid #333; padding: 30px;">
+                    <div style="text-align: center; color: #444; padding: 60px 20px;">
+                        <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">Configure parameters and generate prompt</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prompt History -->
+            <div style="margin-top: 40px; background: #111; border: 1px solid #333; padding: 30px;">
+                <h3 style="font-size: 16px; font-weight: bold; letter-spacing: 1px; margin-bottom: 20px;">PROMPT HISTORY</h3>
+                <div id="promptHistory" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                    <!-- History items will be added here -->
                 </div>
             </div>
         </div>
@@ -1171,28 +1297,105 @@
                     </div>
             `;
             
-            // Gate checks
+            // Gate checks with improved clarity
             if (evaluation.gate) {
+                const getGateStatus = (passed) => {
+                    if (passed === true) return { text: '✓ PASSED', color: '#4CAF50', icon: '✓' };
+                    if (passed === false) return { text: '✗ FAILED', color: '#f44336', icon: '✗' };
+                    return { text: '? UNKNOWN', color: '#888', icon: '?' };
+                };
+                
+                const getEthicsStatus = (status) => {
+                    if (status === 'present') return { text: '✓ DOCUMENTED', color: '#4CAF50', icon: '✓', desc: 'Process fully documented' };
+                    if (status === 'todo') return { text: '⚠ NEEDS DOCUMENTATION', color: '#FF9800', icon: '⚠', desc: 'Documentation incomplete' };
+                    if (status === 'missing') return { text: '✗ NOT DOCUMENTED', color: '#f44336', icon: '✗', desc: 'No process documentation' };
+                    return { text: '? UNCLEAR', color: '#888', icon: '?', desc: 'Status unclear' };
+                };
+                
+                const compStatus = getGateStatus(evaluation.gate.compositional_integrity || evaluation.gate.print_integrity);
+                const artifactStatus = getGateStatus(evaluation.gate.artifact_control);
+                const ethicsStatus = getEthicsStatus(evaluation.gate.ethics_process);
+                
                 html += `
-                    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-                        <div style="flex: 1; padding: 15px; background: rgba(255,255,255,0.03); border: 1px solid ${evaluation.gate.print_integrity ? '#4CAF50' : '#f44336'};">
-                            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">PRINT INTEGRITY</div>
-                            <div style="font-size: 14px; font-weight: bold; color: ${evaluation.gate.print_integrity ? '#4CAF50' : '#f44336'};">
-                                ${evaluation.gate.print_integrity ? 'PASS' : 'FAIL'}
+                    <div style="margin-bottom: 25px;">
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 10px;">
+                            QUALITY GATES (Must Pass for Exhibition Consideration)
+                        </div>
+                        <div style="display: flex; gap: 15px;">
+                            <!-- Compositional Integrity -->
+                            <div style="flex: 1; padding: 15px; background: rgba(255,255,255,0.03); border: 2px solid ${compStatus.color}; position: relative;">
+                                <div style="position: absolute; top: -10px; left: 10px; background: #000; padding: 0 5px;">
+                                    <span style="font-size: 10px; color: #888;">COMPOSITION</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="font-size: 24px; color: ${compStatus.color};">${compStatus.icon}</div>
+                                    <div>
+                                        <div style="font-size: 13px; font-weight: bold; color: ${compStatus.color};">
+                                            ${compStatus.text}
+                                        </div>
+                                        <div style="font-size: 10px; color: #666; margin-top: 2px;">
+                                            ${(evaluation.gate.compositional_integrity || evaluation.gate.print_integrity) ? 'Coherent composition & concept' : 'Incoherent or broken composition'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Artifact Control -->
+                            <div style="flex: 1; padding: 15px; background: rgba(255,255,255,0.03); border: 2px solid ${artifactStatus.color}; position: relative;">
+                                <div style="position: absolute; top: -10px; left: 10px; background: #000; padding: 0 5px;">
+                                    <span style="font-size: 10px; color: #888;">AI ARTIFACTS</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="font-size: 24px; color: ${artifactStatus.color};">${artifactStatus.icon}</div>
+                                    <div>
+                                        <div style="font-size: 13px; font-weight: bold; color: ${artifactStatus.color};">
+                                            ${artifactStatus.text}
+                                        </div>
+                                        <div style="font-size: 10px; color: #666; margin-top: 2px;">
+                                            ${evaluation.gate.artifact_control ? 'No obvious AI glitches' : 'Contains AI artifacts (morphing, halos)'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Ethics Process -->
+                            <div style="flex: 1; padding: 15px; background: rgba(255,255,255,0.03); border: 2px solid ${ethicsStatus.color}; position: relative;">
+                                <div style="position: absolute; top: -10px; left: 10px; background: #000; padding: 0 5px;">
+                                    <span style="font-size: 10px; color: #888;">ETHICS & PROCESS</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="font-size: 24px; color: ${ethicsStatus.color};">${ethicsStatus.icon}</div>
+                                    <div>
+                                        <div style="font-size: 13px; font-weight: bold; color: ${ethicsStatus.color};">
+                                            ${ethicsStatus.text}
+                                        </div>
+                                        <div style="font-size: 10px; color: #666; margin-top: 2px;">
+                                            ${ethicsStatus.desc}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div style="flex: 1; padding: 15px; background: rgba(255,255,255,0.03); border: 1px solid ${evaluation.gate.artifact_control ? '#4CAF50' : '#f44336'};">
-                            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ARTIFACT CONTROL</div>
-                            <div style="font-size: 14px; font-weight: bold; color: ${evaluation.gate.artifact_control ? '#4CAF50' : '#f44336'};">
-                                ${evaluation.gate.artifact_control ? 'PASS' : 'FAIL'}
-                            </div>
-                        </div>
-                        <div style="flex: 1; padding: 15px; background: rgba(255,255,255,0.03); border: 1px solid ${evaluation.gate.ethics_process === 'present' ? '#4CAF50' : evaluation.gate.ethics_process === 'todo' ? '#FF9800' : '#f44336'};">
-                            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ETHICS PROCESS</div>
-                            <div style="font-size: 14px; font-weight: bold; color: ${evaluation.gate.ethics_process === 'present' ? '#4CAF50' : evaluation.gate.ethics_process === 'todo' ? '#FF9800' : '#f44336'};">
-                                ${evaluation.gate.ethics_process.toUpperCase()}
-                            </div>
-                        </div>
+                        
+                        ${(!(evaluation.gate.compositional_integrity || evaluation.gate.print_integrity) || !evaluation.gate.artifact_control || evaluation.gate.ethics_process === 'missing') ? 
+                            `<div style="margin-top: 10px; padding: 10px; background: rgba(244, 67, 54, 0.1); border-left: 3px solid #f44336;">
+                                <div style="font-size: 11px; color: #ff9999;">
+                                    <strong>⚠ Gate Failure Impact:</strong> Work cannot achieve INCLUDE verdict with failed gates, regardless of dimensional scores.
+                                </div>
+                            </div>` : 
+                            (evaluation.gate.ethics_process === 'todo' ? 
+                                `<div style="margin-top: 10px; padding: 10px; background: rgba(255, 152, 0, 0.1); border-left: 3px solid #FF9800;">
+                                    <div style="font-size: 11px; color: #ffcc80;">
+                                        <strong>⚠ Documentation Needed:</strong> Complete process documentation before final submission.
+                                    </div>
+                                </div>` : 
+                                `<div style="margin-top: 10px; padding: 10px; background: rgba(76, 175, 80, 0.1); border-left: 3px solid #4CAF50;">
+                                    <div style="font-size: 11px; color: #a5d6a7;">
+                                        <strong>✓ All Gates Passed:</strong> Work meets technical requirements for exhibition consideration.
+                                    </div>
+                                </div>`
+                            )
+                        }
                     </div>
                 `;
             }
@@ -1635,6 +1838,383 @@
             document.getElementById('playoffUploadArea').style.display = 'block';
             document.getElementById('playoffResults').style.display = 'none';
             document.getElementById('playoffResultsGrid').innerHTML = '';
+        }
+
+        // PROMPT GENERATION MODE
+        let promptHistory = [];
+
+        // Handle style reference selection
+        document.getElementById('promptStyle').addEventListener('change', function() {
+            const customDiv = document.getElementById('customStyleDiv');
+            if (this.value === 'custom') {
+                customDiv.style.display = 'block';
+            } else {
+                customDiv.style.display = 'none';
+            }
+        });
+
+        async function generateCreationPrompt() {
+            const concept = document.getElementById('promptConcept').value;
+            const style = document.getElementById('promptStyle').value;
+            const customStyle = document.getElementById('customStyle').value;
+            const tech = document.getElementById('promptTech').value;
+            const context = document.getElementById('promptContext').value;
+            const format = document.getElementById('promptFormat').value;
+
+            if (!concept.trim()) {
+                alert('Please enter a concept/theme to generate a prompt');
+                return;
+            }
+
+            const btn = document.getElementById('generatePromptBtn');
+            btn.disabled = true;
+            btn.textContent = 'GENERATING...';
+
+            try {
+                const promptData = await createPrompt({
+                    concept: concept,
+                    style: style === 'custom' ? customStyle : style,
+                    technical: tech,
+                    context: context,
+                    format: format
+                });
+
+                displayPromptResult(promptData);
+                addToPromptHistory(promptData);
+
+            } catch (error) {
+                console.error('Prompt generation failed:', error);
+                displayPromptError(error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'GENERATE CREATION PROMPT';
+            }
+        }
+
+        async function createPrompt(params) {
+            // Create a sophisticated prompt based on Nina's criteria
+            const styleGuides = {
+                'sherman_constructed': {
+                    approach: 'Staged identity construction with deliberate artifice',
+                    reference: 'Cindy Sherman\'s Untitled Film Stills',
+                    technique: 'Multiple persona exploration, costume/makeup transformation'
+                },
+                'tillmans_intimacy': {
+                    approach: 'Digital intimacy with analog feeling',
+                    reference: 'Wolfgang Tillmans\' Silver series',
+                    technique: 'Abstract color fields, scanner experiments, light studies'
+                },
+                'paglen_datasets': {
+                    approach: 'Archaeological excavation of AI training data',
+                    reference: 'Trevor Paglen\'s ImageNet Roulette',
+                    technique: 'Dataset visualization, bias revelation, taxonomy critique'
+                },
+                'dinkins_family': {
+                    approach: 'Personal AI training with family narratives',
+                    reference: 'Stephanie Dinkins\' AI grandmother conversations',
+                    technique: 'Custom model training, intergenerational dialogue'
+                },
+                'elwes_drag': {
+                    approach: 'AI performance of gender fluidity',
+                    reference: 'Jake Elwes\' Zizi drag performances',
+                    technique: 'GAN training on drag imagery, identity morphing'
+                },
+                'ulman_instagram': {
+                    approach: 'Social media performance art',
+                    reference: 'Amalia Ulman\'s Instagram trilogy',
+                    technique: 'Platform-specific performance, algorithmic manipulation'
+                }
+            };
+
+            const techSpecs = {
+                'diffusion_custom': 'Custom Stable Diffusion model trained on curated dataset',
+                'diffusion_lora': 'LoRA fine-tuning for style adaptation',
+                'gan_original': 'Custom GAN architecture with novel loss functions',
+                'hybrid_photo': 'Traditional photography enhanced with AI post-processing',
+                'dataset_curation': 'Original dataset creation with clear provenance',
+                'procedural_ai': 'Procedural generation combined with neural networks'
+            };
+
+            const contextSpecs = {
+                'paris_photo': {
+                    requirements: 'Wall presence at 80-120cm, gallery lighting compatibility',
+                    audience: 'International photo collectors and curators',
+                    standards: 'Compare to Gagosian/Zwirner main floor quality'
+                },
+                'biennale': {
+                    requirements: 'Conceptual rigor, global relevance, critical discourse',
+                    audience: 'International art world, critics, institutions',
+                    standards: 'Museum acquisition quality, art historical significance'
+                },
+                'commercial_gallery': {
+                    requirements: 'Market appeal while maintaining artistic integrity',
+                    audience: 'Private collectors, art advisors',
+                    standards: 'Blue-chip gallery representation level'
+                }
+            };
+
+            const selectedStyle = styleGuides[params.style] || { 
+                approach: 'Custom artistic approach', 
+                reference: params.style,
+                technique: 'Artist-defined methodology' 
+            };
+            
+            const selectedContext = contextSpecs[params.context] || contextSpecs['paris_photo'];
+            
+            // Generate the comprehensive prompt
+            const prompt = {
+                id: `prompt_${Date.now()}`,
+                timestamp: new Date().toISOString(),
+                concept: params.concept,
+                style_reference: selectedStyle,
+                technical_method: techSpecs[params.technical] || 'Standard AI generation',
+                exhibition_context: selectedContext,
+                output_format: params.format,
+                
+                creation_prompt: generateDetailedPrompt(params, selectedStyle, selectedContext),
+                nina_evaluation_prediction: predictScore(params),
+                production_guidelines: generateGuidelines(params, selectedStyle),
+                risk_assessment: assessRisks(params),
+                success_metrics: defineSuccess(params.context)
+            };
+
+            return prompt;
+        }
+
+        function generateDetailedPrompt(params, style, context) {
+            let prompt = `CREATION PROMPT - Nina Roehrs Curatorial Standards\n\n`;
+            
+            prompt += `CONCEPT: ${params.concept}\n\n`;
+            
+            prompt += `ARTISTIC APPROACH:\n`;
+            prompt += `- Reference: ${style.reference}\n`;
+            prompt += `- Method: ${style.approach}\n`;
+            prompt += `- Technique: ${style.technique}\n\n`;
+            
+            prompt += `TECHNICAL EXECUTION:\n`;
+            prompt += `- Method: ${params.technical}\n`;
+            prompt += `- Output: ${params.format}\n`;
+            prompt += `- Quality: ${context.standards}\n\n`;
+            
+            prompt += `CRITICAL REQUIREMENTS (Nina's Gates):\n`;
+            prompt += `1. PRINT INTEGRITY: Ensure clean edges, no artifacts at exhibition scale\n`;
+            prompt += `2. AI-CRITICALITY: Embed visible stance on dataset/bias issues\n`;
+            prompt += `3. ETHICS PROCESS: Document methodology, consent, dataset sources\n\n`;
+            
+            prompt += `DIMENSION TARGETS:\n`;
+            prompt += `- Paris Photo Readiness (30%): Frame for gallery wall, strong presence\n`;
+            prompt += `- AI-Criticality (25%): Challenge systems, don't just use them\n`;
+            prompt += `- Conceptual Strength (20%): ${params.concept} must be visible, not just explained\n`;
+            prompt += `- Technical Excellence (15%): Professional color/light control\n`;
+            prompt += `- Cultural Dialogue (10%): Reference without pastiche\n\n`;
+            
+            prompt += `AVOID:\n`;
+            prompt += `- Derivative imitation of references\n`;
+            prompt += `- AI artifacts (plastic skin, double irises, halo edges)\n`;
+            prompt += `- Surface aesthetics without conceptual depth\n`;
+            prompt += `- Unclear or undocumented process\n\n`;
+            
+            prompt += `SUCCESS TARGET: 75+ overall score for INCLUDE verdict`;
+            
+            return prompt;
+        }
+
+        function predictScore(params) {
+            // Predict how this prompt might score based on Nina's algorithm
+            let predictions = {
+                paris_photo_ready: 65,
+                ai_criticality: 60,
+                conceptual_strength: 70,
+                technical_excellence: 65,
+                cultural_dialogue: 60
+            };
+
+            // Adjust based on style selection
+            if (params.style.includes('paglen') || params.style.includes('dinkins')) {
+                predictions.ai_criticality += 15;
+            }
+            if (params.style.includes('sherman') || params.style.includes('ulman')) {
+                predictions.conceptual_strength += 10;
+            }
+            
+            // Adjust based on technical approach
+            if (params.technical.includes('custom')) {
+                predictions.technical_excellence += 10;
+                predictions.ai_criticality += 5;
+            }
+
+            const weighted_total = (
+                predictions.paris_photo_ready * 0.30 +
+                predictions.ai_criticality * 0.25 +
+                predictions.conceptual_strength * 0.20 +
+                predictions.technical_excellence * 0.15 +
+                predictions.cultural_dialogue * 0.10
+            );
+
+            return {
+                predicted_scores: predictions,
+                weighted_total: Math.round(weighted_total),
+                likely_verdict: weighted_total >= 75 ? 'INCLUDE' : weighted_total >= 55 ? 'MAYBE' : 'EXCLUDE',
+                confidence: 0.75,
+                key_strengths: getStrengths(predictions),
+                improvement_areas: getWeaknesses(predictions)
+            };
+        }
+
+        function getStrengths(scores) {
+            const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+            return sorted.slice(0, 2).map(([dim, score]) => 
+                `${dim.replace(/_/g, ' ')}: ${score}/100`
+            );
+        }
+
+        function getWeaknesses(scores) {
+            const sorted = Object.entries(scores).sort((a, b) => a[1] - b[1]);
+            return sorted.slice(0, 2).map(([dim, score]) => 
+                `${dim.replace(/_/g, ' ')}: ${score}/100 - needs development`
+            );
+        }
+
+        function generateGuidelines(params, style) {
+            return [
+                `Document your entire AI process for ethics gate`,
+                `Test multiple iterations - first attempts rarely score 75+`,
+                `Reference ${style.reference} but establish unique voice`,
+                `Consider post-processing for technical excellence`,
+                `Embed critique in visuals, not just wall text`,
+                `Frame specifically for ${params.format} display context`
+            ];
+        }
+
+        function assessRisks(params) {
+            return [
+                'High: Derivative work penalty (-8 points)',
+                'Medium: Technical artifacts from rapid generation',
+                'Medium: Unclear AI methodology documentation',
+                'Low: Style reference too literal',
+                'Variable: Concept visibility in final image'
+            ];
+        }
+
+        function defineSuccess(context) {
+            const metrics = {
+                'paris_photo': 'Gallery representation, collector interest, curatorial selection',
+                'biennale': 'Critical discourse, art historical contribution, institutional acquisition',
+                'commercial_gallery': 'Sales success while maintaining artistic integrity',
+                'museum_acquisition': 'Permanent collection consideration, scholarly attention'
+            };
+            
+            return metrics[context] || 'Recognition within art photography community';
+        }
+
+        function displayPromptResult(promptData) {
+            const output = document.getElementById('promptOutput');
+            
+            let html = `
+                <h3 style="font-size: 16px; font-weight: bold; letter-spacing: 1px; margin-bottom: 20px; color: #4CAF50;">
+                    CREATION PROMPT GENERATED
+                </h3>
+                
+                <div style="background: #222; border: 1px solid #444; padding: 20px; margin-bottom: 20px;">
+                    <pre style="color: #fff; font-size: 12px; line-height: 1.6; white-space: pre-wrap; font-family: 'Courier New', monospace;">${promptData.creation_prompt}</pre>
+                </div>
+
+                <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50; padding: 15px; margin-bottom: 15px;">
+                    <h4 style="font-size: 12px; font-weight: bold; color: #4CAF50; margin-bottom: 10px;">PREDICTED EVALUATION</h4>
+                    <div style="font-size: 11px; color: #aaa;">
+                        Expected Score: ${promptData.nina_evaluation_prediction.weighted_total}/100<br>
+                        Likely Verdict: ${promptData.nina_evaluation_prediction.likely_verdict}<br>
+                        Confidence: ${Math.round(promptData.nina_evaluation_prediction.confidence * 100)}%
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <h4 style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">PRODUCTION GUIDELINES</h4>
+                    ${promptData.production_guidelines.map(g => 
+                        `<div style="font-size: 11px; color: #ccc; margin-bottom: 3px;">→ ${g}</div>`
+                    ).join('')}
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <h4 style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">RISK ASSESSMENT</h4>
+                    ${promptData.risk_assessment.map(r => 
+                        `<div style="font-size: 11px; color: #ff9; margin-bottom: 3px;">⚠ ${r}</div>`
+                    ).join('')}
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="copyPrompt('${promptData.id}')" style="padding: 8px 16px; background: transparent; color: #fff; border: 1px solid #666; font-size: 10px; text-transform: uppercase; cursor: pointer;">
+                        Copy Prompt
+                    </button>
+                    <button onclick="savePrompt('${promptData.id}')" style="padding: 8px 16px; background: transparent; color: #fff; border: 1px solid #666; font-size: 10px; text-transform: uppercase; cursor: pointer;">
+                        Save to History
+                    </button>
+                </div>
+            `;
+            
+            output.innerHTML = html;
+        }
+
+        function displayPromptError(error) {
+            const output = document.getElementById('promptOutput');
+            output.innerHTML = `
+                <div style="text-align: center; color: #f44336; padding: 40px 20px;">
+                    <h4 style="margin-bottom: 10px;">PROMPT GENERATION FAILED</h4>
+                    <p style="font-size: 11px;">${error.message}</p>
+                </div>
+            `;
+        }
+
+        function addToPromptHistory(promptData) {
+            promptHistory.unshift(promptData);
+            if (promptHistory.length > 10) promptHistory.pop();
+            updatePromptHistoryDisplay();
+        }
+
+        function updatePromptHistoryDisplay() {
+            const historyDiv = document.getElementById('promptHistory');
+            
+            if (promptHistory.length === 0) {
+                historyDiv.innerHTML = '<div style="text-align: center; color: #444; padding: 40px;">No prompts generated yet</div>';
+                return;
+            }
+
+            historyDiv.innerHTML = promptHistory.map(prompt => `
+                <div style="background: #222; border: 1px solid #444; padding: 15px; cursor: pointer;" onclick="viewPromptDetails('${prompt.id}')">
+                    <div style="font-size: 11px; color: #888; margin-bottom: 5px;">${new Date(prompt.timestamp).toLocaleString()}</div>
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">${prompt.concept.substring(0, 50)}...</div>
+                    <div style="font-size: 10px; color: #aaa;">Style: ${prompt.style_reference.reference || 'Custom'}</div>
+                    <div style="font-size: 10px; color: #aaa;">Predicted: ${prompt.nina_evaluation_prediction.weighted_total}/100</div>
+                </div>
+            `).join('');
+        }
+
+        function copyPrompt(promptId) {
+            const prompt = promptHistory.find(p => p.id === promptId);
+            if (prompt) {
+                navigator.clipboard.writeText(prompt.creation_prompt).then(() => {
+                    // Temporary feedback
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = 'COPIED!';
+                    setTimeout(() => btn.textContent = originalText, 1500);
+                });
+            }
+        }
+
+        function savePrompt(promptId) {
+            // For now, just add visual feedback - could be enhanced to save to backend
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'SAVED!';
+            setTimeout(() => btn.textContent = originalText, 1500);
+        }
+
+        function viewPromptDetails(promptId) {
+            const prompt = promptHistory.find(p => p.id === promptId);
+            if (prompt) {
+                displayPromptResult(prompt);
+            }
         }
     </script>
 </body>

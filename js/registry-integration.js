@@ -27,7 +27,8 @@ class RegistryClient {
     buildUrl(endpoint) {
         const url = `${this.baseUrl}${endpoint}`;
         
-        if (this.bypassToken) {
+        // Only add bypass token for external registry URLs
+        if (this.bypassToken && this.baseUrl.includes('eden-genesis-registry')) {
             const separator = endpoint.includes('?') ? '&' : '?';
             return `${url}${separator}x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=${this.bypassToken}`;
         }
@@ -343,11 +344,15 @@ class RegistryClient {
         try {
             // Test the actual available endpoint
             const url = this.buildUrl('/agents');
+            console.log('Testing registry connection to:', url);
+            
             const response = await fetch(url, {
                 method: 'GET',
                 headers: this.getHeaders(),
                 timeout: 5000
             });
+            
+            console.log('Registry response:', response.status, response.ok);
             
             if (response.ok) {
                 return {

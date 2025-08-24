@@ -143,7 +143,6 @@
             text-transform: uppercase;
             margin-bottom: 5px;
             color: #666;
-            pointer-events: none;  /* Ensure clicks pass through to parent */
         }
 
         .nav-tab-desc {
@@ -152,7 +151,6 @@
             letter-spacing: 1px;
             text-transform: uppercase;
             white-space: nowrap;
-            pointer-events: none;  /* Ensure clicks pass through to parent */
         }
 
         .nav-tab:hover {
@@ -1374,24 +1372,21 @@
         const API_URL = '/api/nina-studio-api';
 
         // Tab switching
-        window.switchTab = function(tabName, evt) {
+        function switchTab(tabName) {
             console.log('Switching to tab:', tabName);
             
             // Remove active from all tabs and content areas
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
             
-            // Add active to clicked tab
-            if (evt && evt.currentTarget) {
-                evt.currentTarget.classList.add('active');
-            } else {
-                // Fallback: find the tab by matching onclick
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    const onclick = tab.getAttribute('onclick');
-                    if (onclick && onclick.includes(`'${tabName}'`)) {
-                        tab.classList.add('active');
-                    }
-                });
+            // Find and activate the clicked tab
+            const tabs = document.querySelectorAll('.nav-tab');
+            for (let tab of tabs) {
+                const onclick = tab.getAttribute('onclick');
+                if (onclick && onclick.indexOf(tabName) > -1) {
+                    tab.classList.add('active');
+                    break;
+                }
             }
             
             // Show the content area
@@ -1416,6 +1411,9 @@
                 console.error('Error loading tab data:', error);
             }
         }
+        
+        // Make it globally accessible
+        window.switchTab = switchTab;
 
         // Learning & Feedback Functions
         async function loadRecentEvaluations() {

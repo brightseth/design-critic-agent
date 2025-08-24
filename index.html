@@ -462,8 +462,12 @@
                 <span class="workspace-title">Workspace</span>
                 <span class="workspace-count" id="workspaceCount">0</span>
             </div>
-            <div class="workspace-actions">
-                <button class="btn btn-small btn-primary" onclick="addToWorkspace()">+ Add Images</button>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-small" id="imageMode" onclick="setMediaMode('image')" style="background: #4CAF50; color: #000;">Images</button>
+                    <button class="btn btn-small" id="videoMode" onclick="setMediaMode('video')">Videos</button>
+                </div>
+                <button class="btn btn-small btn-primary" onclick="addToWorkspace()" id="addMediaBtn">+ Add Images</button>
                 <button class="btn btn-small" onclick="clearWorkspace()">Clear All</button>
             </div>
         </div>
@@ -605,6 +609,7 @@
             collection: [],
             patterns: {},
             currentMode: 'evaluate',
+            mediaMode: 'image', // 'image' or 'video'
             tournamentRound: 0,
             tournamentWinners: []
         };
@@ -657,13 +662,48 @@
             }
         }
 
+        function setMediaMode(mode) {
+            workspace.mediaMode = mode;
+            
+            // Update UI
+            document.getElementById('imageMode').style.background = mode === 'image' ? '#4CAF50' : '#111';
+            document.getElementById('imageMode').style.color = mode === 'image' ? '#000' : '#fff';
+            document.getElementById('videoMode').style.background = mode === 'video' ? '#4CAF50' : '#111';
+            document.getElementById('videoMode').style.color = mode === 'video' ? '#000' : '#fff';
+            
+            // Update file input and labels
+            const fileInput = document.getElementById('workspaceFileInput');
+            const addBtn = document.getElementById('addMediaBtn');
+            const dropText = document.querySelector('#workspaceDropZone span');
+            
+            if (mode === 'video') {
+                fileInput.accept = 'video/*';
+                addBtn.textContent = '+ Add Videos';
+                dropText.textContent = 'Drop videos here or click + Add Videos (MAX 4MB)';
+            } else {
+                fileInput.accept = 'image/*';
+                addBtn.textContent = '+ Add Images';
+                dropText.textContent = 'Drop images here or click + Add Images';
+            }
+            
+            // Clear workspace when switching modes
+            if (workspace.images.length > 0) {
+                const currentType = workspace.images[0].type;
+                const newType = mode;
+                if (currentType !== newType) {
+                    clearWorkspace();
+                    showNotification(`Switched to ${mode} mode - workspace cleared`, 'info');
+                }
+            }
+        }
+
         function addToWorkspace() {
             const fileInput = document.getElementById('workspaceFileInput');
             if (!fileInput) {
                 console.error('File input not found!');
                 return;
             }
-            console.log('Opening file dialog, multiple:', fileInput.multiple, 'accept:', fileInput.accept);
+            console.log('Opening file dialog for:', workspace.mediaMode, 'accept:', fileInput.accept);
             fileInput.value = ''; // Reset to allow re-selecting
             fileInput.click();
         }
@@ -676,13 +716,24 @@
             const validFiles = Array.from(files).filter(file => {
                 const isImage = file.type.startsWith('image/');
                 const isVideo = file.type.startsWith('video/');
-                if (!isImage && !isVideo) console.log('Skipping non-media file:', file.name);
+                
+                // Only accept files matching current media mode
+                if (workspace.mediaMode === 'image' && !isImage) {
+                    console.log('Skipping non-image file in image mode:', file.name);
+                    return false;
+                }
+                if (workspace.mediaMode === 'video' && !isVideo) {
+                    console.log('Skipping non-video file in video mode:', file.name);
+                    return false;
+                }
+                
                 if (isVideo && file.size > 4 * 1024 * 1024) {
                     console.log('Skipping oversized video:', file.name, 'Size:', Math.round(file.size / 1024 / 1024) + 'MB');
                     showNotification(`Video "${file.name}" too large (max 4MB)`, 'error');
                     return false;
                 }
-                return isImage || isVideo;
+                
+                return (workspace.mediaMode === 'image' && isImage) || (workspace.mediaMode === 'video' && isVideo);
             });
             
             console.log('Processing', validFiles.length, 'valid media files');
@@ -708,7 +759,7 @@
                         id: `media_${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}`,
                         data: mediaData,
                         name: file.name,
-                        type: file.type.startsWith('image/') ? 'image' : 'video',
+                        type: workspace.mediaMode, // Use current media mode
                         evaluated: false,
                         score: null,
                         selected: false
@@ -1046,8 +1097,11 @@
                         <div class="result-info">
                             <div class="result-score ${scoreClass}">${Math.round(score)}%</div>
                             <div class="result-verdict">${evaluation.verdict || (score >= 85 ? 'Exhibition Ready' : score >= 60 ? 'Promising' : 'Needs Work')}</div>
-                            <div style="font-size: 10px; color: #666; margin-top: 5px; cursor: pointer;" onclick="event.stopPropagation(); toggleForCollection('${img.id}')">
-                                ${img.type === 'video' ? '🎬' : '🖼️'} Click for details • ${workspace.collection.find(c => c.id === img.id) ? '✓ In Collection' : 'Add to Collection'}
+                            <div style="font-size: 10px; color: #666; margin-top: 5px; display: flex; justify-content: space-between;">
+                                <span>${img.type === 'video' ? '🎬 Video' : '🖼️ Image'}</span>
+                                <span style="cursor: pointer; color: #4CAF50;" onclick="event.stopPropagation(); toggleForCollection('${img.id}')">
+                                    ${workspace.collection.find(c => c.id === img.id) ? '✓ Remove' : '+ Collect'}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -1233,16 +1287,25 @@
             const container = document.getElementById('collectionGrid');
             
             if (workspace.collection.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">No images in collection yet</div>';
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">No items collected yet. Go to EVALUATE and click "+ Collect" on items you want to include.</div>';
                 return;
             }
             
-            container.innerHTML = workspace.collection.map(img => `
-                <div class="result-card selected">
-                    <img src="${img.data}" class="result-image">
+            container.innerHTML = workspace.collection.map(item => `
+                <div class="result-card selected" onclick="showImageDetails('${item.id}')">
+                    ${item.type === 'video' ? 
+                        `<video class="result-image" muted loop autoplay><source src="${item.data}"></video>` :
+                        `<img src="${item.data}" class="result-image">`
+                    }
                     <div class="result-info">
-                        <div class="result-score score-high">${Math.round(img.score || 0)}%</div>
+                        <div class="result-score score-high">${Math.round(item.score || 0)}%</div>
                         <div class="result-verdict">Selected for Exhibition</div>
+                        <div style="font-size: 10px; color: #666; margin-top: 5px; display: flex; justify-content: space-between;">
+                            <span>${item.type === 'video' ? '🎬 Video' : '🖼️ Image'}</span>
+                            <span style="cursor: pointer; color: #f44336;" onclick="event.stopPropagation(); toggleForCollection('${item.id}')">
+                                ✗ Remove
+                            </span>
+                        </div>
                     </div>
                 </div>
             `).join('');
@@ -1371,22 +1434,47 @@
 
         // OPTIMIZE functions
         function generateOptimizations() {
-            const highScorers = workspace.images.filter(img => img.score && img.score >= 75);
+            const collection = workspace.collection.length > 0 ? workspace.collection : workspace.images.filter(img => img.score && img.score >= 75);
             
-            if (highScorers.length === 0) {
-                document.getElementById('optimizedPrompt').textContent = 'Need evaluated high-scoring images to generate optimizations';
+            if (collection.length === 0) {
+                document.getElementById('optimizedPrompt').textContent = 'Need evaluated high-scoring items or a collection to generate optimizations. Go to EVALUATE first.';
                 return;
             }
             
-            const prompts = [
-                "Posthuman identity performing through synthetic overlays, body as dataset negotiating visibility and erasure. Emphasize the glitch between organic and algorithmic presence.",
-                "Figure caught in recursive loop of self-documentation, each iteration degrading into more authentic representation. Focus on compression artifacts as emotional truth.",
-                "Consciousness streaming through fiber optic infrastructure, human warmth persisting through cold data transfer. Capture the latency between thought and transmission.",
-                "Portrait where training data shows through the skin, revealing the violence of categorization. Make visible the dataset's colonial gaze.",
-                "Body performing its own deepfake, authenticity through deliberate synthetic corruption. The uncanny valley as home."
+            // Analyze what made the high scorers successful
+            const avgScore = collection.reduce((sum, item) => sum + (item.score || 0), 0) / collection.length;
+            const hasVideos = collection.some(item => item.type === 'video');
+            const exhibitionReady = collection.filter(item => item.score >= 85).length;
+            
+            let insights = [];
+            
+            if (avgScore >= 80) {
+                insights.push("Strong conceptual consistency across selected pieces");
+            }
+            if (exhibitionReady >= 2) {
+                insights.push("Multiple exhibition-ready pieces suggest clear aesthetic direction");
+            }
+            if (hasVideos) {
+                insights.push("Temporal media adds narrative depth to static work");
+            }
+            
+            // Generate dynamic prompt based on actual results
+            const mediaType = hasVideos ? "video and image" : workspace.mediaMode;
+            const qualityLevel = avgScore >= 85 ? "exhibition-grade" : avgScore >= 70 ? "gallery-worthy" : "emerging";
+            
+            const dynamicPrompts = [
+                `Create ${qualityLevel} ${mediaType} work that builds on the ${insights.length > 0 ? insights[0].toLowerCase() : 'aesthetic patterns'} seen in your top selections. Focus on Paris Photo 2025 exhibition context.`,
+                `Based on your ${collection.length} selected pieces (avg: ${Math.round(avgScore)}%), generate ${mediaType} work that amplifies the successful ${hasVideos ? 'temporal and visual' : 'visual'} elements while addressing any conceptual gaps.`,
+                `Your curation reveals strong ${avgScore >= 80 ? 'technical execution' : 'conceptual foundation'}. Create new ${mediaType} work that pushes this aesthetic further toward gallery exhibition standards.`
             ];
             
-            document.getElementById('optimizedPrompt').textContent = prompts[Math.floor(Math.random() * prompts.length)];
+            const optimizedPrompt = dynamicPrompts[Math.floor(Math.random() * dynamicPrompts.length)];
+            const analysis = `Analysis: ${collection.length} items selected, ${Math.round(avgScore)}% average score, ${exhibitionReady} exhibition-ready pieces${hasVideos ? ', includes video work' : ''}.`;
+            
+            document.getElementById('optimizedPrompt').innerHTML = `
+                <div style="color: #666; font-size: 12px; margin-bottom: 15px;">${analysis}</div>
+                <div style="color: #4CAF50; line-height: 1.6;">${optimizedPrompt}</div>
+            `;
         }
 
         // REVIEW functions

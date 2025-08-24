@@ -900,8 +900,19 @@
                 <div class="card">
                     <div class="card-title">Collection Images</div>
                     <div class="card-content">
+                        <div id="collectionUploadArea" class="upload-area" style="display: none; margin-bottom: 20px;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                            <p>ADD IMAGES TO COLLECTION</p>
+                            <span class="file-hint">DRAG IMAGES HERE OR CLICK TO UPLOAD</span>
+                            <input type="file" id="collectionImageInput" multiple accept="image/*" style="display: none;">
+                        </div>
                         <div class="image-grid" id="collectionImages"></div>
-                        <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" id="addImagesBtn" onclick="showCollectionUpload()">+ Add Images</button>
                             <button class="btn btn-secondary" onclick="generateCuratorialStatement()">Generate Statement</button>
                             <button class="btn btn-secondary" onclick="optimizeSequence()">Optimize Sequence</button>
                             <button class="btn btn-secondary" onclick="checkCoherence()">Check Coherence</button>
@@ -1656,6 +1667,133 @@
                 event.currentTarget.classList.add('active');
             }
             displayCollectionImages();
+            
+            // Show/hide add images button based on selection
+            const addBtn = document.getElementById('addImagesBtn');
+            if (addBtn) {
+                addBtn.style.display = currentCollection ? 'block' : 'none';
+            }
+        }
+        
+        function showCollectionUpload() {
+            if (!currentCollection) {
+                showNotification('Please select a collection first', 'error');
+                return;
+            }
+            
+            const uploadArea = document.getElementById('collectionUploadArea');
+            uploadArea.style.display = 'flex';
+            initCollectionUpload();
+        }
+        
+        let collectionUploadInitialized = false;
+        function initCollectionUpload() {
+            if (collectionUploadInitialized) return;
+            collectionUploadInitialized = true;
+            
+            const uploadArea = document.getElementById('collectionUploadArea');
+            const fileInput = document.getElementById('collectionImageInput');
+            
+            if (!uploadArea || !fileInput) return;
+            
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleCollectionFiles(e.dataTransfer.files);
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleCollectionFiles(e.target.files);
+                }
+            });
+        }
+        
+        async function handleCollectionFiles(files) {
+            if (!currentCollection) {
+                showNotification('No collection selected', 'error');
+                return;
+            }
+            
+            const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            
+            if (validFiles.length === 0) {
+                showNotification('Please select valid image files', 'error');
+                return;
+            }
+            
+            showNotification(`Evaluating ${validFiles.length} images for collection...`, 'info');
+            
+            // Process each image
+            for (const file of validFiles) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const imageData = e.target.result;
+                    
+                    // Evaluate the image first
+                    try {
+                        const evalResponse = await fetch(API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'evaluate',
+                                data: {
+                                    imageData: imageData,
+                                    metadata: {
+                                        artistId: artistId,
+                                        collectionId: currentCollection.id,
+                                        fileName: file.name
+                                    }
+                                }
+                            })
+                        });
+                        
+                        const evalResult = await evalResponse.json();
+                        
+                        if (evalResult.success && evalResult.evaluation) {
+                            // Add to collection
+                            const addResponse = await fetch(API_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    action: 'add_to_collection',
+                                    data: {
+                                        collectionId: currentCollection.id,
+                                        evaluationId: evalResult.evaluation.id,
+                                        role: evalResult.evaluation.weighted_total >= 85 ? 'hero' : 'supporting',
+                                        tags: []
+                                    }
+                                })
+                            });
+                            
+                            const addResult = await addResponse.json();
+                            
+                            if (addResult.success) {
+                                showNotification(`Added ${file.name} to collection (Score: ${evalResult.evaluation.weighted_total})`, 'success');
+                                // Refresh collection display
+                                displayCollectionImages();
+                            }
+                        } else {
+                            showNotification(`Failed to evaluate ${file.name}`, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error processing image:', error);
+                        showNotification(`Error processing ${file.name}`, 'error');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Hide upload area after processing
+            document.getElementById('collectionUploadArea').style.display = 'none';
         }
 
         function displayCollectionImages() {

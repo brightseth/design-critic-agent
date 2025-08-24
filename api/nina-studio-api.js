@@ -1,16 +1,40 @@
 // Nina Studio API - Unified endpoint for all Studio features
-const NinaLearning = require('./nina-learning');
-const NinaCuration = require('./nina-curation');
-const NinaPromptEnhancement = require('./nina-prompt-enhancement');
 const { evaluateImage } = require('./nina-curator-v2');
 const NinaVideoAnalyzer = require('./nina-video-analyzer');
 const ninaStorage = require('../lib/supabase');
-const registryClient = require('../lib/genesis-registry');
 
-// Initialize systems
-const learning = new NinaLearning();
-const curation = new NinaCuration();
-const promptEnhancer = new NinaPromptEnhancement();
+// Try to load optional modules with fallbacks
+let NinaLearning, NinaCuration, NinaPromptEnhancement, registryClient;
+let learning, curation, promptEnhancer;
+
+try {
+  NinaLearning = require('./nina-learning');
+  learning = new NinaLearning();
+} catch (e) {
+  console.log('Nina Learning module not available:', e.message);
+}
+
+try {
+  NinaCuration = require('./nina-curation');
+  curation = new NinaCuration();
+} catch (e) {
+  console.log('Nina Curation module not available:', e.message);
+}
+
+try {
+  NinaPromptEnhancement = require('./nina-prompt-enhancement');
+  promptEnhancer = new NinaPromptEnhancement();
+} catch (e) {
+  console.log('Nina Prompt Enhancement module not available:', e.message);
+}
+
+try {
+  registryClient = require('../lib/genesis-registry');
+} catch (e) {
+  console.log('Genesis Registry client not available:', e.message);
+}
+
+// Initialize core systems
 const videoAnalyzer = new NinaVideoAnalyzer();
 
 // Fallback in-memory storage for when Supabase is unavailable
@@ -23,8 +47,10 @@ const memoryStorage = {
   feedback: []
 };
 
-// Initialize learning system on startup
-learning.initialize().catch(console.error);
+// Initialize learning system on startup if available
+if (learning) {
+  learning.initialize().catch(console.error);
+}
 
 module.exports = async (req, res) => {
   // CORS headers
@@ -159,42 +185,54 @@ async function handleEvaluation(data, res) {
   // Store evaluation locally first (for UX)
   memoryStorage.evaluations.push(evaluation);
   
-  // Apply style fingerprint if artist ID provided
-  if (metadata.artistId) {
-    const adjusted = await learning.applyStyleFingerprint(evaluation, metadata.artistId);
-    evaluation.fingerprint_adjusted = adjusted.fingerprint_adjusted;
-    evaluation.artist_context = adjusted.artist_context;
+  // Apply style fingerprint if artist ID provided and learning available
+  if (metadata.artistId && learning) {
+    try {
+      const adjusted = await learning.applyStyleFingerprint(evaluation, metadata.artistId);
+      evaluation.fingerprint_adjusted = adjusted.fingerprint_adjusted;
+      evaluation.artist_context = adjusted.artist_context;
+    } catch (e) {
+      console.log('Style fingerprint not available:', e.message);
+    }
   }
   
-  // Track success patterns
-  if (evaluation.weighted_total >= 0.75) {
-    await learning.recordSuccessPattern(evaluation);
+  // Track success patterns if learning available
+  if (evaluation.weighted_total >= 0.75 && learning) {
+    try {
+      await learning.recordSuccessPattern(evaluation);
+    } catch (e) {
+      console.log('Success pattern tracking not available:', e.message);
+    }
   }
   
-  // Mirror to Registry if this is for an agent
-  if (metadata.agentId && metadata.imageUrl) {
-    await registryClient.appendCreation(metadata.agentId, {
-      mediaUri: metadata.imageUrl,
-      metadata: {
-        criticScores: {
-          composition: evaluation.dimensions.technical_excellence,
-          originality: evaluation.dimensions.ai_criticality,
-          conceptual: evaluation.dimensions.conceptual_strength,
-          parisPhotoReady: evaluation.dimensions.paris_photo_ready,
-          culturalDialogue: evaluation.dimensions.cultural_dialogue,
-          overall: evaluation.weighted_total
-        },
-        notes: evaluation.recommendation,
-        ninaEvaluationId: evaluation.id,
-        timestamp: evaluation.timestamp
-      }
-    });
+  // Mirror to Registry if this is for an agent and registry available
+  if (metadata.agentId && metadata.imageUrl && registryClient) {
+    try {
+      await registryClient.appendCreation(metadata.agentId, {
+        mediaUri: metadata.imageUrl,
+        metadata: {
+          criticScores: {
+            composition: evaluation.dimensions.technical_excellence,
+            originality: evaluation.dimensions.ai_criticality,
+            conceptual: evaluation.dimensions.conceptual_strength,
+            parisPhotoReady: evaluation.dimensions.paris_photo_ready,
+            culturalDialogue: evaluation.dimensions.cultural_dialogue,
+            overall: evaluation.weighted_total
+          },
+          notes: evaluation.recommendation,
+          ninaEvaluationId: evaluation.id,
+          timestamp: evaluation.timestamp
+        }
+      });
+    } catch (e) {
+      console.log('Registry update not available:', e.message);
+    }
   }
   
   return res.status(200).json({
     success: true,
     evaluation,
-    recommendations: await learning.getRecommendations(evaluation),
+    recommendations: learning ? await learning.getRecommendations(evaluation) : [],
     agentData: agentData ? {
       name: agentData.displayName,
       handle: agentData.handle,
@@ -598,16 +636,24 @@ async function evaluateVideo(data, res) {
     return res.status(400).json({ error: 'No video data provided' });
   }
   
-  const evaluation = await videoAnalyzer.evaluateVideo(videoData, metadata);
-  
-  // Store in memory (would need Supabase video table)
-  memoryStorage.evaluations.push(evaluation);
-  
-  return res.status(200).json({
-    success: true,
-    evaluation,
-    format_suggestion: evaluation.exhibition_format
-  });
+  try {
+    const evaluation = await videoAnalyzer.evaluateVideo(videoData, metadata);
+    
+    // Store in memory (would need Supabase video table)
+    memoryStorage.evaluations.push(evaluation);
+    
+    return res.status(200).json({
+      success: true,
+      evaluation,
+      format_suggestion: evaluation.exhibition_format
+    });
+  } catch (error) {
+    console.error('Video evaluation error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to analyze video: ' + error.message
+    });
+  }
 }
 
 async function compareVideos(data, res) {

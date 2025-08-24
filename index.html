@@ -453,6 +453,40 @@
             <div class="logo">CURATION STATION</div>
             <div class="tagline">AI-Powered Art Curation Platform</div>
         </div>
+        
+        <!-- Curator & Venue Selectors -->
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666;">Curator Lens</label>
+                <select id="curatorSelector" onchange="updateCurator()" style="background: #111; border: 2px solid #333; color: #fff; padding: 10px 15px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer; min-width: 150px;">
+                    <option value="nina">🎯 Nina - Gallery</option>
+                    <option value="warhol">🥫 Warhol - Pop Art</option>
+                    <option value="abramovic">🔥 Abramović - Performance</option>
+                    <option value="adams">🏔️ Adams - Landscape</option>
+                    <option value="scher">📐 Scher - Graphics</option>
+                    <option value="kusama">🔴 Kusama - Infinity</option>
+                    <option value="bourgeois">🕷️ Bourgeois - Psychology</option>
+                    <option value="koons">🎈 Koons - Luxury Pop</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666;">Venue Context</label>
+                <select id="venueSelector" onchange="updateVenue()" style="background: #111; border: 2px solid #333; color: #fff; padding: 10px 15px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer; min-width: 150px;">
+                    <option value="parisPhoto">🗼 Paris Photo</option>
+                    <option value="whiteCube">⬜ White Cube</option>
+                    <option value="moma">🏛️ MoMA</option>
+                    <option value="artBasel">🌍 Art Basel</option>
+                    <option value="veniceBiennale">🎭 Venice Biennale</option>
+                    <option value="onlineGallery">💻 Online Gallery</option>
+                    <option value="publicInstallation">🏙️ Public Space</option>
+                    <option value="auctionHouse">🔨 Auction House</option>
+                    <option value="retailSpace">🛍️ Retail Space</option>
+                    <option value="nftPlatform">⛓️ NFT Platform</option>
+                </select>
+            </div>
+        </div>
+        
         <div>
             <div style="display: flex; gap: 20px; align-items: center;">
                 <button onclick="showNinaInfo()" style="background: none; border: 2px solid #333; border-radius: 6px; color: #888; padding: 12px 20px; font-size: 13px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.borderColor='#666'; this.style.color='#fff'" onmouseout="this.style.borderColor='#333'; this.style.color='#888'">About Curator</button>
@@ -532,6 +566,10 @@
                     <button class="btn" onclick="moveTopToCompare()" id="compareTopBtn" style="display: none;">Compare Top →</button>
                 </div>
             </div>
+            
+            <!-- Curation Context Display -->
+            <div id="curationContext"></div>
+            
             <div id="evaluateResults" class="results-grid">
                 <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
                     Add images to workspace above to begin evaluation
@@ -616,6 +654,10 @@
         </div>
     </div>
 
+    <!-- Load curator and venue configurations -->
+    <script src="curator-personas.js"></script>
+    <script src="venue-profiles.js"></script>
+    
     <script>
         // Global workspace
         let workspace = {
@@ -627,8 +669,14 @@
             currentMode: 'evaluate',
             mediaMode: 'image', // 'image' or 'video'
             tournamentRound: 0,
-            tournamentWinners: []
+            tournamentWinners: [],
+            currentCurator: 'nina',
+            currentVenue: 'parisPhoto'
         };
+        
+        // Current curator and venue settings
+        let currentCurator = CURATOR_PERSONAS.nina;
+        let currentVenue = VENUE_PROFILES.parisPhoto;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -636,9 +684,58 @@
             setupFileInput();
             loadFromStorage();
             updateAllCounts();
+            updateCurationContext(); // Initialize context display
         });
 
         // Workspace setup
+        // Curator and Venue Management
+        function updateCurator() {
+            const curatorId = document.getElementById('curatorSelector').value;
+            workspace.currentCurator = curatorId;
+            currentCurator = CURATOR_PERSONAS[curatorId];
+            
+            // Update UI to reflect new curator
+            updateCurationContext();
+            showNotification(`Switched to ${currentCurator.name} (${currentCurator.title})`, 'info');
+        }
+        
+        function updateVenue() {
+            const venueId = document.getElementById('venueSelector').value;
+            workspace.currentVenue = venueId;
+            currentVenue = VENUE_PROFILES[venueId];
+            
+            // Update UI to reflect new venue
+            updateCurationContext();
+            showNotification(`Context: ${currentVenue.name} (${currentVenue.type})`, 'info');
+        }
+        
+        function updateCurationContext() {
+            // Update the analysis section with current context
+            const contextDisplay = document.getElementById('curationContext');
+            if (contextDisplay) {
+                contextDisplay.innerHTML = `
+                    <div style="display: flex; gap: 20px; padding: 15px; background: #0a0a0a; border-radius: 6px; margin-bottom: 20px;">
+                        <div style="flex: 1;">
+                            <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Curator Perspective</div>
+                            <div style="font-size: 16px; font-weight: 600; color: ${currentCurator.color};">
+                                ${currentCurator.avatar} ${currentCurator.name}
+                                <span style="font-size: 13px; color: #888; font-weight: 400; margin-left: 10px;">${currentCurator.title}</span>
+                            </div>
+                            <div style="font-size: 13px; color: #aaa; margin-top: 5px;">${currentCurator.description}</div>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Venue Context</div>
+                            <div style="font-size: 16px; font-weight: 600; color: #4CAF50;">
+                                ${currentVenue.icon} ${currentVenue.name}
+                                <span style="font-size: 13px; color: #888; font-weight: 400; margin-left: 10px;">${currentVenue.type}</span>
+                            </div>
+                            <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Quality Threshold: ${currentVenue.requirements.minQuality}%</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         function setupWorkspace() {
             const dropZone = document.getElementById('workspaceDropZone');
             if (!dropZone) return;

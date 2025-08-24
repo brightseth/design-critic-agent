@@ -1,55 +1,18 @@
 {
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/curation-api-docs.html",
+      "destination": "/registry-docs.html"
+    }
+  ],
   "functions": {
-    "api/analyze.js": {
-      "maxDuration": 30
-    },
-    "api/analyze-simple.js": {
-      "maxDuration": 30
-    },
-    "api/nina-curator.js": {
-      "maxDuration": 30
-    },
-    "api/nina-curator-v2.js": {
-      "maxDuration": 30
-    },
-    "api/nina-api.js": {
-      "maxDuration": 30
-    },
-    "api/nina-studio-api.js": {
-      "maxDuration": 30
-    },
-    "api/test-timeout.js": {
-      "maxDuration": 30
+    "api/index.js": {
+      "maxDuration": 10
     }
-  },
-  "routes": [
-    {
-      "src": "/api/test-env",
-      "dest": "/api/test-env.js"
-    },
-    {
-      "src": "/api/test-claude",
-      "dest": "/api/test-claude.js"
-    },
-    {
-      "src": "/api/analyze",
-      "dest": "/api/analyze-simple.js"
-    },
-    {
-      "src": "/api/nina-curator",
-      "dest": "/api/nina-curator.js"
-    },
-    {
-      "src": "/api/nina-curator-v2",
-      "dest": "/api/nina-curator-v2.js"
-    },
-    {
-      "src": "/api/nina",
-      "dest": "/api/nina-api.js"
-    },
-    {
-      "src": "/api/nina-studio",
-      "dest": "/api/nina-studio-api.js"
-    }
-  ]
+  }
 }

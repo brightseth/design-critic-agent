@@ -251,8 +251,13 @@ function selectRandom(array, min, max) {
     return shuffled.slice(0, count);
 }
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Design Critic Agent running at http://localhost:${PORT}`);
-    console.log(`Press Ctrl+C to stop the server`);
-});
+// Start server (only if not in Vercel)
+if (process.env.VERCEL !== '1') {
+    app.listen(PORT, () => {
+        console.log(`Design Critic Agent running at http://localhost:${PORT}`);
+        console.log(`Press Ctrl+C to stop the server`);
+    });
+}
+
+// Export for Vercel
+module.exports = app;

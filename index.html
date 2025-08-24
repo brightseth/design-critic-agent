@@ -321,6 +321,12 @@
             border: 1px solid rgba(255, 193, 7, 0.3);
         }
 
+        .status-pending {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6C757D;
+            border: 1px solid rgba(108, 117, 125, 0.3);
+        }
+
         /* Upload Zone */
         .upload-zone {
             border: 2px dashed #333;
@@ -478,8 +484,18 @@
             <div class="tagline">AI-Powered Art Curation Platform</div>
         </div>
         
-        <!-- Curator & Venue Selectors -->
+        <!-- Agent, Curator & Venue Selectors -->
         <div style="display: flex; gap: 20px; align-items: center;">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666;">Agent Source</label>
+                <select id="agentSelector" onchange="updateAgent()" style="background: #111; border: 2px solid #333; color: #fff; padding: 10px 15px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer; min-width: 150px;">
+                    <option value="solienne-001">✨ Solienne - Identity</option>
+                    <option value="abraham-001">📚 Abraham - Knowledge</option>
+                    <option value="koru-001">🌀 Koru - Patterns</option>
+                    <option value="custom">📁 Local Files</option>
+                </select>
+            </div>
+            
             <div style="display: flex; flex-direction: column; gap: 5px;">
                 <label style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666;">Curator Lens</label>
                 <select id="curatorSelector" onchange="updateCurator()" style="background: #111; border: 2px solid #333; color: #fff; padding: 10px 15px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer; min-width: 150px;">
@@ -700,11 +716,13 @@
             mediaMode: 'image', // 'image' or 'video'
             tournamentRound: 0,
             tournamentWinners: [],
+            currentAgent: 'solienne-001',
             currentCurator: 'nina',
             currentVenue: 'parisPhoto'
         };
         
-        // Current curator and venue settings
+        // Current agent, curator and venue settings
+        let currentAgent = 'solienne-001';
         let currentCurator = CURATOR_PERSONAS.nina;
         let currentVenue = VENUE_PROFILES.parisPhoto;
 
@@ -718,7 +736,25 @@
         });
 
         // Workspace setup
-        // Curator and Venue Management
+        // Agent, Curator and Venue Management
+        function updateAgent() {
+            const agentId = document.getElementById('agentSelector').value;
+            workspace.currentAgent = agentId;
+            currentAgent = agentId;
+            
+            // Update UI to reflect new agent
+            updateCurationContext();
+            
+            const agentNames = {
+                'solienne-001': 'Solienne (Identity Explorer)',
+                'abraham-001': 'Abraham (Knowledge Synthesizer)', 
+                'koru-001': 'Koru (Pattern Researcher)',
+                'custom': 'Local Files'
+            };
+            
+            showNotification(`Source: ${agentNames[agentId] || agentId}`, 'info');
+        }
+        
         function updateCurator() {
             const curatorId = document.getElementById('curatorSelector').value;
             workspace.currentCurator = curatorId;
@@ -743,15 +779,30 @@
             // Update the analysis section with current context
             const contextDisplay = document.getElementById('curationContext');
             if (contextDisplay) {
+                const agentNames = {
+                    'solienne-001': { name: 'Solienne', specialty: 'Identity Explorer', icon: '✨' },
+                    'abraham-001': { name: 'Abraham', specialty: 'Knowledge Synthesizer', icon: '📚' },
+                    'koru-001': { name: 'Koru', specialty: 'Pattern Researcher', icon: '🌀' },
+                    'custom': { name: 'Local Files', specialty: 'User Uploads', icon: '📁' }
+                };
+                
+                const agentInfo = agentNames[currentAgent] || { name: currentAgent, specialty: 'Unknown', icon: '❓' };
+                
                 contextDisplay.innerHTML = `
-                    <div style="display: flex; gap: 20px; padding: 15px; background: #0a0a0a; border-radius: 6px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; padding: 15px; background: #0a0a0a; border-radius: 6px; margin-bottom: 20px;">
+                        <div style="flex: 1;">
+                            <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Agent Source</div>
+                            <div style="font-size: 16px; font-weight: 600; color: #FFC107;">
+                                ${agentInfo.icon} ${agentInfo.name}
+                                <span style="font-size: 13px; color: #888; font-weight: 400; margin-left: 10px;">${agentInfo.specialty}</span>
+                            </div>
+                        </div>
                         <div style="flex: 1;">
                             <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Curator Perspective</div>
                             <div style="font-size: 16px; font-weight: 600; color: ${currentCurator.color};">
                                 ${currentCurator.avatar} ${currentCurator.name}
                                 <span style="font-size: 13px; color: #888; font-weight: 400; margin-left: 10px;">${currentCurator.title}</span>
                             </div>
-                            <div style="font-size: 13px; color: #aaa; margin-top: 5px;">${currentCurator.description}</div>
                         </div>
                         <div style="flex: 1;">
                             <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Venue Context</div>
@@ -759,7 +810,6 @@
                                 ${currentVenue.icon} ${currentVenue.name}
                                 <span style="font-size: 13px; color: #888; font-weight: 400; margin-left: 10px;">${currentVenue.type}</span>
                             </div>
-                            <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Quality Threshold: ${currentVenue.requirements.minQuality}%</div>
                         </div>
                     </div>
                 `;
@@ -844,16 +894,36 @@
         async function showRegistryBrowser() {
             try {
                 // Test connection first
-                const connected = await registryClient.testConnection()
-                if (!connected) {
-                    showNotification('Could not connect to Genesis Registry', 'error')
-                    return
+                if (!window.registryClient) {
+                    showNotification('Registry client not initialized', 'error');
+                    return;
                 }
                 
-                // Load Solienne's works
-                showNotification('Loading Solienne\'s works from Registry...', 'info')
+                const connectionStatus = await window.registryClient.testConnection();
+                if (!connectionStatus.connected) {
+                    showNotification(`Registry: ${connectionStatus.message}`, 'warning');
+                    // Still show the modal but with a message
+                }
                 
-                const response = await registryClient.getAgentWorks('solienne-001', {
+                // Get current agent
+                const selectedAgent = document.getElementById('agentSelector').value;
+                
+                // Skip if custom (local files)
+                if (selectedAgent === 'custom') {
+                    showNotification('Switch to an AI agent to browse Registry works', 'info');
+                    return;
+                }
+                
+                // Load selected agent's works
+                const agentNames = {
+                    'solienne-001': 'Solienne',
+                    'abraham-001': 'Abraham',
+                    'koru-001': 'Koru'
+                };
+                
+                showNotification(`Loading ${agentNames[selectedAgent]}'s works from Registry...`, 'info');
+                
+                const response = await registryClient.getAgentWorks(selectedAgent, {
                     type: 'image',
                     featured: 'true',
                     limit: 20,
@@ -870,7 +940,7 @@
                         themes: work.themes || [],
                         description: work.description || work.prompt,
                         source: 'registry',
-                        agent: 'solienne-001',
+                        agent: selectedAgent,
                         registryData: work
                     }))
                     
@@ -882,7 +952,7 @@
                     updateAllCounts()
                     saveToStorage()
                     
-                    showNotification(`Added ${validWorks.length} works from Solienne`, 'success')
+                    showNotification(`Added ${validWorks.length} works from ${agentNames[selectedAgent]}`, 'success')
                 } else {
                     showNotification('No featured works found for Solienne', 'warning')
                 }

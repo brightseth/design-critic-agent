@@ -352,27 +352,42 @@ class RegistryClient {
                 return {
                     connected: true,
                     status: response.status,
-                    message: 'Registry connected successfully'
+                    message: 'Registry API Connected'
+                };
+            } else if (response.status === 500) {
+                // Server error - registry exists but API not ready
+                return {
+                    connected: false,
+                    status: response.status,
+                    message: 'Registry API Unavailable'
                 };
             } else {
-                // Try fallback to root
+                // Try fallback to root to check if registry exists
                 const rootUrl = this.baseUrl.replace('/api/v1', '');
                 const rootResponse = await fetch(rootUrl, {
                     method: 'GET',
                     timeout: 5000
                 });
                 
-                return {
-                    connected: rootResponse.ok,
-                    status: rootResponse.status,
-                    message: rootResponse.ok ? 'Registry accessible (limited endpoints)' : `Registry error: ${response.status}`
-                };
+                if (rootResponse.ok) {
+                    return {
+                        connected: false,
+                        status: response.status,
+                        message: 'Registry Online (API Pending)'
+                    };
+                } else {
+                    return {
+                        connected: false,
+                        status: response.status,
+                        message: `Registry Error: ${response.status}`
+                    };
+                }
             }
         } catch (error) {
             return {
                 connected: false,
                 status: null,
-                message: `Registry connection failed: ${error.message}`
+                message: 'Registry Offline'
             };
         }
     }
@@ -449,7 +464,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const statusElement = document.getElementById('registry-status');
                 if (statusElement) {
                     statusElement.textContent = status.message;
-                    statusElement.className = status.connected ? 'status-connected' : 'status-disconnected';
+                    
+                    // Determine status class
+                    let statusClass = 'registry-status';
+                    if (status.connected) {
+                        statusClass += ' status-connected';
+                    } else if (status.message.includes('Online') || status.message.includes('Pending')) {
+                        statusClass += ' status-pending';
+                    } else {
+                        statusClass += ' status-disconnected';
+                    }
+                    
+                    statusElement.className = statusClass;
                 }
             });
         }

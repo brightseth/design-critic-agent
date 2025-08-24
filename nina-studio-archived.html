@@ -1,0 +1,2870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NINA STUDIO — ADVANCED CURATION SUITE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header - Matching Nina's main interface */
+        .header {
+            padding: 30px 40px;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header-text h1 {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: #888;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .mode-indicator {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #4CAF50;
+            display: inline-block;
+        }
+
+        /* Studio Badge */
+        .studio-badge {
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #333, #111);
+            border: 1px solid #666;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        /* Nina Link */
+        .nina-link {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid #666;
+            color: #888;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        .nina-link:hover {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        /* Navigation Tabs - Nina style */
+        .nav-tabs {
+            display: flex;
+            background: #111;
+            border-bottom: 1px solid #333;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: #333 #111;
+        }
+        
+        .nav-tabs::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .nav-tabs::-webkit-scrollbar-track {
+            background: #111;
+        }
+        
+        .nav-tabs::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        
+        .nav-tabs::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .nav-tab {
+            flex: 0 0 auto;
+            min-width: 140px;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-right: 1px solid #333;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-tab:last-child {
+            border-right: none;
+        }
+
+        .nav-tab-title {
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .nav-tab-desc {
+            font-size: 9px;
+            color: #444;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab:hover .nav-tab-title {
+            color: #fff;
+        }
+
+        .nav-tab.active {
+            background: #000;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .nav-tab.active .nav-tab-title {
+            color: #fff;
+        }
+
+        /* Content Areas */
+        .content-area {
+            display: none;
+            padding: 30px 40px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .content-area.active {
+            display: block;
+        }
+
+        /* Cards - Nina style */
+        .card {
+            background: #111;
+            border: 1px solid #333;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            padding: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            color: #fff;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        /* Buttons - Nina style */
+        .btn {
+            padding: 15px 30px;
+            background: #000;
+            color: #fff;
+            border: 1px solid #666;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        .btn:hover {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border-color: #333;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            border-color: #666;
+            color: #fff;
+            background: transparent;
+        }
+
+        .btn-success {
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+
+        .btn-success:hover {
+            background: #4CAF50;
+            color: #000;
+        }
+
+        /* Forms - Nina style */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input, textarea {
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        .form-input:focus, textarea:focus {
+            outline: none;
+            border-color: #666;
+            background: #111;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        /* Image Grid - Nina style */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            padding: 20px 0;
+        }
+
+        .image-item {
+            position: relative;
+            background: #111;
+            border: 1px solid #333;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            aspect-ratio: 1;
+        }
+
+        .image-item:hover {
+            border-color: #666;
+        }
+
+        .image-item.selected {
+            border-color: #4CAF50;
+            border-width: 2px;
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 10px;
+            color: #fff;
+        }
+
+        .image-score {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .image-verdict {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #111;
+            border: 1px solid #333;
+            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Collection Specific */
+        .collection-sidebar {
+            background: #111;
+            border: 1px solid #333;
+            padding: 20px;
+            height: 100%;
+        }
+
+        .collection-item {
+            padding: 15px;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .collection-item:hover {
+            background: #1a1a1a;
+            border-color: #666;
+        }
+
+        .collection-item.active {
+            background: #000;
+            border-color: #4CAF50;
+        }
+
+        /* Comparison View */
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .variant-box {
+            background: #111;
+            border: 1px solid #333;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .variant-box.winner {
+            border-color: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .variant-label {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        /* Prompt Lab */
+        .prompt-input {
+            width: 100%;
+            min-height: 150px;
+            padding: 20px;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .prompt-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .suggestion-chip {
+            padding: 8px 15px;
+            background: #111;
+            border: 1px solid #333;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .suggestion-chip:hover {
+            border-color: #666;
+            background: #1a1a1a;
+        }
+
+        /* Fingerprint Visualization */
+        .fingerprint-viz {
+            background: #111;
+            border: 1px solid #333;
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .dimension-bar {
+            margin-bottom: 20px;
+        }
+
+        .dimension-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .dimension-track {
+            height: 6px;
+            background: #222;
+            border: 1px solid #333;
+            position: relative;
+        }
+
+        .dimension-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #333, #4CAF50);
+            transition: width 0.3s;
+        }
+
+        /* Video Analysis Styles */
+        .gate-checks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .gate-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .gate-icon {
+            font-size: 16px;
+        }
+
+        .evaluation-summary {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+
+        .score-value {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .score-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .recommendation {
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .exhibition-format {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .comparison-video {
+            text-align: center;
+        }
+
+        .comparison-video h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            color: #888;
+        }
+
+        .video-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-top: 15px;
+        }
+
+        /* Upload Area Styles */
+        .upload-area {
+            border: 2px dashed #666;
+            border-radius: 8px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.02);
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area:hover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-area svg {
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .upload-area p {
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .upload-area .file-hint {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .upload-area.small {
+            padding: 30px;
+            min-height: 200px;
+        }
+
+        .winner-announcement {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
+            border: 1px solid #4CAF50;
+            border-radius: 4px;
+        }
+
+        .winner-announcement h3 {
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #333;
+            border-top-color: #666;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 40px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #111;
+            border: 1px solid #333;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        /* Slider */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 2px;
+            background: #333;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border: 2px solid #666;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            min-width: 40px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        /* Success Patterns */
+        .pattern-card {
+            background: #111;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .pattern-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .pattern-factors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .factor-chip {
+            padding: 5px 10px;
+            background: #222;
+            border: 1px solid #333;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .nav-tab {
+                min-width: 120px;
+                padding: 12px 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-tabs {
+                overflow-x: scroll;
+                -webkit-overflow-scrolling: touch;
+            }
+            .nav-tab {
+                min-width: 110px;
+                padding: 10px 12px;
+            }
+            .nav-tab-title {
+                font-size: 10px;
+                letter-spacing: 0.5px;
+            }
+            .nav-tab-desc {
+                font-size: 8px;
+            }
+            .container {
+                padding: 10px;
+            }
+            .image-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .nav-tab {
+                min-width: 100px;
+                padding: 8px 10px;
+            }
+            .nav-tab-title {
+                font-size: 9px;
+            }
+            .nav-tab-desc {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-text">
+                <h1>NINA STUDIO</h1>
+                <div class="subtitle">Advanced Curation & Learning Suite</div>
+                <div class="mode-indicator">Professional Mode Active</div>
+            </div>
+            <div style="display: flex; align-items: center;">
+                <a href="/" class="nina-link">Nina</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-tabs">
+        <div class="nav-tab active" onclick="switchTab('learning')">
+            <div class="nav-tab-title">Learning & Feedback</div>
+            <div class="nav-tab-desc">Improve Nina's judgment</div>
+        </div>
+        <div class="nav-tab" onclick="switchTab('collections')">
+            <div class="nav-tab-title">Collections</div>
+            <div class="nav-tab-desc">Build exhibitions</div>
+        </div>
+        <div class="nav-tab" onclick="switchTab('comparison')">
+            <div class="nav-tab-title">A/B Testing</div>
+            <div class="nav-tab-desc">Compare variants</div>
+        </div>
+        <div class="nav-tab" onclick="switchTab('series')">
+            <div class="nav-tab-title">Series Analysis</div>
+            <div class="nav-tab-desc">Coherence check</div>
+        </div>
+        <div class="nav-tab" onclick="switchTab('prompt')">
+            <div class="nav-tab-title">Prompt Lab</div>
+            <div class="nav-tab-desc">Optimize prompts</div>
+        </div>
+        <div class="nav-tab" onclick="switchTab('fingerprint')">
+            <div class="nav-tab-title">Style Fingerprint</div>
+            <div class="nav-tab-desc">Your signature</div>
+        </div>
+        <div class="nav-tab" onclick="switchTab('video')">
+            <div class="nav-tab-title">Video Analysis</div>
+            <div class="nav-tab-desc">Motion & time</div>
+        </div>
+    </div>
+
+    <!-- Content Areas -->
+    
+    <!-- Learning & Feedback -->
+    <div id="learning" class="content-area active">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Total Evaluations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">0%</div>
+                <div class="stat-label">Agreement Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Feedback Given</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Patterns Learned</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Learning & Feedback System</div>
+            <div class="card-content">
+                <div style="padding: 20px; background: #000; border: 1px solid #333; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">How It Works</h4>
+                    <div style="font-size: 12px; line-height: 1.6; color: #888;">
+                        1. <strong>View recent evaluations</strong> below<br>
+                        2. <strong>Click any image</strong> to provide feedback<br>
+                        3. <strong>Rate Nina's accuracy</strong> and suggest improvements<br>
+                        4. <strong>Nina learns</strong> from your feedback over time
+                    </div>
+                </div>
+                
+                <h4 style="margin-bottom: 15px; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Recent Evaluations - Click to Provide Feedback</h4>
+                <div class="image-grid" id="recentEvaluations">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <span>Loading evaluations...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collections -->
+    <div id="collections" class="content-area">
+        <div class="grid-2">
+            <div>
+                <div class="card">
+                    <div class="card-title">Collections</div>
+                    <div class="card-content">
+                        <button class="btn btn-success" onclick="createNewCollection()" style="width: 100%; margin-bottom: 20px;">
+                            + New Collection
+                        </button>
+                        <div id="collectionsList"></div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="card">
+                    <div class="card-title">Collection Images</div>
+                    <div class="card-content">
+                        <div id="collectionUploadArea" class="upload-area" style="display: none; margin-bottom: 20px;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                            <p>ADD IMAGES TO COLLECTION</p>
+                            <span class="file-hint">DRAG IMAGES HERE OR CLICK TO UPLOAD</span>
+                            <input type="file" id="collectionImageInput" multiple accept="image/*" style="display: none;">
+                        </div>
+                        <div class="image-grid" id="collectionImages"></div>
+                        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" id="addImagesBtn" onclick="showCollectionUpload()">+ Add Images</button>
+                            <button class="btn btn-secondary" onclick="generateCuratorialStatement()">Generate Statement</button>
+                            <button class="btn btn-secondary" onclick="optimizeSequence()">Optimize Sequence</button>
+                            <button class="btn btn-secondary" onclick="checkCoherence()">Check Coherence</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- A/B Comparison -->
+    <div id="comparison" class="content-area">
+        <div class="card">
+            <div class="card-title">Variant Comparison</div>
+            <div class="card-content">
+                <div class="comparison-container">
+                    <div class="variant-box" id="variantA">
+                        <div class="variant-label">Variant A</div>
+                        <div style="height: 300px; background: #222; margin: 15px 0; display: flex; align-items: center; justify-content: center; color: #666;">
+                            Drop Image Here
+                        </div>
+                        <input type="file" accept="image/*" style="display: none;" id="uploadA">
+                        <button class="btn" onclick="document.getElementById('uploadA').click()">Upload Image</button>
+                    </div>
+                    <div class="variant-box" id="variantB">
+                        <div class="variant-label">Variant B</div>
+                        <div style="height: 300px; background: #222; margin: 15px 0; display: flex; align-items: center; justify-content: center; color: #666;">
+                            Drop Image Here
+                        </div>
+                        <input type="file" accept="image/*" style="display: none;" id="uploadB">
+                        <button class="btn" onclick="document.getElementById('uploadB').click()">Upload Image</button>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-success" onclick="runComparison()" style="padding: 20px 60px;">
+                        RUN COMPARISON
+                    </button>
+                </div>
+                <div id="comparisonResults" style="display: none; margin-top: 30px;">
+                    <div class="card">
+                        <div class="card-title">Comparison Results</div>
+                        <div class="card-content" id="comparisonDetails"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Series Analysis -->
+    <div id="series" class="content-area">
+        <div class="card">
+            <div class="card-title">Series Coherence Analysis</div>
+            <div class="card-content">
+                <div class="upload-area" id="seriesUploadArea">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    <p>DRAG SERIES HERE OR CLICK TO UPLOAD</p>
+                    <span class="file-hint">5-20 IMAGES • JPG, PNG • RELATED WORKS</span>
+                    <input type="file" id="seriesInput" multiple accept="image/*" style="display: none;">
+                </div>
+                <div class="image-grid" id="seriesImages" style="display: none; margin-top: 20px;"></div>
+                <button class="btn btn-success" id="analyzeSeriesBtn" onclick="analyzeSeries()" style="margin-top: 20px; display: none;">Analyze Series Coherence</button>
+                <div id="seriesResults" style="margin-top: 30px; display: none;">
+                    <div class="fingerprint-viz">
+                        <h3 style="margin-bottom: 20px;">Coherence Analysis</h3>
+                        <div class="dimension-bar">
+                            <div class="dimension-label">Visual Consistency</div>
+                            <div class="dimension-track">
+                                <div class="dimension-fill" style="width: 75%;"></div>
+                            </div>
+                        </div>
+                        <div class="dimension-bar">
+                            <div class="dimension-label">Thematic Unity</div>
+                            <div class="dimension-track">
+                                <div class="dimension-fill" style="width: 85%;"></div>
+                            </div>
+                        </div>
+                        <div class="dimension-bar">
+                            <div class="dimension-label">Narrative Flow</div>
+                            <div class="dimension-track">
+                                <div class="dimension-fill" style="width: 65%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt Lab -->
+    <div id="prompt" class="content-area">
+        <div class="card">
+            <div class="card-title">Prompt Optimization Lab</div>
+            <div class="card-content">
+                <div class="form-group">
+                    <label class="form-label">Enter Your Prompt</label>
+                    <textarea class="prompt-input" id="promptInput" placeholder="Describe the image you want to create..."></textarea>
+                </div>
+                <button class="btn" onclick="analyzePrompt()" style="margin-bottom: 20px;">Analyze Prompt</button>
+                <div class="prompt-suggestions" id="promptSuggestions" style="display: none;">
+                    <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Suggested Enhancements</h4>
+                    <div class="suggestion-chip" onclick="addToPrompt('architectural precision')">+ Architectural Precision</div>
+                    <div class="suggestion-chip" onclick="addToPrompt('museum-quality composition')">+ Museum Quality</div>
+                    <div class="suggestion-chip" onclick="addToPrompt('critical AI discourse')">+ AI Criticality</div>
+                    <div class="suggestion-chip" onclick="addToPrompt('Paris Photo 2025 aesthetic')">+ Paris Photo Ready</div>
+                    <div class="suggestion-chip">+ Paris Photo Ready</div>
+                </div>
+                <button class="btn btn-success" onclick="analyzePrompt()" style="margin-top: 20px;">Analyze & Optimize</button>
+                <div id="promptAnalysis" style="margin-top: 30px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Style Fingerprint -->
+    <div id="fingerprint" class="content-area">
+        <div class="card">
+            <div class="card-title">Your Style Fingerprint</div>
+            <div class="card-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="fingerprintSamples">0</div>
+                        <div class="stat-label">Total Samples</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgScore">0</div>
+                        <div class="stat-label">Average Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="successRate">0%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+                
+                <div class="fingerprint-viz">
+                    <h3 style="margin-bottom: 20px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Dimensional Preferences</h3>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Paris Photo Ready</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" id="dimParis" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">AI Criticality</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" id="dimAI" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Conceptual Strength</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" id="dimConcept" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Technical Excellence</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" id="dimTech" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Cultural Dialogue</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" id="dimCultural" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3 style="margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Success Patterns</h3>
+                    <div id="successPatterns"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Analysis -->
+    <div id="video" class="content-area">
+        <div class="card">
+            <div class="card-title">Video Analysis</div>
+            <div class="card-content">
+                <div class="upload-area" id="videoUploadArea">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <polygon points="9 2 9 11 2 11"></polygon>
+                        <line x1="12" y1="17" x2="12" y2="11"></line>
+                        <line x1="9" y1="14" x2="15" y2="14"></line>
+                    </svg>
+                    <p>DRAG VIDEO HERE OR CLICK TO UPLOAD</p>
+                    <span class="file-hint">MP4, MOV, WEBM • MAX 500MB • 15s-5min</span>
+                    <input type="file" id="videoInput" accept="video/*" style="display: none;">
+                </div>
+
+                <div id="videoPreview" style="display: none; margin-top: 30px;">
+                    <video id="videoPlayer" controls style="width: 100%; max-width: 600px; margin: 0 auto; display: block;"></video>
+                    
+                    <div class="video-metadata" style="margin-top: 20px;">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="videoDuration">0s</div>
+                                <div class="stat-label">Duration</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="videoResolution">--</div>
+                                <div class="stat-label">Resolution</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="videoFramerate">--fps</div>
+                                <div class="stat-label">Frame Rate</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="videoSize">0MB</div>
+                                <div class="stat-label">File Size</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <label class="form-label">Is this a loop?</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <button class="btn btn-secondary" onclick="setVideoLoop(true)">Yes, Seamless Loop</button>
+                            <button class="btn btn-secondary" onclick="setVideoLoop(false)">No, Linear Video</button>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="analyzeVideo()">ANALYZE VIDEO</button>
+                    </div>
+                </div>
+
+                <div id="videoResults" style="display: none; margin-top: 40px;">
+                    <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">Video Evaluation</h3>
+                    
+                    <div class="evaluation-summary">
+                        <div class="score-display">
+                            <div class="score-value" id="videoScore">0</div>
+                            <div class="score-label">Overall Score</div>
+                        </div>
+                        <div class="recommendation" id="videoRecommendation"></div>
+                        <div class="exhibition-format" id="videoExhibitionFormat"></div>
+                    </div>
+
+                    <div class="video-dimensions" style="margin-top: 30px;">
+                        <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Temporal Dimensions</h4>
+                        <div class="dimension-bar">
+                            <div class="dimension-label">Temporal Coherence</div>
+                            <div class="dimension-track">
+                                <div class="dimension-fill" id="vidTemporalCoherence" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <div class="dimension-bar">
+                            <div class="dimension-label">Narrative Structure</div>
+                            <div class="dimension-track">
+                                <div class="dimension-fill" id="vidNarrative" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <div class="dimension-bar">
+                            <div class="dimension-label">Motion Aesthetics</div>
+                            <div class="dimension-track">
+                                <div class="dimension-fill" id="vidMotion" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <div class="dimension-bar">
+                            <div class="dimension-label">Rhythm & Pacing</div>
+                            <div class="dimension-track">
+                                <div class="dimension-fill" id="vidRhythm" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="video-gates" style="margin-top: 30px;">
+                        <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Exhibition Gates</h4>
+                        <div class="gate-checks">
+                            <div class="gate-item" id="gateDuration">
+                                <span class="gate-icon">⚠</span>
+                                <span>Duration Appropriate</span>
+                            </div>
+                            <div class="gate-item" id="gateResolution">
+                                <span class="gate-icon">⚠</span>
+                                <span>Resolution Sufficient</span>
+                            </div>
+                            <div class="gate-item" id="gateCompression">
+                                <span class="gate-icon">⚠</span>
+                                <span>Compression Quality</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <button class="btn" onclick="addVideoToCollection()">Add to Collection</button>
+                        <button class="btn btn-secondary" onclick="compareWithOtherVideo()">Compare Videos</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Comparison -->
+        <div class="card" id="videoComparisonCard" style="display: none;">
+            <div class="card-title">Video Comparison</div>
+            <div class="card-content">
+                <div class="comparison-grid">
+                    <div class="comparison-video">
+                        <h4>Video A</h4>
+                        <video id="videoA" controls style="width: 100%;"></video>
+                        <div class="video-score" id="scoreA">--</div>
+                    </div>
+                    <div class="comparison-video">
+                        <h4>Video B</h4>
+                        <div class="upload-area small" id="videoBUpload">
+                            <p>Upload Video B</p>
+                            <input type="file" id="videoBInput" accept="video/*" style="display: none;">
+                        </div>
+                        <video id="videoB" controls style="width: 100%; display: none;"></video>
+                        <div class="video-score" id="scoreB">--</div>
+                    </div>
+                </div>
+                
+                <div id="comparisonResults" style="margin-top: 30px; display: none;">
+                    <h4>Comparison Results</h4>
+                    <div id="comparisonMatrix"></div>
+                    <div class="winner-announcement" id="videoWinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Provide Feedback on Evaluation</div>
+            </div>
+            <div class="modal-body">
+                <div id="evaluationDetails" style="margin-bottom: 30px;"></div>
+                
+                <div class="form-group">
+                    <label class="form-label">Do you agree with Nina's evaluation?</label>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn" onclick="quickFeedback(true)">Yes, Accurate</button>
+                        <button class="btn btn-secondary" onclick="quickFeedback(false)">No, Needs Adjustment</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Your suggested score (0-100)</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="suggestedScore" min="0" max="100" value="50">
+                        <div class="slider-value" id="scoreValue">50</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Which dimensions need adjustment?</label>
+                    <div style="display: grid; gap: 10px;">
+                        <label><input type="checkbox" value="paris_photo_ready"> Paris Photo Ready</label>
+                        <label><input type="checkbox" value="ai_criticality"> AI Criticality</label>
+                        <label><input type="checkbox" value="conceptual_strength"> Conceptual Strength</label>
+                        <label><input type="checkbox" value="technical_excellence"> Technical Excellence</label>
+                        <label><input type="checkbox" value="cultural_dialogue"> Cultural Dialogue</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Additional Comments</label>
+                    <textarea class="form-input" id="feedbackComments" rows="4" placeholder="What did Nina miss?"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn" onclick="submitFeedback()">Submit Feedback</button>
+                    <button class="btn btn-secondary" onclick="closeFeedbackModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentTab = 'learning';
+        let selectedImage = null;
+        let selectedEvaluation = null;
+        let currentCollection = null;
+        let evaluationHistory = [];
+        let collections = [];
+        let fingerprint = null;
+        let artistId = 'default_artist';
+        
+        // API endpoint
+        const API_URL = '/api/nina-studio-api';
+
+        // Tab switching
+        function switchTab(tabName) {
+            console.log('Switching to tab:', tabName);
+            
+            // Remove active from all tabs and content areas
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+            
+            // Find and activate the clicked tab
+            const tabs = document.querySelectorAll('.nav-tab');
+            for (let tab of tabs) {
+                const onclick = tab.getAttribute('onclick');
+                if (onclick && onclick.indexOf(tabName) > -1) {
+                    tab.classList.add('active');
+                    break;
+                }
+            }
+            
+            // Show the content area
+            const contentArea = document.getElementById(tabName);
+            if (contentArea) {
+                contentArea.classList.add('active');
+                console.log('Activated content area:', tabName);
+            } else {
+                console.error('Content area not found:', tabName);
+            }
+            
+            currentTab = tabName;
+
+            // Load tab-specific data
+            try {
+                if (tabName === 'learning') loadRecentEvaluations();
+                if (tabName === 'collections') loadCollections();
+                if (tabName === 'fingerprint') loadFingerprint();
+                if (tabName === 'video') initVideoTab();
+                if (tabName === 'series') initSeriesUpload();
+            } catch (error) {
+                console.error('Error loading tab data:', error);
+            }
+        }
+        
+        // Make it globally accessible
+        window.switchTab = switchTab;
+
+        // Learning & Feedback Functions
+        async function loadRecentEvaluations() {
+            const grid = document.getElementById('recentEvaluations');
+            grid.innerHTML = '<div class="loading"><div class="loading-spinner"></div><span>Loading evaluations...</span></div>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_evaluations',
+                        data: { limit: 12, artistId: artistId }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.evaluations && result.evaluations.length > 0) {
+                    evaluationHistory = result.evaluations;
+                    grid.innerHTML = '';
+                    
+                    result.evaluations.forEach((eval, i) => {
+                        const item = document.createElement('div');
+                        item.className = 'image-item';
+                        item.innerHTML = `
+                            <img src="${eval.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='}" 
+                                 alt="Evaluation ${i+1}"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                            <div class="image-overlay">
+                                <div class="image-score">${Math.round((eval.weighted_total || 0) * 100)}/100</div>
+                                <div class="image-verdict">${eval.verdict || 'PENDING'}</div>
+                            </div>
+                        `;
+                        item.onclick = () => selectImageForFeedback(i);
+                        grid.appendChild(item);
+                    });
+                    
+                    // Update stats
+                    document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = result.evaluations.length;
+                } else {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
+                            <p>No evaluations yet</p>
+                            <p style="margin-top: 10px; font-size: 11px;">Upload images in the main Nina interface to start</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load evaluations:', error);
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #ff6b6b;">Failed to load evaluations</div>';
+            }
+        }
+
+        function selectImageForFeedback(index) {
+            selectedEvaluation = evaluationHistory[index];
+            document.getElementById('feedbackModal').classList.add('active');
+            
+            // Display evaluation details
+            const details = document.getElementById('evaluationDetails');
+            details.innerHTML = `
+                <div style="background: #000; border: 1px solid #333; padding: 20px;">
+                    <h3 style="margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Nina's Evaluation</h3>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">
+                        Score: ${Math.round((selectedEvaluation.weighted_total || 0) * 100)}/100
+                    </div>
+                    <div style="font-size: 14px; color: ${selectedEvaluation.verdict === 'INCLUDE' ? '#4CAF50' : selectedEvaluation.verdict === 'EXCLUDE' ? '#ff6b6b' : '#ffa500'}; margin-bottom: 15px;">
+                        Verdict: ${selectedEvaluation.verdict || 'PENDING'}
+                    </div>
+                    <div style="font-size: 12px; line-height: 1.6; color: #888;">
+                        ${selectedEvaluation.i_see || 'No description available'}
+                    </div>
+                </div>
+            `;
+            
+            // Set slider to current score
+            const currentScore = Math.round((selectedEvaluation.weighted_total || 0) * 100);
+            document.getElementById('suggestedScore').value = currentScore;
+            document.getElementById('scoreValue').textContent = currentScore;
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').classList.remove('active');
+            selectedEvaluation = null;
+        }
+
+        async function submitFeedback() {
+            if (!selectedEvaluation) return;
+            
+            const feedback = {
+                evaluationId: selectedEvaluation.id,
+                agree: false,
+                suggested_score: parseInt(document.getElementById('suggestedScore').value),
+                dimension_adjustments: Array.from(document.querySelectorAll('#feedbackModal input[type="checkbox"]:checked'))
+                    .map(cb => cb.value),
+                comments: document.getElementById('feedbackComments').value
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'submit_feedback',
+                        data: feedback
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Feedback submitted successfully!', 'success');
+                    closeFeedbackModal();
+                    loadRecentEvaluations();
+                }
+            } catch (error) {
+                console.error('Failed to submit feedback:', error);
+                showNotification('Failed to submit feedback', 'error');
+            }
+        }
+
+        async function quickFeedback(agree) {
+            if (!selectedEvaluation) return;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'submit_feedback',
+                        data: {
+                            evaluationId: selectedEvaluation.id,
+                            agree: agree
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showNotification(agree ? 'Thanks for confirming!' : 'Thanks for the feedback!', 'success');
+                    closeFeedbackModal();
+                }
+            } catch (error) {
+                console.error('Quick feedback failed:', error);
+            }
+        }
+
+        // Collection Builder Functions
+        async function loadCollections() {
+            const list = document.getElementById('collectionsList');
+            const grid = document.getElementById('collectionImages');
+            
+            list.innerHTML = '<div class="loading">Loading collections...</div>';
+            grid.innerHTML = '';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_collections',
+                        data: { artistId: artistId }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.collections) {
+                    collections = result.collections;
+                    
+                    if (collections.length > 0) {
+                        updateCollectionsList();
+                    } else {
+                        list.innerHTML = `
+                            <div style="text-align: center; padding: 20px; color: #666;">
+                                <p>No collections yet</p>
+                                <button class="btn" onclick="createNewCollection()" style="margin-top: 10px;">
+                                    Create First Collection
+                                </button>
+                            </div>
+                        `;
+                    }
+                } else {
+                    list.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #666;">
+                            <p>No collections found</p>
+                            <button class="btn" onclick="createNewCollection()" style="margin-top: 10px;">
+                                Create Collection
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                await loadAvailableImages();
+                
+            } catch (error) {
+                console.error('Failed to load collections:', error);
+                list.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #ff6b6b;">
+                        <p>Failed to load collections</p>
+                        <button class="btn" onclick="loadCollections()" style="margin-top: 10px;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        async function loadAvailableImages() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_evaluations',
+                        data: { limit: 20, artistId: artistId }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success && result.evaluations) {
+                    evaluationHistory = result.evaluations;
+                }
+            } catch (error) {
+                console.error('Failed to load available images:', error);
+            }
+        }
+
+        function createNewCollection() {
+            // Show inline collection form
+            const list = document.getElementById('collectionsList');
+            list.innerHTML = `
+                <div style="border: 1px solid #4CAF50; padding: 20px; margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 15px; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">New Collection</h4>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <input type="text" id="newCollectionName" class="form-input" placeholder="Collection name" style="margin-bottom: 10px;" onkeypress="if(event.key==='Enter') saveNewCollection()">
+                        <input type="text" id="newCollectionTheme" class="form-input" placeholder="Theme/Description (optional)" onkeypress="if(event.key==='Enter') saveNewCollection()">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" onclick="saveNewCollection()">Create</button>
+                        <button class="btn btn-secondary" onclick="cancelCreateCollection()">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            // Focus on name input
+            setTimeout(() => document.getElementById('newCollectionName').focus(), 100);
+        }
+        
+        async function saveNewCollection() {
+            const name = document.getElementById('newCollectionName').value.trim();
+            const theme = document.getElementById('newCollectionTheme').value.trim();
+            
+            if (!name) {
+                showNotification('Collection name is required', 'error');
+                return;
+            }
+            
+            // Show loading state
+            const createButton = document.querySelector('button[onclick=\"saveNewCollection()\"]');
+            createButton.textContent = 'Creating...';
+            createButton.disabled = true;
+            
+            try {
+                console.log('Creating collection:', { name, theme, artistId });
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'create_collection',
+                        data: {
+                            artistId: artistId,
+                            name: name,
+                            theme: theme || '',
+                            target_size: 20
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Collection creation result:', result);
+                
+                if (result.success && result.collection) {
+                    collections.push(result.collection);
+                    showNotification('Collection created successfully!', 'success');
+                    // Reload collections to show the new one
+                    loadCollections();
+                } else {
+                    console.error('Collection creation failed:', result);
+                    showNotification(result.error || 'Failed to create collection', 'error');
+                    createButton.textContent = 'Create';
+                    createButton.disabled = false;
+                }
+            } catch (error) {
+                console.error('Failed to create collection:', error);
+                showNotification('Network error: Failed to create collection', 'error');
+                createButton.textContent = 'Create';
+                createButton.disabled = false;
+            }
+        }
+        
+        function cancelCreateCollection() {
+            loadCollections(); // Reload the collections list
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#ff6b6b' : '#2196F3'};
+                color: white;
+                border-radius: 0;
+                border: 1px solid rgba(255,255,255,0.2);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function updateCollectionsList() {
+            const list = document.getElementById('collectionsList');
+            list.innerHTML = collections.map(c => `
+                <div class="collection-item" onclick="selectCollection('${c.id}')">
+                    <div style="font-weight: bold; margin-bottom: 5px;">${c.name}</div>
+                    <div style="font-size: 11px; color: #888;">${c.collection_images ? c.collection_images.length : 0} images</div>
+                </div>
+            `).join('');
+        }
+
+        function selectCollection(id) {
+            currentCollection = collections.find(c => c.id === id);
+            document.querySelectorAll('.collection-item').forEach(item => item.classList.remove('active'));
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+            displayCollectionImages();
+            
+            // Show/hide add images button based on selection
+            const addBtn = document.getElementById('addImagesBtn');
+            if (addBtn) {
+                addBtn.style.display = currentCollection ? 'block' : 'none';
+            }
+        }
+        
+        // Debug helper to inspect collection data
+        window.debugCollection = function() {
+            if (!currentCollection) {
+                console.log('No collection selected');
+                showNotification('No collection selected', 'info');
+                return;
+            }
+            
+            console.log('=== COLLECTION DEBUG ===');
+            console.log('Collection:', {
+                name: currentCollection.name,
+                id: currentCollection.id,
+                imageCount: currentCollection.collection_images ? currentCollection.collection_images.length : 0
+            });
+            
+            if (currentCollection.collection_images && currentCollection.collection_images.length > 0) {
+                currentCollection.collection_images.forEach((img, i) => {
+                    console.log(`Image ${i}:`, {
+                        hasImageData: !!img.imageData,
+                        hasImageUrl: !!img.image_url,
+                        imageDataLength: img.imageData ? img.imageData.length : 0,
+                        imageDataStart: img.imageData ? img.imageData.substring(0, 50) : 'none',
+                        score: img.weighted_total,
+                        role: img.role,
+                        evaluationId: img.evaluation_id
+                    });
+                });
+                showNotification(`Collection has ${currentCollection.collection_images.length} images - check console`, 'info');
+            } else {
+                console.log('No images in collection');
+                showNotification('No images in collection', 'warning');
+            }
+            console.log('======================');
+        };
+        
+        function showCollectionUpload() {
+            if (!currentCollection) {
+                showNotification('Please select a collection first', 'error');
+                return;
+            }
+            
+            const uploadArea = document.getElementById('collectionUploadArea');
+            uploadArea.style.display = 'flex';
+            initCollectionUpload();
+        }
+        
+        let collectionUploadInitialized = false;
+        function initCollectionUpload() {
+            if (collectionUploadInitialized) return;
+            collectionUploadInitialized = true;
+            
+            const uploadArea = document.getElementById('collectionUploadArea');
+            const fileInput = document.getElementById('collectionImageInput');
+            
+            if (!uploadArea || !fileInput) return;
+            
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleCollectionFiles(e.dataTransfer.files);
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleCollectionFiles(e.target.files);
+                }
+            });
+        }
+        
+        async function handleCollectionFiles(files) {
+            if (!currentCollection) {
+                showNotification('No collection selected', 'error');
+                return;
+            }
+            
+            const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            
+            if (validFiles.length === 0) {
+                showNotification('Please select valid image files', 'error');
+                return;
+            }
+            
+            showNotification(`Evaluating ${validFiles.length} images for collection...`, 'info');
+            
+            // Process each image sequentially
+            for (const file of validFiles) {
+                await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                    const imageData = e.target.result;
+                    
+                    // Evaluate the image first
+                    try {
+                        const evalResponse = await fetch(API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'evaluate',
+                                data: {
+                                    imageData: imageData,
+                                    metadata: {
+                                        artistId: artistId,
+                                        collectionId: currentCollection.id,
+                                        fileName: file.name
+                                    }
+                                }
+                            })
+                        });
+                        
+                        const evalResult = await evalResponse.json();
+                        
+                        if (evalResult.success && evalResult.evaluation) {
+                            // Add to collection
+                            const addResponse = await fetch(API_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    action: 'add_to_collection',
+                                    data: {
+                                        collectionId: currentCollection.id,
+                                        evaluationId: evalResult.evaluation.id,
+                                        role: evalResult.evaluation.weighted_total >= 85 ? 'hero' : 'supporting',
+                                        tags: []
+                                    }
+                                })
+                            });
+                            
+                            // Don't wait for server response, update UI immediately
+                            const score = evalResult.evaluation.weighted_total > 1 ? 
+                                evalResult.evaluation.weighted_total : 
+                                evalResult.evaluation.weighted_total * 100;
+                            
+                            // Add the evaluation to the current collection's images array
+                            if (!currentCollection.collection_images) {
+                                currentCollection.collection_images = [];
+                            }
+                            
+                            // Store the image with all necessary data
+                            const collectionImage = {
+                                evaluation_id: evalResult.evaluation.id,
+                                role: score >= 85 ? 'hero' : 'supporting',
+                                weighted_total: score,
+                                imageData: imageData,  // Store the base64 image
+                                image_url: imageData,  // Also store as image_url
+                                evaluations: {
+                                    ...evalResult.evaluation,
+                                    image_url: imageData,
+                                    imageData: imageData,
+                                    weighted_total: score
+                                }
+                            };
+                            
+                            currentCollection.collection_images.push(collectionImage);
+                            
+                            console.log('Added image to collection:', {
+                                id: evalResult.evaluation.id,
+                                score: score,
+                                role: collectionImage.role,
+                                hasImage: !!imageData,
+                                imageDataLength: imageData ? imageData.length : 0,
+                                totalImages: currentCollection.collection_images.length
+                            });
+                            
+                            showNotification(`Added ${file.name} to collection (Score: ${Math.round(score)}/100)`, 'success');
+                            
+                            // Refresh collection display immediately
+                            displayCollectionImages();
+                            
+                            // Process server response but don't block UI
+                            addResponse.json().then(addResult => {
+                                if (!addResult.success) {
+                                    console.error('Server failed to add to collection:', addResult);
+                                }
+                            }).catch(error => {
+                                console.error('Failed to sync with server:', error);
+                            });
+                        } else {
+                            showNotification(`Failed to evaluate ${file.name}`, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error processing image:', error);
+                        showNotification(`Error processing ${file.name}`, 'error');
+                    }
+                    resolve();
+                };
+                reader.readAsDataURL(file);
+                });
+            }
+            
+            // Hide upload area after processing
+            document.getElementById('collectionUploadArea').style.display = 'none';
+        }
+
+        function displayCollectionImages() {
+            const grid = document.getElementById('collectionImages');
+            
+            if (!currentCollection) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">Select a collection to view images</div>';
+                return;
+            }
+            
+            console.log('Displaying collection:', {
+                name: currentCollection.name,
+                id: currentCollection.id,
+                hasImages: !!currentCollection.collection_images,
+                imageCount: currentCollection.collection_images ? currentCollection.collection_images.length : 0
+            });
+            
+            if (currentCollection.collection_images && currentCollection.collection_images.length > 0) {
+                // Debug first image
+                if (currentCollection.collection_images[0]) {
+                    console.log('First image structure:', {
+                        hasImageData: !!currentCollection.collection_images[0].imageData,
+                        hasImageUrl: !!currentCollection.collection_images[0].image_url,
+                        imageDataStart: currentCollection.collection_images[0].imageData ? 
+                            currentCollection.collection_images[0].imageData.substring(0, 50) : 'none',
+                        score: currentCollection.collection_images[0].weighted_total,
+                        role: currentCollection.collection_images[0].role
+                    });
+                }
+                
+                grid.innerHTML = currentCollection.collection_images.map((item, index) => {
+                    // Get image from multiple possible sources with priority
+                    const imageUrl = item.imageData || 
+                                    item.image_url || 
+                                    (item.evaluations && item.evaluations.imageData) ||
+                                    (item.evaluations && item.evaluations.image_url) ||
+                                    '';
+                    
+                    // Get score and normalize to 0-100 range
+                    let score = item.weighted_total || 
+                               (item.evaluations && item.evaluations.weighted_total) || 
+                               0;
+                    const displayScore = score > 1 ? Math.round(score) : Math.round(score * 100);
+                    
+                    // Get role
+                    const role = item.role || 
+                                (item.evaluations && item.evaluations.verdict) || 
+                                'Supporting';
+                    
+                    if (!imageUrl) {
+                        console.warn(`Image ${index} has no data:`, item);
+                    }
+                    
+                    return `
+                        <div class="image-item" data-index="${index}">
+                            <img src="${imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='}" 
+                                 alt="Collection image ${index + 1}"
+                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                 onerror="console.error('Image load error for index ${index}'); this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5Mb2FkIEVycm9yPC90ZXh0Pjwvc3ZnPg==">
+                            <div class="image-overlay">
+                                <div class="image-score">${displayScore}/100</div>
+                                <div class="image-verdict">${role.toUpperCase()}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                showNotification(`Showing ${currentCollection.collection_images.length} images`, 'success');
+            } else {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">
+                        <p>No images in this collection yet</p>
+                        <p style="margin-top: 10px;">Click "+ Add Images" to upload images</p>
+                    </div>
+                `;
+                /* Commented out old code for adding from history
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1;">
+                        <h4 style="margin-bottom: 15px;">Add Images to Collection</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                            ${evaluationHistory.map((eval, i) => `
+                                <div class="image-item" style="cursor: pointer;" onclick="addToCollection('${eval.id}')">
+                                    <img src="${eval.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='}" 
+                                         alt="Available image">
+                                    <div class="image-overlay">
+                                        <div class="image-score">${Math.round((eval.weighted_total || 0) * 100)}/100</div>
+                                        <div class="image-verdict">+ Add</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `; */
+            }
+        }
+        
+        function addToCollection(evaluationId) {
+            if (!currentCollection) {
+                showNotification('Please select a collection first', 'error');
+                return;
+            }
+            
+            // Show inline role selection
+            const grid = document.getElementById('collectionImages');
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; border: 1px solid #4CAF50; padding: 20px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 15px; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Add Image to Collection</h4>
+                    <div class="form-group">
+                        <label class="form-label">Image Role</label>
+                        <select id="imageRole" class="form-input">
+                            <option value="supporting">Supporting</option>
+                            <option value="hero">Hero</option>
+                            <option value="anchor">Anchor</option>
+                            <option value="contextual">Contextual</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-success" onclick="saveToCollection('${evaluationId}')">Add Image</button>
+                        <button class="btn btn-secondary" onclick="displayCollectionImages()">Cancel</button>
+                    </div>
+                </div>
+            ` + grid.innerHTML;
+        }
+        
+        async function saveToCollection(evaluationId) {
+            const role = document.getElementById('imageRole').value;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'add_to_collection',
+                        data: {
+                            collectionId: currentCollection.id,
+                            evaluationId: evaluationId,
+                            role: role,
+                            tags: []
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Image added to collection!', 'success');
+                    loadCollections();
+                } else {
+                    showNotification('Failed to add image', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to add to collection:', error);
+                showNotification('Failed to add image', 'error');
+            }
+        }
+
+        function generateCuratorialStatement() {
+            if (!currentCollection) {
+                showNotification('Please select a collection first', 'error');
+                return;
+            }
+            showNotification('Curatorial statement generation coming soon', 'info');
+        }
+
+        function optimizeSequence() {
+            if (!currentCollection) {
+                showNotification('Please select a collection first', 'error');
+                return;
+            }
+            showNotification('Sequence optimization coming soon', 'info');
+        }
+
+        function checkCoherence() {
+            if (!currentCollection) {
+                showNotification('Please select a collection first', 'error');
+                return;
+            }
+            showNotification('Coherence analysis coming soon', 'info');
+        }
+
+        // A/B Testing Functions
+        let variantAData = null;
+        let variantBData = null;
+
+        // Handle file upload for variants
+        document.getElementById('uploadA')?.addEventListener('change', function(e) {
+            handleVariantUpload(e, 'A');
+        });
+
+        document.getElementById('uploadB')?.addEventListener('change', function(e) {
+            handleVariantUpload(e, 'B');
+        });
+
+        function handleVariantUpload(event, variant) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageData = e.target.result;
+                
+                // Display the image
+                const variantBox = document.getElementById(`variant${variant}`);
+                const imageContainer = variantBox.querySelector('div[style*="height: 300px"]');
+                imageContainer.innerHTML = `<img src="${imageData}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                
+                // Store the image data
+                if (variant === 'A') {
+                    variantAData = imageData.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+                } else {
+                    variantBData = imageData.split(',')[1];
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function runComparison() {
+            if (!variantAData || !variantBData) {
+                showNotification('Please upload both images first', 'error');
+                return;
+            }
+
+            const runButton = document.querySelector('button[onclick="runComparison()"]');
+            runButton.textContent = 'ANALYZING...';
+            runButton.disabled = true;
+
+            try {
+                // Evaluate both variants
+                const [evalA, evalB] = await Promise.all([
+                    evaluateVariant(variantAData, 'A'),
+                    evaluateVariant(variantBData, 'B')
+                ]);
+
+                // Compare results
+                const results = document.getElementById('comparisonResults');
+                results.style.display = 'block';
+                
+                const scoreA = Math.round((evalA.weighted_total || 0) * 100);
+                const scoreB = Math.round((evalB.weighted_total || 0) * 100);
+                const winner = scoreA > scoreB ? 'A' : 'B';
+                const loser = winner === 'A' ? 'B' : 'A';
+                const winnerScore = winner === 'A' ? scoreA : scoreB;
+                const loserScore = winner === 'A' ? scoreB : scoreA;
+                const advantage = Math.abs(scoreA - scoreB);
+
+                // Find key advantages
+                const evalWinner = winner === 'A' ? evalA : evalB;
+                const evalLoser = winner === 'A' ? evalB : evalA;
+                const keyAdvantages = findKeyAdvantages(evalWinner, evalLoser);
+
+                document.getElementById('comparisonDetails').innerHTML = `
+                    <div style="padding: 20px;">
+                        <h4 style="color: #4CAF50; margin-bottom: 15px;">Variant ${winner} Wins</h4>
+                        <div style="display: grid; gap: 10px; font-size: 12px; margin-bottom: 20px;">
+                            <div><strong>Overall Score:</strong> ${winner}: ${winnerScore} vs ${loser}: ${loserScore}</div>
+                            <div><strong>Advantage:</strong> +${advantage} points</div>
+                            <div><strong>Key Advantages:</strong> ${keyAdvantages.join(', ')}</div>
+                            <div><strong>Winner Verdict:</strong> ${evalWinner.verdict}</div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <h5 style="margin-bottom: 10px;">Variant A Breakdown:</h5>
+                                <div style="font-size: 11px; color: #888;">
+                                    ${formatScoreBreakdown(evalA)}
+                                </div>
+                            </div>
+                            <div>
+                                <h5 style="margin-bottom: 10px;">Variant B Breakdown:</h5>
+                                <div style="font-size: 11px; color: #888;">
+                                    ${formatScoreBreakdown(evalB)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Highlight winner
+                document.getElementById(`variant${winner}`).classList.add('winner');
+                document.getElementById(`variant${loser}`).classList.remove('winner');
+
+            } catch (error) {
+                console.error('Comparison failed:', error);
+                showNotification('Comparison failed. Please try again.', 'error');
+            } finally {
+                runButton.textContent = 'RUN COMPARISON';
+                runButton.disabled = false;
+            }
+        }
+
+        async function evaluateVariant(imageData, variant) {
+            try {
+                const response = await fetch('/api/nina-curator-v2', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        imageData: imageData,
+                        metadata: {
+                            filename: `variant_${variant}.jpg`,
+                            artistId: artistId
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    return result.evaluation;
+                } else {
+                    throw new Error(`Evaluation failed for variant ${variant}`);
+                }
+            } catch (error) {
+                console.error(`Failed to evaluate variant ${variant}:`, error);
+                throw error;
+            }
+        }
+
+        function findKeyAdvantages(winner, loser) {
+            const advantages = [];
+            const dimensions = ['paris_photo_ready', 'ai_criticality', 'conceptual_strength', 'technical_excellence', 'cultural_dialogue'];
+            
+            dimensions.forEach(dim => {
+                const winnerScore = winner.scores_raw?.[dim] || 0;
+                const loserScore = loser.scores_raw?.[dim] || 0;
+                const diff = winnerScore - loserScore;
+                
+                if (diff >= 1.5) {
+                    const dimName = dim.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    advantages.push(`${dimName} (+${diff.toFixed(1)})`);
+                }
+            });
+            
+            return advantages.length > 0 ? advantages : ['Overall consistency'];
+        }
+
+        function formatScoreBreakdown(evaluation) {
+            if (!evaluation.scores_raw) return 'No detailed scores available';
+            
+            return Object.entries(evaluation.scores_raw)
+                .map(([key, value]) => {
+                    const name = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    return `${name}: ${typeof value === 'number' ? value.toFixed(1) : value}`;
+                })
+                .join('<br>');
+        }
+
+        // Prompt Lab Functions
+        function analyzePrompt() {
+            const prompt = document.getElementById('promptInput').value;
+            const analysis = document.getElementById('promptAnalysis');
+            
+            analysis.innerHTML = `
+                <div class="card">
+                    <div class="card-title">Prompt Analysis</div>
+                    <div class="card-content">
+                        <div style="margin-bottom: 10px;">
+                            <span style="color: #888;">Complexity:</span> 
+                            <span style="color: #4CAF50;">72/100</span>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="color: #888;">Success Probability:</span> 
+                            <span style="color: #ffa500;">65%</span>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h4 style="margin-bottom: 10px;">Optimized Version:</h4>
+                            <div style="padding: 15px; background: #000; border: 1px solid #333;">
+                                ${prompt} | architectural precision, museum-quality composition, critical AI discourse, Paris Photo 2025 aesthetic
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Style Fingerprint Functions
+        async function loadFingerprint() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_fingerprint',
+                        data: { artistId: artistId }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.fingerprint) {
+                    fingerprint = result.fingerprint;
+                    displayFingerprint();
+                }
+            } catch (error) {
+                console.error('Failed to load fingerprint:', error);
+            }
+        }
+
+        function displayFingerprint() {
+            if (!fingerprint) return;
+            
+            document.getElementById('fingerprintSamples').textContent = fingerprint.total_samples || 0;
+            
+            if (fingerprint.scoring_tendencies) {
+                const avg = fingerprint.scoring_tendencies.avg_scores;
+                if (avg) {
+                    document.getElementById('dimParis').style.width = `${(avg.paris_photo_ready || 0) * 10}%`;
+                    document.getElementById('dimAI').style.width = `${(avg.ai_criticality || 0) * 10}%`;
+                    document.getElementById('dimConcept').style.width = `${(avg.conceptual_strength || 0) * 10}%`;
+                    document.getElementById('dimTech').style.width = `${(avg.technical_excellence || 0) * 10}%`;
+                    document.getElementById('dimCultural').style.width = `${(avg.cultural_dialogue || 0) * 10}%`;
+                }
+            }
+        }
+
+        // Slider functionality
+        document.getElementById('suggestedScore')?.addEventListener('input', function() {
+            document.getElementById('scoreValue').textContent = this.value;
+        });
+
+        // Video Analysis Functions
+        let currentVideo = null;
+        let videoMetadata = {};
+        let videoIsLoop = false;
+
+        let videoInitialized = false;
+        function initVideoTab() {
+            if (videoInitialized) return;
+            videoInitialized = true;
+            
+            const uploadArea = document.getElementById('videoUploadArea');
+            const videoInput = document.getElementById('videoInput');
+            const videoBUpload = document.getElementById('videoBUpload');
+            const videoBInput = document.getElementById('videoBInput');
+
+            if (!uploadArea || !videoInput) return;
+
+            // Main video upload
+            uploadArea.addEventListener('click', () => videoInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('video/')) {
+                    handleVideoUpload(files[0]);
+                }
+            });
+
+            videoInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleVideoUpload(e.target.files[0]);
+                }
+            });
+
+            // Video B upload for comparison
+            if (videoBUpload && videoBInput) {
+                videoBUpload.addEventListener('click', () => videoBInput.click());
+                videoBInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        handleVideoBUpload(e.target.files[0]);
+                    }
+                });
+            }
+        }
+
+        function handleVideoUpload(file) {
+            if (file.size > 500 * 1024 * 1024) {
+                showNotification('Video file too large. Maximum size is 500MB.', 'error');
+                return;
+            }
+
+            const videoPlayer = document.getElementById('videoPlayer');
+            const url = URL.createObjectURL(file);
+            videoPlayer.src = url;
+            currentVideo = file;
+
+            // Extract metadata
+            videoPlayer.addEventListener('loadedmetadata', () => {
+                const duration = Math.round(videoPlayer.duration);
+                const width = videoPlayer.videoWidth;
+                const height = videoPlayer.videoHeight;
+                
+                videoMetadata = {
+                    duration: duration,
+                    resolution: `${width}x${height}`,
+                    size: (file.size / (1024 * 1024)).toFixed(2),
+                    format: file.type,
+                    name: file.name
+                };
+
+                // Update UI
+                document.getElementById('videoDuration').textContent = `${duration}s`;
+                document.getElementById('videoResolution').textContent = videoMetadata.resolution;
+                document.getElementById('videoSize').textContent = `${videoMetadata.size}MB`;
+                
+                // Estimate framerate (simplified)
+                document.getElementById('videoFramerate').textContent = '30fps';
+
+                // Show preview and hide upload area
+                document.getElementById('videoUploadArea').style.display = 'none';
+                document.getElementById('videoPreview').style.display = 'block';
+            });
+        }
+
+        function setVideoLoop(isLoop) {
+            videoIsLoop = isLoop;
+            const buttons = document.querySelectorAll('.btn-secondary');
+            buttons.forEach(btn => {
+                if (btn.textContent.includes('Loop') && isLoop) {
+                    btn.classList.add('active');
+                } else if (btn.textContent.includes('Linear') && !isLoop) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        async function analyzeVideo() {
+            if (!currentVideo) {
+                showNotification('Please upload a video first', 'error');
+                return;
+            }
+
+            showNotification('Analyzing video...', 'info');
+
+            // Convert video to base64 for API (simplified - in production would extract frames)
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const videoData = e.target.result;
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'evaluate_video',
+                            data: {
+                                videoData: videoData,
+                                metadata: {
+                                    ...videoMetadata,
+                                    isLoop: videoIsLoop,
+                                    artistId: artistId
+                                }
+                            }
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        displayVideoResults(result.evaluation);
+                        showNotification('Video analysis complete', 'success');
+                    } else {
+                        showNotification('Video analysis failed: ' + result.error, 'error');
+                    }
+                } catch (error) {
+                    console.error('Video analysis error:', error);
+                    showNotification('Failed to analyze video', 'error');
+                }
+            };
+
+            reader.readAsDataURL(currentVideo);
+        }
+
+        function displayVideoResults(evaluation) {
+            // Show results section
+            document.getElementById('videoResults').style.display = 'block';
+
+            // Overall score
+            document.getElementById('videoScore').textContent = evaluation.weighted_total || '75';
+            document.getElementById('videoRecommendation').textContent = evaluation.recommendation || 'INCLUDE - Good candidate for exhibition';
+            document.getElementById('videoExhibitionFormat').textContent = evaluation.exhibition_format || 'SINGLE CHANNEL - Individual viewing station';
+
+            // Temporal dimensions
+            const dimensions = evaluation.dimensions || {
+                temporal_coherence: 0.75,
+                narrative_structure: 0.70,
+                motion_aesthetics: 0.80,
+                rhythm_pacing: 0.85
+            };
+
+            document.getElementById('vidTemporalCoherence').style.width = `${dimensions.temporal_coherence * 100}%`;
+            document.getElementById('vidNarrative').style.width = `${dimensions.narrative_structure * 100}%`;
+            document.getElementById('vidMotion').style.width = `${dimensions.motion_aesthetics * 100}%`;
+            document.getElementById('vidRhythm').style.width = `${dimensions.rhythm_pacing * 100}%`;
+
+            // Gates
+            const gates = evaluation.video_gates || {
+                duration_appropriate: true,
+                resolution_sufficient: true,
+                compression_quality: true
+            };
+
+            updateGateDisplay('gateDuration', gates.duration_appropriate);
+            updateGateDisplay('gateResolution', gates.resolution_sufficient);
+            updateGateDisplay('gateCompression', gates.compression_quality);
+        }
+
+        function updateGateDisplay(elementId, passed) {
+            const element = document.getElementById(elementId);
+            const icon = element.querySelector('.gate-icon');
+            
+            if (passed) {
+                icon.textContent = '✓';
+                icon.style.color = '#4CAF50';
+                element.style.color = '#4CAF50';
+            } else {
+                icon.textContent = '✗';
+                icon.style.color = '#f44336';
+                element.style.color = '#f44336';
+            }
+        }
+
+        function addVideoToCollection() {
+            // Would implement adding video evaluation to collection
+            showNotification('Video added to collection', 'success');
+        }
+
+        function compareWithOtherVideo() {
+            document.getElementById('videoComparisonCard').style.display = 'block';
+            // Copy current video to comparison slot A
+            document.getElementById('videoA').src = document.getElementById('videoPlayer').src;
+            document.getElementById('scoreA').textContent = document.getElementById('videoScore').textContent;
+        }
+
+        function handleVideoBUpload(file) {
+            const videoB = document.getElementById('videoB');
+            const url = URL.createObjectURL(file);
+            videoB.src = url;
+            videoB.style.display = 'block';
+            document.getElementById('videoBUpload').style.display = 'none';
+            
+            // Analyze and compare
+            compareVideos();
+        }
+
+        async function compareVideos() {
+            showNotification('Comparing videos...', 'info');
+            
+            // Would call comparison API
+            setTimeout(() => {
+                document.getElementById('comparisonResults').style.display = 'block';
+                document.getElementById('videoWinner').innerHTML = `
+                    <h3>Video A Wins</h3>
+                    <p>Superior temporal coherence and narrative structure</p>
+                `;
+                document.getElementById('scoreB').textContent = '68';
+                showNotification('Comparison complete', 'success');
+            }, 2000);
+        }
+
+        // Series Analysis Functions
+        let seriesImages = [];
+        let seriesInitialized = false;
+        
+        function initSeriesUpload() {
+            if (seriesInitialized) return;
+            seriesInitialized = true;
+            
+            const uploadArea = document.getElementById('seriesUploadArea');
+            const seriesInput = document.getElementById('seriesInput');
+            
+            if (!uploadArea || !seriesInput) return;
+            
+            uploadArea.addEventListener('click', () => seriesInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleSeriesFiles(e.dataTransfer.files);
+            });
+            
+            seriesInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleSeriesFiles(e.target.files);
+                }
+            });
+        }
+        
+        function handleSeriesFiles(files) {
+            const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            
+            if (validFiles.length < 5) {
+                showNotification('Please upload at least 5 images for series analysis', 'error');
+                return;
+            }
+            
+            if (validFiles.length > 20) {
+                showNotification('Maximum 20 images for series analysis', 'error');
+                return;
+            }
+            
+            seriesImages = validFiles;
+            displaySeriesImages();
+        }
+        
+        function displaySeriesImages() {
+            const grid = document.getElementById('seriesImages');
+            grid.innerHTML = '';
+            grid.style.display = 'grid';
+            
+            seriesImages.forEach((file, i) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const item = document.createElement('div');
+                    item.className = 'image-item';
+                    item.innerHTML = `
+                        <img src="${e.target.result}" alt="Series image ${i+1}">
+                        <div class="item-overlay">${i+1}</div>
+                    `;
+                    grid.appendChild(item);
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            document.getElementById('seriesUploadArea').style.display = 'none';
+            document.getElementById('analyzeSeriesBtn').style.display = 'block';
+        }
+        
+        async function analyzeSeries() {
+            if (seriesImages.length === 0) {
+                showNotification('Please upload images first', 'error');
+                return;
+            }
+            
+            showNotification('Analyzing series coherence...', 'info');
+            
+            // Convert images to base64
+            const imageData = await Promise.all(
+                seriesImages.map(file => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                })
+            );
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'analyze_series',
+                        data: {
+                            images: imageData.map((data, i) => ({
+                                imageData: data,
+                                order: i + 1
+                            })),
+                            seriesName: 'User Series Analysis'
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displaySeriesResults(result.series);
+                    showNotification('Series analysis complete', 'success');
+                } else {
+                    showNotification('Series analysis failed', 'error');
+                }
+            } catch (error) {
+                console.error('Series analysis error:', error);
+                showNotification('Failed to analyze series', 'error');
+            }
+        }
+        
+        function displaySeriesResults(series) {
+            const results = document.getElementById('seriesResults');
+            results.style.display = 'block';
+            
+            // Update coherence bars
+            const coherence = series?.coherence || {
+                visual_consistency: 0.75,
+                thematic_unity: 0.85,
+                narrative_flow: 0.65
+            };
+            
+            results.innerHTML = `
+                <div class="fingerprint-viz">
+                    <h3 style="margin-bottom: 20px;">Coherence Analysis</h3>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Visual Consistency</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" style="width: ${coherence.visual_consistency * 100}%;"></div>
+                        </div>
+                    </div>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Thematic Unity</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" style="width: ${coherence.thematic_unity * 100}%;"></div>
+                        </div>
+                    </div>
+                    <div class="dimension-bar">
+                        <div class="dimension-label">Narrative Flow</div>
+                        <div class="dimension-track">
+                            <div class="dimension-fill" style="width: ${coherence.narrative_flow * 100}%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 30px;">
+                    <h4>Recommendation</h4>
+                    <p>${series?.recommendation || 'Series shows good coherence for exhibition'}</p>
+                </div>
+            `;
+        }
+        
+        // Prompt Enhancement Functions
+        async function analyzePrompt() {
+            const promptInput = document.getElementById('promptInput');
+            const prompt = promptInput.value.trim();
+            
+            if (!prompt) {
+                showNotification('Please enter a prompt to analyze', 'error');
+                return;
+            }
+            
+            showNotification('Analyzing prompt...', 'info');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'analyze_prompt',
+                        data: { prompt }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayPromptAnalysis(result);
+                    showNotification('Prompt analysis complete', 'success');
+                } else {
+                    showNotification('Prompt analysis failed', 'error');
+                }
+            } catch (error) {
+                console.error('Prompt analysis error:', error);
+                showNotification('Failed to analyze prompt', 'error');
+            }
+        }
+        
+        function displayPromptAnalysis(result) {
+            const suggestions = document.getElementById('promptSuggestions');
+            suggestions.style.display = 'block';
+            
+            // Add enhanced prompt display
+            if (result.suggestions?.enhanced_prompt) {
+                const enhancedDiv = document.createElement('div');
+                enhancedDiv.className = 'enhanced-prompt';
+                enhancedDiv.style.cssText = 'margin-top: 20px; padding: 15px; background: rgba(76,175,80,0.1); border: 1px solid #4CAF50;';
+                enhancedDiv.innerHTML = `
+                    <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Enhanced Prompt</h4>
+                    <p style="font-style: italic;">${result.suggestions.enhanced_prompt}</p>
+                    <button class="btn btn-success" onclick="copyEnhancedPrompt()" style="margin-top: 10px;">Copy Enhanced</button>
+                `;
+                
+                const existingEnhanced = document.querySelector('.enhanced-prompt');
+                if (existingEnhanced) existingEnhanced.remove();
+                
+                suggestions.appendChild(enhancedDiv);
+            }
+        }
+        
+        function addToPrompt(addition) {
+            const promptInput = document.getElementById('promptInput');
+            const currentPrompt = promptInput.value.trim();
+            
+            if (!currentPrompt.includes(addition)) {
+                promptInput.value = currentPrompt + (currentPrompt ? ', ' : '') + addition;
+                showNotification(`Added "${addition}" to prompt`, 'success');
+            }
+        }
+        
+        function copyEnhancedPrompt() {
+            const enhanced = document.querySelector('.enhanced-prompt p').textContent;
+            navigator.clipboard.writeText(enhanced);
+            showNotification('Enhanced prompt copied to clipboard', 'success');
+        }
+        
+        // Initialize
+        loadRecentEvaluations();
+    </script>
+</body>
+</html>

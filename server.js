@@ -62,11 +62,23 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Serve documentation pages
+app.get('/curation-api-docs.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'registry-docs.html'));
+});
+app.get('/registry-docs.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'registry-docs.html'));
+});
+app.get('/curation-station.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'curation-station.html'));
+});
+
 // Load API handlers
 const ninaCuratorV2 = require('./api/nina-curator-v2');
 const ninaCurator = require('./api/nina-curator');
 const analyzeSimple = require('./api/analyze-simple');
 const ninaStudioApi = require('./api/nina-studio-api');
+const publicApi = require('./api/public-api');
 
 // API routes
 app.post('/api/nina-curator-v2', ninaCuratorV2);
@@ -74,6 +86,19 @@ app.post('/api/nina-curator', ninaCurator);
 app.post('/api/analyze-simple', analyzeSimple);
 app.post('/api/analyze', analyzeSimple);
 app.post('/api/nina-studio-api', ninaStudioApi);
+
+// Public API endpoint
+app.post('/api/v1/curate', publicApi);
+app.get('/api/v1/status', publicApi);
+
+// Curation Station API v2 - Multi-curator support
+const curationApiV2 = require('./api/curation-api-v2');
+app.get('/api/v2/curation/curators', curationApiV2);
+app.get('/api/v2/curation/curator', curationApiV2);
+app.post('/api/v2/curation/evaluate', curationApiV2);
+app.post('/api/v2/curation/compare', curationApiV2);
+app.post('/api/v2/curation/register', curationApiV2);
+app.get('/api/v2/curation/status', curationApiV2);
 
 // API endpoint for design analysis
 app.post('/api/analyze', upload.single('design'), async (req, res) => {

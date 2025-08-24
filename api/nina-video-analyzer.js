@@ -24,7 +24,7 @@ class NinaVideoAnalyzer {
         loop_quality: 0,             // For looping videos
         
         // Inherit from still image analysis
-        paris_photo_readiness: 0,
+        exhibition_readiness: 0,
         ai_criticality: 0,
         conceptual_strength: 0,
         technical_excellence: 0,
@@ -101,7 +101,7 @@ class NinaVideoAnalyzer {
         narrative_structure: 0.70,
         motion_aesthetics: 0.80,
         rhythm_pacing: 0.85,
-        paris_photo_readiness: 0.70,
+        exhibition_readiness: 0.70,
         ai_criticality: 0.75,
         conceptual_strength: 0.70,
         technical_excellence: 0.75,
@@ -157,7 +157,7 @@ class NinaVideoAnalyzer {
             },
             {
               type: "text",
-              text: `Analyze this video frame for Paris Photo 2025 exhibition. Provide:
+              text: `Analyze this video frame for professional gallery exhibition. Provide:
 
 1. VISUAL DESCRIPTION: What do you see? Focus on composition, subjects, style, technical quality
 2. TEMPORAL NARRATIVE: How might this develop over time in a video context?
@@ -173,7 +173,7 @@ Format as JSON:
     "temporal_coherence": 0.0-1.0,
     "narrative_structure": 0.0-1.0,
     "motion_aesthetics": 0.0-1.0,
-    "paris_photo_readiness": 0.0-1.0,
+    "exhibition_readiness": 0.0-1.0,
     "ai_criticality": 0.0-1.0,
     "conceptual_strength": 0.0-1.0,
     "technical_excellence": 0.0-1.0,
@@ -235,7 +235,7 @@ Format as JSON:
         temporal_coherence: Math.max(0.4, Math.min(0.95, baseScore + (Math.random() - 0.5) * variance)),
         narrative_structure: Math.max(0.4, Math.min(0.95, baseScore + (Math.random() - 0.5) * variance)),
         motion_aesthetics: Math.max(0.4, Math.min(0.95, baseScore + (Math.random() - 0.5) * variance)),
-        paris_photo_readiness: Math.max(0.4, Math.min(0.95, baseScore + (Math.random() - 0.5) * variance)),
+        exhibition_readiness: Math.max(0.4, Math.min(0.95, baseScore + (Math.random() - 0.5) * variance)),
         ai_criticality: Math.max(0.4, Math.min(0.95, baseScore + (Math.random() - 0.5) * variance * 1.2)),
         conceptual_strength: Math.max(0.4, Math.min(0.95, baseScore + (Math.random() - 0.5) * variance)),
         technical_excellence: Math.max(0.4, Math.min(0.95, baseScore + (Math.random() - 0.5) * variance * 0.8)),
@@ -325,7 +325,7 @@ Format as JSON:
       // Generate varied placeholder scores based on video characteristics
       const variance = () => 0.65 + Math.random() * 0.25; // 65-90% range
       return {
-        paris_photo_readiness: variance(),
+        exhibition_readiness: variance(),
         ai_criticality: variance(),
         conceptual_strength: variance(),
         technical_excellence: variance(),
@@ -373,7 +373,7 @@ Format as JSON:
       narrative_structure: 0.15,
       motion_aesthetics: 0.10,
       rhythm_pacing: 0.10,
-      paris_photo_readiness: 0.20,
+      exhibition_readiness: 0.20,
       ai_criticality: 0.15,
       conceptual_strength: 0.10,
       technical_excellence: 0.05
@@ -397,7 +397,7 @@ Format as JSON:
     const score = evaluation.weighted_total * 100; // Convert to percentage
     
     if (score >= 85) {
-      return 'EXHIBITION READY - Strong video piece for Paris Photo';
+      return 'EXHIBITION READY - Strong video piece for gallery presentation';
     } else if (score >= 75) {
       return 'INCLUDE - Good candidate with minor refinements';
     } else if (score >= 60) {

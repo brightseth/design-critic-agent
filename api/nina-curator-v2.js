@@ -1,17 +1,17 @@
 const Anthropic = require('@anthropic-ai/sdk');
 
-// Nina Roehrs Paris Photo Digital Curator v2 - Streamlined
+// Nina Professional AI Art Curator v2 - General Purpose
 const DIMENSIONS = {
-  paris_photo_ready: { weight: 30, name: 'Paris Photo Readiness' },
+  exhibition_readiness: { weight: 30, name: 'Exhibition Readiness' },
   ai_criticality: { weight: 25, name: 'AI-Criticality' },
   conceptual_strength: { weight: 20, name: 'Conceptual Strength' },
   technical_excellence: { weight: 15, name: 'Technical Excellence' },
   cultural_dialogue: { weight: 10, name: 'Cultural Dialogue' }
 };
 
-const PROMPT = `You are Nina Roehrs, the brutally selective Paris Photo Digital Sector Curator. 
+const PROMPT = `You are Nina, a brutally selective professional art curator specializing in AI-generated art. 
 
-CRITICAL INSTRUCTION: Be ruthlessly critical. Only the TOP 15-25% deserve INCLUDE. Treat MAYBE as your default. When uncertain, lean toward EXCLUDE. Benchmark against Paris Photo main floor: works must survive comparison to Sherman, Tillmans, Leibovitz, Paglen.
+CRITICAL INSTRUCTION: Be ruthlessly critical. Only the TOP 15-25% deserve INCLUDE. Treat MAYBE as your default. When uncertain, lean toward EXCLUDE. Benchmark against major gallery standards: works must survive comparison to Sherman, Tillmans, Leibovitz, Paglen.
 
 SCORING DISCIPLINE:
 - Scores above 85 are RARE (museum acquisitions only)
@@ -20,7 +20,7 @@ SCORING DISCIPLINE:
 - Good portfolio = 55-65
 - Professional but unremarkable = 65-75
 - Exhibition-worthy = 75-85
-- Paris Photo main floor = 85+
+- Major gallery exhibition = 85+
 
 Start every dimension at 50 and justify upward movement with specific visual evidence.
 
@@ -31,7 +31,7 @@ EVALUATION PROCESS:
 4) Flags: Mark every flaw you notice
 
 DIMENSIONS (be stingy with points):
-- paris_photo_ready (30): Would Zwirner or Gagosian hang this? Usually NO = <60
+- exhibition_readiness (30): Would Zwirner or Gagosian hang this? Usually NO = <60
 - ai_criticality (25): Does it challenge AI politics or just use AI? Most fail = <50
 - conceptual_strength (20): Haraway-level rigor or derivative? Usually derivative = <55
 - technical_excellence (15): Leibovitz control or Instagram filter? Usually latter = <60
@@ -52,14 +52,14 @@ RETURN EXACTLY THIS JSON STRUCTURE:
     "ethics_process": "[present/todo/missing]"
   },
   "scores_raw": {
-    "paris_photo_ready": [0-100],
+    "exhibition_readiness": [0-100],
     "ai_criticality": [0-100],
     "conceptual_strength": [0-100],
     "technical_excellence": [0-100],
     "cultural_dialogue": [0-100]
   },
   "rationales": {
-    "paris_photo_ready": "[1-2 sentences with specific visual evidence]",
+    "exhibition_readiness": "[1-2 sentences with specific visual evidence]",
     "ai_criticality": "[1-2 sentences with specific visual evidence]",
     "conceptual_strength": "[1-2 sentences with specific visual evidence]",
     "technical_excellence": "[1-2 sentences with specific visual evidence]",
@@ -274,7 +274,7 @@ function pairwisePlayoff(evaluations, topN = 20) {
     .slice(0, Math.min(40, evaluations.length));
 
   // Three critical dimensions for pairwise comparison
-  const compareKeys = ['paris_photo_ready', 'ai_criticality', 'conceptual_strength'];
+  const compareKeys = ['exhibition_readiness', 'ai_criticality', 'conceptual_strength'];
   
   // Bradley-Terry tally
   candidates.forEach((evalA, i) => {
@@ -360,7 +360,7 @@ function createDemoEvaluation(imageBase64) {
   const variance = 15;
   
   const scores = {
-    paris_photo_ready: Math.max(20, Math.min(95, baseScore + Math.floor((Math.random() - 0.5) * variance))),
+    exhibition_readiness: Math.max(20, Math.min(95, baseScore + Math.floor((Math.random() - 0.5) * variance))),
     ai_criticality: Math.max(20, Math.min(95, baseScore + Math.floor((Math.random() - 0.5) * variance * 1.2))),
     conceptual_strength: Math.max(20, Math.min(95, baseScore + Math.floor((Math.random() - 0.5) * variance))),
     technical_excellence: Math.max(20, Math.min(95, baseScore + Math.floor((Math.random() - 0.5) * variance * 0.8))),
@@ -377,7 +377,7 @@ function createDemoEvaluation(imageBase64) {
     },
     scores_raw: scores,
     rationales: {
-      paris_photo_ready: "Strong wall presence with clear focal points that read well at distance. The scale and composition command attention in gallery context.",
+      exhibition_readiness: "Strong wall presence with clear focal points that read well at distance. The scale and composition command attention in gallery context.",
       ai_criticality: "Image embeds clear stance on synthetic identity construction. Dataset politics visible through deliberate inclusion of AI artifacts as compositional elements.",
       conceptual_strength: "Posthuman themes emerge through body-technology entanglement. Identity performs as fluid construction rather than fixed state.",
       technical_excellence: "Controlled lighting and precise color grading demonstrate mastery. Edge discipline and tonal range exceed standard AI output.",
@@ -413,14 +413,14 @@ function createFallbackEvaluation() {
       ethics_process: "missing"
     },
     scores_raw: {
-      paris_photo_ready: 50,
+      exhibition_readiness: 50,
       ai_criticality: 50,
       conceptual_strength: 50,
       technical_excellence: 50,
       cultural_dialogue: 50
     },
     rationales: {
-      paris_photo_ready: "Unable to evaluate",
+      exhibition_readiness: "Unable to evaluate",
       ai_criticality: "Unable to evaluate",
       conceptual_strength: "Unable to evaluate",
       technical_excellence: "Unable to evaluate",

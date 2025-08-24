@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Nina Evaluation</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #000;
+            color: #0f0;
+        }
+        button {
+            background: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #0f0;
+            color: #000;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #111;
+            border: 1px solid #333;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Nina API Evaluation</h1>
+    
+    <div>
+        <input type="file" id="fileInput" accept="image/*">
+        <br>
+        <button onclick="testWithImage()">Test with Selected Image</button>
+        <button onclick="testWithDemoImage()">Test with Demo Image</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testWithImage() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                await sendToAPI(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function testWithDemoImage() {
+            // Create a small test image
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+            
+            // Create a gradient
+            const gradient = ctx.createLinearGradient(0, 0, 400, 400);
+            gradient.addColorStop(0, '#ff00ff');
+            gradient.addColorStop(1, '#00ffff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 400, 400);
+            
+            // Add some shapes
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.beginPath();
+            ctx.arc(200, 200, 100, 0, Math.PI * 2);
+            ctx.fill();
+            
+            const imageData = canvas.toDataURL('image/png');
+            await sendToAPI(imageData);
+        }
+        
+        async function sendToAPI(imageData) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Sending to API...';
+            
+            try {
+                const response = await fetch('/api/nina-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'single',
+                        imageData: imageData
+                    })
+                });
+                
+                const result = await response.json();
+                
+                resultDiv.textContent = 'Response received:\n\n' + JSON.stringify(result, null, 2);
+                
+                // Highlight the score
+                if (result.evaluation && result.evaluation.weighted_total !== undefined) {
+                    resultDiv.textContent += '\n\n===== SCORE: ' + (result.evaluation.weighted_total * 100).toFixed(1) + '% =====';
+                }
+                
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message + '\n\n' + error.stack;
+            }
+        }
+    </script>
+</body>
+</html>

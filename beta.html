@@ -1109,8 +1109,8 @@
                     <div class="suggestion-chip" onclick="addToPrompt('architectural precision')">+ Architectural Precision</div>
                     <div class="suggestion-chip" onclick="addToPrompt('museum-quality composition')">+ Museum Quality</div>
                     <div class="suggestion-chip" onclick="addToPrompt('critical AI discourse')">+ AI Criticality</div>
-                    <div class="suggestion-chip" onclick="addToPrompt('Paris Photo 2025 aesthetic')">+ Paris Photo Ready</div>
-                    <div class="suggestion-chip">+ Paris Photo Ready</div>
+                    <div class="suggestion-chip" onclick="addToPrompt('exhibition-ready aesthetic')">+ Exhibition Ready</div>
+                    <div class="suggestion-chip" onclick="addToPrompt('gallery presentation quality')">+ Gallery Quality</div>
                 </div>
                 <button class="btn btn-success" onclick="analyzePrompt()" style="margin-top: 20px;">Analyze & Optimize</button>
                 <div id="promptAnalysis" style="margin-top: 30px;"></div>
@@ -1141,7 +1141,7 @@
                 <div class="fingerprint-viz">
                     <h3 style="margin-bottom: 20px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Dimensional Preferences</h3>
                     <div class="dimension-bar">
-                        <div class="dimension-label">Paris Photo Ready</div>
+                        <div class="dimension-label">Exhibition Ready</div>
                         <div class="dimension-track">
                             <div class="dimension-fill" id="dimParis" style="width: 0%;"></div>
                         </div>
@@ -1381,7 +1381,7 @@
                 <div class="form-group">
                     <label class="form-label">Which dimensions need adjustment?</label>
                     <div style="display: grid; gap: 10px;">
-                        <label><input type="checkbox" value="paris_photo_ready"> Paris Photo Ready</label>
+                        <label><input type="checkbox" value="exhibition_readiness"> Exhibition Ready</label>
                         <label><input type="checkbox" value="ai_criticality"> AI Criticality</label>
                         <label><input type="checkbox" value="conceptual_strength"> Conceptual Strength</label>
                         <label><input type="checkbox" value="technical_excellence"> Technical Excellence</label>
@@ -2379,7 +2379,7 @@
                         <div style="margin-top: 20px;">
                             <h4 style="margin-bottom: 10px;">Optimized Version:</h4>
                             <div style="padding: 15px; background: #000; border: 1px solid #333;">
-                                ${prompt} | architectural precision, museum-quality composition, critical AI discourse, Paris Photo 2025 aesthetic
+                                ${prompt} | architectural precision, museum-quality composition, critical AI discourse, exhibition-ready aesthetic
                             </div>
                         </div>
                     </div>

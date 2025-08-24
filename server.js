@@ -79,6 +79,7 @@ const ninaCurator = require('./api/nina-curator');
 const analyzeSimple = require('./api/analyze-simple');
 const ninaStudioApi = require('./api/nina-studio-api');
 const publicApi = require('./api/public-api');
+const registryEndpoints = require('./api/registry-endpoints');
 
 // API routes
 app.post('/api/nina-curator-v2', ninaCuratorV2);

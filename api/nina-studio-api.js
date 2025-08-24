@@ -149,10 +149,12 @@ async function handleEvaluation(data, res) {
   // Evaluate image
   const evaluation = await evaluateImage(imageData);
   
-  // Add metadata
+  // Add metadata and ensure image data is included
   evaluation.metadata = metadata;
   evaluation.id = `eval_${Date.now()}`;
   evaluation.timestamp = new Date().toISOString();
+  evaluation.imageData = imageData;  // Include the original image data
+  evaluation.image_url = imageData;  // Also as image_url for compatibility
   
   // Store evaluation locally first (for UX)
   memoryStorage.evaluations.push(evaluation);

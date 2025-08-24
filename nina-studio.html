@@ -1675,6 +1675,41 @@
             }
         }
         
+        // Debug helper to inspect collection data
+        window.debugCollection = function() {
+            if (!currentCollection) {
+                console.log('No collection selected');
+                showNotification('No collection selected', 'info');
+                return;
+            }
+            
+            console.log('=== COLLECTION DEBUG ===');
+            console.log('Collection:', {
+                name: currentCollection.name,
+                id: currentCollection.id,
+                imageCount: currentCollection.collection_images ? currentCollection.collection_images.length : 0
+            });
+            
+            if (currentCollection.collection_images && currentCollection.collection_images.length > 0) {
+                currentCollection.collection_images.forEach((img, i) => {
+                    console.log(`Image ${i}:`, {
+                        hasImageData: !!img.imageData,
+                        hasImageUrl: !!img.image_url,
+                        imageDataLength: img.imageData ? img.imageData.length : 0,
+                        imageDataStart: img.imageData ? img.imageData.substring(0, 50) : 'none',
+                        score: img.weighted_total,
+                        role: img.role,
+                        evaluationId: img.evaluation_id
+                    });
+                });
+                showNotification(`Collection has ${currentCollection.collection_images.length} images - check console`, 'info');
+            } else {
+                console.log('No images in collection');
+                showNotification('No images in collection', 'warning');
+            }
+            console.log('======================');
+        };
+        
         function showCollectionUpload() {
             if (!currentCollection) {
                 showNotification('Please select a collection first', 'error');
@@ -1775,35 +1810,55 @@
                                 })
                             });
                             
-                            const addResult = await addResponse.json();
+                            // Don't wait for server response, update UI immediately
+                            const score = evalResult.evaluation.weighted_total > 1 ? 
+                                evalResult.evaluation.weighted_total : 
+                                evalResult.evaluation.weighted_total * 100;
                             
-                            if (addResult.success) {
-                                const score = evalResult.evaluation.weighted_total;
-                                showNotification(`Added ${file.name} to collection (Score: ${score})`, 'success');
-                                
-                                // Add the evaluation to the current collection's images array
-                                if (!currentCollection.collection_images) {
-                                    currentCollection.collection_images = [];
-                                }
-                                
-                                // Store the image with all necessary data
-                                currentCollection.collection_images.push({
-                                    evaluation_id: evalResult.evaluation.id,
-                                    role: score >= 85 ? 'hero' : 'supporting',
-                                    weighted_total: score,
-                                    imageData: imageData,  // Store the base64 image
-                                    evaluations: {
-                                        ...evalResult.evaluation,
-                                        image_url: imageData,
-                                        imageData: imageData
-                                    }
-                                });
-                                
-                                console.log('Added image to collection, total images:', currentCollection.collection_images.length);
-                                
-                                // Refresh collection display immediately
-                                displayCollectionImages();
+                            // Add the evaluation to the current collection's images array
+                            if (!currentCollection.collection_images) {
+                                currentCollection.collection_images = [];
                             }
+                            
+                            // Store the image with all necessary data
+                            const collectionImage = {
+                                evaluation_id: evalResult.evaluation.id,
+                                role: score >= 85 ? 'hero' : 'supporting',
+                                weighted_total: score,
+                                imageData: imageData,  // Store the base64 image
+                                image_url: imageData,  // Also store as image_url
+                                evaluations: {
+                                    ...evalResult.evaluation,
+                                    image_url: imageData,
+                                    imageData: imageData,
+                                    weighted_total: score
+                                }
+                            };
+                            
+                            currentCollection.collection_images.push(collectionImage);
+                            
+                            console.log('Added image to collection:', {
+                                id: evalResult.evaluation.id,
+                                score: score,
+                                role: collectionImage.role,
+                                hasImage: !!imageData,
+                                imageDataLength: imageData ? imageData.length : 0,
+                                totalImages: currentCollection.collection_images.length
+                            });
+                            
+                            showNotification(`Added ${file.name} to collection (Score: ${Math.round(score)}/100)`, 'success');
+                            
+                            // Refresh collection display immediately
+                            displayCollectionImages();
+                            
+                            // Process server response but don't block UI
+                            addResponse.json().then(addResult => {
+                                if (!addResult.success) {
+                                    console.error('Server failed to add to collection:', addResult);
+                                }
+                            }).catch(error => {
+                                console.error('Failed to sync with server:', error);
+                            });
                         } else {
                             showNotification(`Failed to evaluate ${file.name}`, 'error');
                         }
@@ -1829,31 +1884,63 @@
                 return;
             }
             
-            console.log('Displaying collection:', currentCollection);
-            console.log('Collection images:', currentCollection.collection_images);
+            console.log('Displaying collection:', {
+                name: currentCollection.name,
+                id: currentCollection.id,
+                hasImages: !!currentCollection.collection_images,
+                imageCount: currentCollection.collection_images ? currentCollection.collection_images.length : 0
+            });
             
             if (currentCollection.collection_images && currentCollection.collection_images.length > 0) {
-                grid.innerHTML = currentCollection.collection_images.map(item => {
-                    const eval = item.evaluations || item;
-                    // Try multiple possible image sources
-                    const imageUrl = eval.image_url || eval.imageData || item.image_url || item.imageData;
-                    const score = eval.weighted_total !== undefined ? eval.weighted_total : (item.weighted_total || 0);
+                // Debug first image
+                if (currentCollection.collection_images[0]) {
+                    console.log('First image structure:', {
+                        hasImageData: !!currentCollection.collection_images[0].imageData,
+                        hasImageUrl: !!currentCollection.collection_images[0].image_url,
+                        imageDataStart: currentCollection.collection_images[0].imageData ? 
+                            currentCollection.collection_images[0].imageData.substring(0, 50) : 'none',
+                        score: currentCollection.collection_images[0].weighted_total,
+                        role: currentCollection.collection_images[0].role
+                    });
+                }
+                
+                grid.innerHTML = currentCollection.collection_images.map((item, index) => {
+                    // Get image from multiple possible sources with priority
+                    const imageUrl = item.imageData || 
+                                    item.image_url || 
+                                    (item.evaluations && item.evaluations.imageData) ||
+                                    (item.evaluations && item.evaluations.image_url) ||
+                                    '';
+                    
+                    // Get score and normalize to 0-100 range
+                    let score = item.weighted_total || 
+                               (item.evaluations && item.evaluations.weighted_total) || 
+                               0;
                     const displayScore = score > 1 ? Math.round(score) : Math.round(score * 100);
                     
-                    console.log('Displaying image:', {imageUrl: imageUrl ? 'has image' : 'no image', score, role: item.role});
+                    // Get role
+                    const role = item.role || 
+                                (item.evaluations && item.evaluations.verdict) || 
+                                'Supporting';
+                    
+                    if (!imageUrl) {
+                        console.warn(`Image ${index} has no data:`, item);
+                    }
                     
                     return `
-                        <div class="image-item">
+                        <div class="image-item" data-index="${index}">
                             <img src="${imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='}" 
-                                 alt="Collection image">
+                                 alt="Collection image ${index + 1}"
+                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                 onerror="console.error('Image load error for index ${index}'); this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5Mb2FkIEVycm9yPC90ZXh0Pjwvc3ZnPg==">
                             <div class="image-overlay">
                                 <div class="image-score">${displayScore}/100</div>
-                                <div class="image-verdict">${item.role || eval.verdict || 'Supporting'}</div>
+                                <div class="image-verdict">${role.toUpperCase()}</div>
                             </div>
                         </div>
                     `;
                 }).join('');
-                showNotification(`Showing ${currentCollection.collection_images.length} images in collection`, 'info');
+                showNotification(`Showing ${currentCollection.collection_images.length} images`, 'success');
             } else {
                 grid.innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">

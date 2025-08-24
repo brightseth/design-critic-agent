@@ -733,7 +733,35 @@
             loadFromStorage();
             updateAllCounts();
             updateCurationContext(); // Initialize context display
+            checkRegistryStatus(); // Check Registry connection
         });
+
+        // Check and update Registry connection status
+        async function checkRegistryStatus() {
+            try {
+                const statusDiv = document.getElementById('registry-status');
+                if (!statusDiv) return;
+
+                statusDiv.textContent = 'Checking Registry...';
+                
+                const connectionStatus = await window.registryClient.testConnection();
+                
+                if (connectionStatus.connected) {
+                    statusDiv.textContent = '🟢 Registry Connected';
+                    statusDiv.style.color = '#4CAF50';
+                } else {
+                    statusDiv.textContent = '🟡 Using Sample Data';
+                    statusDiv.style.color = '#FFC107';
+                }
+            } catch (error) {
+                console.error('Registry status check failed:', error);
+                const statusDiv = document.getElementById('registry-status');
+                if (statusDiv) {
+                    statusDiv.textContent = '🔴 Registry Offline';
+                    statusDiv.style.color = '#f44336';
+                }
+            }
+        }
 
         // Workspace setup
         // Agent, Curator and Venue Management

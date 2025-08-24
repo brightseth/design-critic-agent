@@ -297,6 +297,30 @@
             cursor: not-allowed;
         }
 
+        /* Registry Status */
+        .registry-status {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: #333;
+            color: #888;
+        }
+
+        .status-connected {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .status-disconnected {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
         /* Upload Zone */
         .upload-zone {
             border: 2px dashed #333;
@@ -504,6 +528,7 @@
                 <span class="workspace-count" id="workspaceCount">0</span>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
+                <div id="registry-status" class="registry-status">Connecting to Registry...</div>
                 <div style="display: flex; gap: 8px;">
                     <button class="btn btn-small" id="imageMode" onclick="setMediaMode('image')" style="background: #4CAF50; color: #000;">Images</button>
                     <button class="btn btn-small" id="videoMode" onclick="setMediaMode('video')">Videos</button>
@@ -657,6 +682,9 @@
     <!-- Load curator and venue configurations -->
     <script src="curator-personas.js"></script>
     <script src="venue-profiles.js"></script>
+    
+    <!-- Load registry integration -->
+    <script src="js/registry-integration.js"></script>
     
     <script>
         // Global workspace
@@ -1067,7 +1095,50 @@
             
             let successCount = 0;
             let errorCount = 0;
+
+            // Get current curator and venue
+            const currentCurator = document.getElementById('curatorSelect').value || 'nina';
+            const currentVenue = document.getElementById('venueSelect').value || 'Exhibition Space';
             
+            // Try Registry evaluation first if available
+            if (window.registryClient && window.evaluateWithRegistry) {
+                try {
+                    const works = workspace.images.map(item => ({
+                        id: item.id || `work_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                        data: item.data,
+                        url: item.url,
+                        type: item.type
+                    }));
+                    
+                    const registryResult = await window.evaluateWithRegistry(works, currentCurator, currentVenue);
+                    
+                    if (registryResult && registryResult.evaluations) {
+                        // Process registry results
+                        registryResult.evaluations.forEach((evaluation, index) => {
+                            if (evaluation.evaluation && workspace.images[index]) {
+                                workspace.images[index].evaluation = evaluation.evaluation;
+                                workspace.images[index].evaluated = true;
+                                workspace.images[index].curator_context = {
+                                    curator: currentCurator,
+                                    venue: currentVenue,
+                                    source: 'registry'
+                                };
+                                successCount++;
+                            }
+                        });
+                        
+                        updateWorkspaceDisplay();
+                        showNotification(`Registry evaluation complete: ${successCount} works analyzed`, 'success');
+                        btn.disabled = false;
+                        btn.textContent = 'Evaluate All';
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Registry evaluation failed, falling back to local:', error);
+                }
+            }
+            
+            // Fallback to local evaluation
             for (let i = 0; i < workspace.images.length; i++) {
                 const item = workspace.images[i];
                 if (!item.evaluated) {
@@ -1112,12 +1183,27 @@
                             throw new Error(result.error || 'API error');
                         }
                         
-                        const evaluation = result.evaluation || result;
+                        let evaluation = result.evaluation || result;
+                        
+                        // Apply curator+venue modifiers for local evaluation
+                        if (window.registryClient && window.registryClient.applyCuratorVenueModifiers) {
+                            evaluation = window.registryClient.applyCuratorVenueModifiers(
+                                evaluation, 
+                                currentCurator, 
+                                currentVenue
+                            );
+                        }
+                        
                         const score = (evaluation.weighted_total || 0) * 100;
                         
                         item.score = score;
                         item.evaluated = true;
                         item.evaluation = evaluation;
+                        item.curator_context = {
+                            curator: currentCurator,
+                            venue: currentVenue,
+                            source: 'local'
+                        };
                         workspace.evaluations[item.id] = evaluation;
                         
                         successCount++;

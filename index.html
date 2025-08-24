@@ -466,7 +466,7 @@
     <div class="workspace">
         <div class="workspace-header">
             <div>
-                <span class="workspace-title">Workspace</span>
+                <span class="workspace-title">Curation Queue</span>
                 <span class="workspace-count" id="workspaceCount">0</span>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -474,8 +474,8 @@
                     <button class="btn btn-small" id="imageMode" onclick="setMediaMode('image')" style="background: #4CAF50; color: #000;">Images</button>
                     <button class="btn btn-small" id="videoMode" onclick="setMediaMode('video')">Videos</button>
                 </div>
-                <button class="btn btn-small btn-primary" onclick="addToWorkspace()" id="addMediaBtn">+ Add Images</button>
-                <button class="btn btn-small" onclick="clearWorkspace()">Clear All</button>
+                <button class="btn btn-small btn-primary" onclick="addToWorkspace()" id="addMediaBtn">+ Add Works</button>
+                <button class="btn btn-small" onclick="clearWorkspace()">Clear Queue</button>
             </div>
         </div>
         <div class="workspace-thumbnails" id="workspaceThumbnails">
@@ -526,9 +526,9 @@
         <!-- EVALUATE Mode -->
         <div class="mode-content active" id="evaluateContent">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="font-size: 24px; font-weight: 300; margin: 0; letter-spacing: 1px;">Evaluate Images</h2>
+                <h2 style="font-size: 28px; font-weight: 600; margin: 0; letter-spacing: 1px;">Curation Analysis</h2>
                 <div>
-                    <button class="btn btn-primary" onclick="evaluateAll()" id="evaluateBtn">Evaluate All</button>
+                    <button class="btn btn-primary" onclick="evaluateAll()" id="evaluateBtn">Analyze Works</button>
                     <button class="btn" onclick="moveTopToCompare()" id="compareTopBtn" style="display: none;">Compare Top →</button>
                 </div>
             </div>
@@ -699,7 +699,7 @@
             } else {
                 fileInput.accept = 'image/*';
                 addBtn.textContent = '+ Add Images';
-                dropText.textContent = 'Drop images here or click + Add Images';
+                dropText.textContent = 'Drop works here or click + Add Works';
             }
             
             // Clear workspace when switching modes
@@ -708,7 +708,7 @@
                 const newType = mode;
                 if (currentType !== newType) {
                     clearWorkspace();
-                    showNotification(`Switched to ${mode} mode - workspace cleared`, 'info');
+                    showNotification(`Switched to ${mode} mode - curation queue cleared`, 'info');
                 }
             }
         }
@@ -896,8 +896,8 @@
                 displayWorkspace();
                 updateAllCounts();
                 saveToStorage();
-                document.getElementById('evaluateResults').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">Workspace cleared</div>';
-                showNotification('Workspace cleared', 'success');
+                document.getElementById('evaluateResults').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">Curation queue cleared</div>';
+                showNotification('Curation queue cleared', 'success');
             }
         }
 

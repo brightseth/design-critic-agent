@@ -450,6 +450,7 @@
         <div>
             <div style="display: flex; gap: 20px; align-items: center;">
                 <button onclick="showNinaInfo()" style="background: none; border: 1px solid #333; color: #666; padding: 8px 12px; font-size: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">About Nina</button>
+                <a href="/curation-api-docs.html" style="color: #4CAF50; text-decoration: none; font-size: 11px; font-weight: 500;">API Docs</a>
                 <a href="/beta.html" style="color: #444; text-decoration: none; font-size: 11px;">Beta Features →</a>
             </div>
         </div>
@@ -547,7 +548,7 @@
             <div style="margin-top: 30px; display: flex; gap: 15px; align-items: end;">
                 <div style="flex: 1;">
                     <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">Collection Name</label>
-                    <input type="text" id="collectionNameInput" value="Paris Photo 2025" style="width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; border-radius: 4px; font-size: 14px;">
+                    <input type="text" id="collectionNameInput" value="Exhibition Collection" style="width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; border-radius: 4px; font-size: 14px;">
                 </div>
                 <button class="btn btn-primary" onclick="saveCollection()" style="padding: 12px 30px; white-space: nowrap;">Save Collection</button>
             </div>
@@ -555,10 +556,19 @@
 
         <!-- OPTIMIZE Mode -->
         <div class="mode-content" id="optimizeContent">
-            <h2 style="font-size: 24px; font-weight: 300; margin: 0 0 30px 0; letter-spacing: 1px;">Optimize Prompts</h2>
+            <h2 style="font-size: 24px; font-weight: 300; margin: 0 0 30px 0; letter-spacing: 1px;">Learn from Your Curation</h2>
+            
+            <div style="background: #1a1a1a; padding: 20px; margin-bottom: 30px; border-left: 3px solid #FFC107;">
+                <h3 style="color: #FFC107; margin-bottom: 10px; font-size: 14px;">What This Does</h3>
+                <p style="color: #ccc; line-height: 1.6; font-size: 14px;">
+                    NINA analyzes your high-scoring selections to identify patterns in your successful works.
+                    Use these insights to refine your creative process and prompt engineering.
+                </p>
+            </div>
+            
             <div style="background: #111; padding: 30px; margin-top: 30px;">
-                <h3 style="font-size: 16px; font-weight: 500; margin: 0 0 15px 0; color: #4CAF50; letter-spacing: 1px;">Optimized Prompt Based on Winners:</h3>
-                <p id="optimizedPrompt" style="margin-top: 20px; line-height: 1.6; color: #4CAF50;"></p>
+                <h3 style="font-size: 16px; font-weight: 500; margin: 0 0 15px 0; color: #4CAF50; letter-spacing: 1px;">Pattern Analysis:</h3>
+                <div id="optimizedPrompt" style="margin-top: 20px; line-height: 1.8; color: #ccc;"></div>
             </div>
             <button class="btn btn-primary" onclick="generateOptimizations()" style="margin-top: 30px;">Generate New Optimization</button>
         </div>
@@ -593,7 +603,7 @@
     <!-- Status Bar -->
     <div class="status-bar">
         <div class="status-info">
-            <span class="status-item text-caps text-small text-muted">Paris Photo 2025 Ready</span>
+            <span class="status-item text-caps text-small text-muted">Exhibition Ready</span>
         </div>
         <div class="progress-bar" style="width: 200px; height: 4px; background: #222; border-radius: 2px;">
             <div id="progressBar" style="width: 0%; height: 100%; background: #4CAF50; transition: width 0.3s;"></div>
@@ -1318,7 +1328,7 @@
             }
             
             const collectionNameInput = document.getElementById('collectionNameInput');
-            const collectionName = collectionNameInput.value.trim() || `Paris Photo ${new Date().getFullYear()}`;
+            const collectionName = collectionNameInput.value.trim() || `Collection ${new Date().getFullYear()}`;
             
             const modalContent = `
                 <div style="max-width: 600px;">
@@ -1353,8 +1363,8 @@
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <button onclick="downloadCollection('${collectionName}')" class="btn btn-primary" style="padding: 15px;">Download JSON</button>
-                        <button onclick="shareCollection('${collectionName}')" class="btn" style="padding: 15px;">Share Collection</button>
+                        <button onclick="downloadCollection()" class="btn btn-primary" style="padding: 15px;">Download JSON</button>
+                        <button onclick="shareCollection()" class="btn" style="padding: 15px;">Share Collection</button>
                     </div>
                     
                     <div style="margin-top: 30px; padding: 20px; background: #111; border-radius: 4px;">
@@ -1394,7 +1404,8 @@
             }
         }
         
-        function downloadCollection(collectionName) {
+        function downloadCollection() {
+            const collectionName = document.getElementById('collectionNameInput').value.trim() || 'Exhibition Collection';
             const data = {
                 name: collectionName,
                 created: new Date().toISOString(),
@@ -1416,8 +1427,9 @@
             showNotification('Collection downloaded', 'success');
         }
         
-        function shareCollection(collectionName) {
-            const shareText = `Nina Collection: ${collectionName}\n${workspace.collection.length} images, ${Math.round(workspace.collection.reduce((sum, img) => sum + (img.score || 0), 0) / workspace.collection.length)}% avg score\nCurated with NINA AI system for Paris Photo 2025`;
+        function shareCollection() {
+            const collectionName = document.getElementById('collectionNameInput').value.trim() || 'Exhibition Collection';
+            const shareText = `Nina Collection: ${collectionName}\n${workspace.collection.length} items, ${Math.round(workspace.collection.reduce((sum, img) => sum + (img.score || 0), 0) / workspace.collection.length)}% avg score\nCurated with NINA AI system`;
             
             if (navigator.share) {
                 navigator.share({
@@ -1437,7 +1449,19 @@
             const collection = workspace.collection.length > 0 ? workspace.collection : workspace.images.filter(img => img.score && img.score >= 75);
             
             if (collection.length === 0) {
-                document.getElementById('optimizedPrompt').textContent = 'Need evaluated high-scoring items or a collection to generate optimizations. Go to EVALUATE first.';
+                document.getElementById('optimizedPrompt').innerHTML = `
+                    <div style="color: #FFC107; margin-bottom: 20px;">
+                        <strong>No patterns to analyze yet!</strong>
+                    </div>
+                    <div style="color: #888; line-height: 1.8;">
+                        <p>To generate insights:</p>
+                        <ol style="margin-left: 20px; margin-top: 10px;">
+                            <li>Upload and evaluate ${workspace.mediaMode === 'video' ? 'videos' : 'images'} in <strong>EVALUATE</strong> mode</li>
+                            <li>Build a collection in <strong>COLLECT</strong> mode (or let high scorers auto-collect)</li>
+                            <li>Return here to see pattern analysis</li>
+                        </ol>
+                    </div>
+                `;
                 return;
             }
             
@@ -1446,35 +1470,118 @@
             const hasVideos = collection.some(item => item.type === 'video');
             const exhibitionReady = collection.filter(item => item.score >= 85).length;
             
-            let insights = [];
+            // Analyze patterns in successful work
+            let patterns = {
+                technical: [],
+                conceptual: [],
+                prompt_elements: []
+            };
             
-            if (avgScore >= 80) {
-                insights.push("Strong conceptual consistency across selected pieces");
+            // Score-based insights
+            if (avgScore >= 85) {
+                patterns.technical.push("Exhibition-ready technical excellence");
+                patterns.prompt_elements.push("museum-quality composition", "archival standards");
+            } else if (avgScore >= 75) {
+                patterns.technical.push("Strong gallery presentation potential");
+                patterns.prompt_elements.push("refined aesthetics", "professional finish");
+            } else if (avgScore >= 65) {
+                patterns.technical.push("Solid foundation with room for refinement");
+                patterns.prompt_elements.push("consistent style", "clear vision");
             }
-            if (exhibitionReady >= 2) {
-                insights.push("Multiple exhibition-ready pieces suggest clear aesthetic direction");
+            
+            // Exhibition readiness insights
+            if (exhibitionReady >= 3) {
+                patterns.conceptual.push("Consistent gallery-level output");
+                patterns.prompt_elements.push("critical discourse", "conceptual rigor");
+            } else if (exhibitionReady >= 1) {
+                patterns.conceptual.push("Emerging exhibition potential");
+                patterns.prompt_elements.push("thematic coherence", "visual impact");
             }
+            
+            // Media type insights
             if (hasVideos) {
-                insights.push("Temporal media adds narrative depth to static work");
+                patterns.technical.push("Temporal narrative development");
+                patterns.prompt_elements.push("motion aesthetics", "time-based composition");
             }
             
-            // Generate dynamic prompt based on actual results
-            const mediaType = hasVideos ? "video and image" : workspace.mediaMode;
-            const qualityLevel = avgScore >= 85 ? "exhibition-grade" : avgScore >= 70 ? "gallery-worthy" : "emerging";
+            // Collection size insights
+            if (collection.length >= 10) {
+                patterns.conceptual.push("Strong curatorial vision across body of work");
+            } else if (collection.length >= 5) {
+                patterns.conceptual.push("Focused thematic exploration");
+            }
             
-            const dynamicPrompts = [
-                `Create ${qualityLevel} ${mediaType} work that builds on the ${insights.length > 0 ? insights[0].toLowerCase() : 'aesthetic patterns'} seen in your top selections. Focus on Paris Photo 2025 exhibition context.`,
-                `Based on your ${collection.length} selected pieces (avg: ${Math.round(avgScore)}%), generate ${mediaType} work that amplifies the successful ${hasVideos ? 'temporal and visual' : 'visual'} elements while addressing any conceptual gaps.`,
-                `Your curation reveals strong ${avgScore >= 80 ? 'technical execution' : 'conceptual foundation'}. Create new ${mediaType} work that pushes this aesthetic further toward gallery exhibition standards.`
-            ];
+            // Build comprehensive analysis
+            const mediaType = workspace.mediaMode === 'video' ? 'video' : 'image';
+            const qualityDesc = avgScore >= 85 ? 'Exhibition-Grade' : avgScore >= 75 ? 'Gallery-Ready' : avgScore >= 65 ? 'Portfolio-Level' : 'Developing';
             
-            const optimizedPrompt = dynamicPrompts[Math.floor(Math.random() * dynamicPrompts.length)];
-            const analysis = `Analysis: ${collection.length} items selected, ${Math.round(avgScore)}% average score, ${exhibitionReady} exhibition-ready pieces${hasVideos ? ', includes video work' : ''}.`;
-            
-            document.getElementById('optimizedPrompt').innerHTML = `
-                <div style="color: #666; font-size: 12px; margin-bottom: 15px;">${analysis}</div>
-                <div style="color: #4CAF50; line-height: 1.6;">${optimizedPrompt}</div>
+            let analysisHTML = `
+                <div style="margin-bottom: 30px;">
+                    <div style="background: #0a0a0a; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+                        <h4 style="color: #4CAF50; margin-bottom: 15px; font-size: 14px;">Collection Analysis</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                            <div>
+                                <div style="color: #FFC107; font-size: 24px; font-weight: bold;">${collection.length}</div>
+                                <div style="color: #666; font-size: 12px;">Selected Works</div>
+                            </div>
+                            <div>
+                                <div style="color: #2196F3; font-size: 24px; font-weight: bold;">${Math.round(avgScore)}%</div>
+                                <div style="color: #666; font-size: 12px;">Average Score</div>
+                            </div>
+                            <div>
+                                <div style="color: #4CAF50; font-size: 24px; font-weight: bold;">${exhibitionReady}</div>
+                                <div style="color: #666; font-size: 12px;">Exhibition Ready</div>
+                            </div>
+                            <div>
+                                <div style="color: #9C27B0; font-size: 24px; font-weight: bold;">${qualityDesc}</div>
+                                <div style="color: #666; font-size: 12px;">Quality Level</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${patterns.technical.length > 0 ? `
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #2196F3; margin-bottom: 10px; font-size: 14px;">Technical Patterns</h4>
+                            <ul style="color: #ccc; line-height: 1.8; padding-left: 20px;">
+                                ${patterns.technical.map(p => `<li>${p}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    
+                    ${patterns.conceptual.length > 0 ? `
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #FFC107; margin-bottom: 10px; font-size: 14px;">Conceptual Strengths</h4>
+                            <ul style="color: #ccc; line-height: 1.8; padding-left: 20px;">
+                                ${patterns.conceptual.map(p => `<li>${p}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="background: #1a1a1a; padding: 20px; border-left: 3px solid #4CAF50;">
+                        <h4 style="color: #4CAF50; margin-bottom: 15px; font-size: 14px;">Optimized Prompt Elements</h4>
+                        <p style="color: #ccc; line-height: 1.8; margin-bottom: 15px;">
+                            Based on your successful selections, incorporate these elements in future prompts:
+                        </p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            ${patterns.prompt_elements.map(element => 
+                                `<span style="background: #333; padding: 5px 12px; border-radius: 20px; color: #4CAF50; font-size: 13px;">${element}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #111; border-radius: 4px;">
+                        <h4 style="color: #9C27B0; margin-bottom: 10px; font-size: 14px;">Next Steps</h4>
+                        <p style="color: #ccc; line-height: 1.6; font-size: 13px;">
+                            ${avgScore >= 75 ? 
+                                `Your work shows strong exhibition potential. Focus on maintaining consistency while pushing conceptual boundaries.` :
+                                `Continue refining technical execution. Study the elements that made your highest-scoring pieces successful.`
+                            }
+                        </p>
+                    </div>
+                </div>
             `;
+            
+            document.getElementById('optimizedPrompt').innerHTML = analysisHTML;
         }
 
         // REVIEW functions
@@ -1585,7 +1692,7 @@
                         <div style="margin-bottom: 30px;">
                             <div style="display: grid; gap: 15px;">
                                 <div style="display: flex; justify-content: space-between; padding: 10px; background: #0a0a0a;">
-                                    <span>Paris Photo Readiness (30%)</span>
+                                    <span>Exhibition Readiness (30%)</span>
                                     <span style="color: #4CAF50; font-weight: bold;">${scores.paris_photo_ready || 0}/100</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; padding: 10px; background: #0a0a0a;">
@@ -1642,15 +1749,15 @@
                     <div style="background: #0a0a0a; padding: 30px; margin-bottom: 30px; border-left: 4px solid #4CAF50;">
                         <h3 style="color: #4CAF50; margin-bottom: 15px;">The Algorithm</h3>
                         <p style="line-height: 1.7; color: #ccc; margin-bottom: 20px;">
-                            NINA evaluates AI-generated artwork through a weighted scoring system designed specifically for 
-                            <strong>Paris Photo 2025</strong>'s digital sector. Each image undergoes rigorous analysis across 
+                            NINA evaluates AI-generated artwork through a weighted scoring system designed for 
+                            <strong>professional exhibition contexts</strong>. Each work undergoes rigorous analysis across 
                             five critical dimensions, with scores weighted by curatorial importance.
                         </p>
                         
                         <div style="display: grid; gap: 15px; margin-top: 20px;">
                             <div style="background: #111; padding: 15px; display: flex; justify-content: space-between;">
                                 <div>
-                                    <strong style="color: #4CAF50;">Paris Photo Readiness</strong>
+                                    <strong style="color: #4CAF50;">Exhibition Readiness</strong>
                                     <div style="font-size: 12px; color: #888;">Wall presence at 80-120cm viewing distance. Museum-grade exhibition quality.</div>
                                 </div>
                                 <span style="color: #4CAF50; font-weight: bold;">30%</span>
@@ -1693,12 +1800,12 @@
                     <div style="background: #0a0a0a; padding: 30px; margin-bottom: 30px;">
                         <h3 style="color: #4CAF50; margin-bottom: 15px;">Curatorial Philosophy</h3>
                         <p style="line-height: 1.7; color: #ccc; margin-bottom: 15px;">
-                            NINA operates with <strong>Paris Photo</strong> level brutality. The system is calibrated against 
+                            NINA operates with <strong>gallery-level</strong> selectivity. The system is calibrated against 
                             gallery standards from Gagosian, Zwirner, and Pace, with benchmarks from critical AI artists 
                             like Trevor Paglen, Stephanie Dinkins, and Jake Elwes.
                         </p>
                         <ul style="color: #ccc; line-height: 1.6; padding-left: 20px;">
-                            <li><strong>85%+</strong> - Exhibition Ready (Paris Photo main booth consideration)</li>
+                            <li><strong>85%+</strong> - Exhibition Ready (major gallery consideration)</li>
                             <li><strong>60-84%</strong> - Promising (needs refinement)</li>
                             <li><strong>Below 60%</strong> - Needs significant work</li>
                         </ul>
@@ -1725,7 +1832,7 @@
                     <div style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #333;">
                         <p style="color: #666; font-size: 12px; line-height: 1.6;">
                             NINA • AI Art Curation System • Powered by Claude 3.5 Sonnet<br>
-                            Designed for Paris Photo 2025 Digital Sector
+                            Professional AI Art Curation System
                         </p>
                     </div>
                 </div>

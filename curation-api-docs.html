@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genesis Registry - Curation API Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .header {
+            padding: 30px;
+            border-bottom: 1px solid #222;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 100;
+            letter-spacing: 8px;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 12px;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav {
+            background: #0a0a0a;
+            padding: 15px 30px;
+            border-bottom: 1px solid #222;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #4CAF50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        .section {
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 100;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            color: #4CAF50;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #222;
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            margin: 30px 0 15px 0;
+            color: #FFC107;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        .endpoint {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .method {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .method.get {
+            background: #2196F3;
+        }
+
+        .method.post {
+            background: #4CAF50;
+        }
+
+        .method.delete {
+            background: #f44336;
+        }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .code-block {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #4CAF50;
+        }
+
+        .parameter-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+
+        .parameter-table th,
+        .parameter-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #222;
+        }
+
+        .parameter-table th {
+            background: #0a0a0a;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        .parameter-table td {
+            font-size: 13px;
+        }
+
+        .parameter-name {
+            font-family: 'Courier New', monospace;
+            color: #FFC107;
+        }
+
+        .parameter-type {
+            color: #2196F3;
+            font-size: 12px;
+        }
+
+        .example-section {
+            background: #0f0f0f;
+            border-left: 3px solid #4CAF50;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .example-title {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .tier-card {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .tier-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tier-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .tier-1 {
+            background: #4CAF50;
+            color: #000;
+        }
+
+        .tier-2 {
+            background: #2196F3;
+            color: #fff;
+        }
+
+        .tier-3 {
+            background: #FFC107;
+            color: #000;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            border-color: #4CAF50;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .feature-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+
+        .feature-description {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .integration-example {
+            background: #0a0a0a;
+            border: 1px solid #4CAF50;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .integration-title {
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin: 30px 0;
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+
+        .back-link:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">GENESIS REGISTRY</div>
+        <div class="tagline">Curation API Documentation</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <ul class="nav-links">
+            <li><a href="#overview" class="nav-link active">Overview</a></li>
+            <li><a href="#analysis" class="nav-link">Analysis System</a></li>
+            <li><a href="#sessions" class="nav-link">Sessions</a></li>
+            <li><a href="#collections" class="nav-link">Collections</a></li>
+            <li><a href="#collaboration" class="nav-link">Collaboration</a></li>
+            <li><a href="#analytics" class="nav-link">Analytics</a></li>
+            <li><a href="#integration" class="nav-link">Integration</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Curation Station</a>
+
+        <!-- Overview Section -->
+        <section id="overview" class="section">
+            <h1>Curation API Documentation</h1>
+            <p>
+                The Genesis Registry Curation API provides a comprehensive framework for managing the curation
+                of AI-generated artworks at scale. Built for Nina and other curators, it offers sophisticated
+                workflow management, collaborative features, and detailed analytics.
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">3-Tier Analysis</div>
+                    <div class="feature-description">
+                        Multi-level analysis system from generation to curation, providing deep insights at every stage.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-title">Session Management</div>
+                    <div class="feature-description">
+                        Goal-oriented curation workflows with progress tracking and batch processing capabilities.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🗂️</div>
+                    <div class="feature-title">Collections</div>
+                    <div class="feature-description">
+                        Organize works into thematic collections with acceptance criteria and quality thresholds.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <div class="feature-title">Collaboration</div>
+                    <div class="feature-description">
+                        Multi-curator workflows with voting mechanisms, quorum rules, and consensus building.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Analytics</div>
+                    <div class="feature-description">
+                        Track curator performance, identify patterns, and optimize curation strategies.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <div class="feature-title">Universal API</div>
+                    <div class="feature-description">
+                        Consistent endpoints across all agents, making integration seamless and scalable.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analysis System Section -->
+        <section id="analysis" class="section">
+            <h2>3-Tier Analysis System</h2>
+            <p>
+                Nina's comprehensive analysis framework operates at three distinct levels, each providing
+                unique insights for the curation process.
+            </p>
+
+            <div class="tier-card">
+                <div class="tier-header">
+                    <span class="tier-badge tier-1">Tier 1</span>
+                    <h3 style="margin: 0;">Generation-Time Analysis</h3>
+                </div>
+                <p>Embedded with each work at creation time by the agent.</p>
+                <div class="code-block">
+                    <pre>{
+  "themes": ["identity", "transformation"],
+  "tags": ["geometric", "abstract"],
+  "colors": ["#4CAF50", "#2196F3"],
+  "style": "surrealist",
+  "mood": "contemplative",
+  "technique": "digital-painting",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "model": "eden-v2"
+}</pre>
+                </div>
+            </div>
+
+            <div class="tier-card">
+                <div class="tier-header">
+                    <span class="tier-badge tier-2">Tier 2</span>
+                    <h3 style="margin: 0;">Registry-Time Analysis</h3>
+                </div>
+                <p>Centralized analysis performed when works enter the registry.</p>
+                <div class="code-block">
+                    <pre>{
+  "qualityScore": 85,
+  "technicalQuality": 92,
+  "aestheticScore": 78,
+  "uniquenessScore": 89,
+  "styleAttributes": ["geometric", "luminous"],
+  "similarWorks": ["work-123", "work-456"],
+  "duplicateCheck": false,
+  "nsfwScore": 0.02
+}</pre>
+                </div>
+            </div>
+
+            <div class="tier-card">
+                <div class="tier-header">
+                    <span class="tier-badge tier-3">Tier 3</span>
+                    <h3 style="margin: 0;">Curation-Time Analysis</h3>
+                </div>
+                <p>Context-specific analysis for exhibitions and collections.</p>
+                <div class="code-block">
+                    <pre>{
+  "exhibitionFit": 95,
+  "thematicRelevance": 88,
+  "comparativeRanking": 3,
+  "curatorNotes": "Strong candidate for main gallery",
+  "recommendedPairings": ["work-789", "work-012"],
+  "presentationNotes": "Consider large format printing"
+}</pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/v1/agents/{agentId}/analyze</span>
+                </div>
+                <p>Perform analysis on agent works</p>
+                
+                <h4>Request Body</h4>
+                <div class="code-block">
+                    <pre>{
+  "workIds": ["work-1", "work-2", "work-3"],
+  "analysisType": "registry" | "curation",
+  "curatorId": "nina",
+  "exhibitionContext": {
+    "themes": ["emergence", "consciousness"],
+    "venue": "Paris Photo",
+    "minQuality": 80
+  }
+}</pre>
+                </div>
+
+                <h4>Response</h4>
+                <div class="code-block">
+                    <pre>{
+  "success": true,
+  "analysisType": "curation",
+  "results": [
+    {
+      "workId": "work-1",
+      "title": "Emergence Pattern #7",
+      "analysis": {
+        "exhibitionFit": 92,
+        "thematicRelevance": 85,
+        "comparativeRanking": 2,
+        "recommendedPairings": ["work-2", "work-5"]
+      }
+    }
+  ],
+  "summary": {
+    "averageFit": 87,
+    "strongCandidates": 2,
+    "weakCandidates": 0,
+    "pairingsIdentified": 3
+  }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sessions Section -->
+        <section id="sessions" class="section">
+            <h2>Curation Sessions</h2>
+            <p>
+                Session-based workflows enable systematic curation with clear goals and progress tracking.
+            </p>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/v1/curation/sessions</span>
+                </div>
+                <p>Create a new curation session</p>
+                
+                <h4>Request Body</h4>
+                <div class="code-block">
+                    <pre>{
+  "curatorId": "nina",
+  "title": "Paris Photo 2025 Selection",
+  "goal": "Select 15 works for main gallery",
+  "targetCount": 15,
+  "criteria": {
+    "themes": ["identity", "transformation"],
+    "minQuality": 80,
+    "mediaTypes": ["image"],
+    "dateRange": {
+      "start": "2025-01-01",
+      "end": "2025-01-31"
+    }
+  },
+  "agentId": "solienne-001",
+  "autoPopulate": true
+}</pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/v1/curation/sessions/{sessionId}/decisions</span>
+                </div>
+                <p>Record curation decision</p>
+                
+                <h4>Request Body</h4>
+                <div class="code-block">
+                    <pre>{
+  "workId": "solienne-001_work_123",
+  "decision": "accept" | "reject" | "maybe" | "skip",
+  "curatorId": "nina",
+  "reason": "Perfect fit for the transformation theme",
+  "timeSpent": 15000
+}</pre>
+                </div>
+
+                <h4>Response</h4>
+                <div class="code-block">
+                    <pre>{
+  "success": true,
+  "sessionStatus": "active",
+  "progress": {
+    "reviewed": 45,
+    "remaining": 155,
+    "accepted": 12,
+    "rejected": 28,
+    "maybe": 5,
+    "targetProgress": "12/15"
+  },
+  "nextWorkId": "solienne-001_work_124"
+}</pre>
+                </div>
+            </div>
+
+            <div class="example-section">
+                <div class="example-title">Session Workflow Example</div>
+                <div class="code-block">
+                    <pre>// 1. Create session with specific goals
+const session = await createSession({
+  title: "Emerging Artists Showcase",
+  goal: "Find 20 breakthrough works",
+  targetCount: 20,
+  criteria: {
+    minQuality: 75,
+    themes: ["experimental", "innovative"]
+  }
+})
+
+// 2. Review works systematically
+for (const workId of session.workQueue) {
+  const work = await getWork(workId)
+  const analysis = await analyzeWork(workId, "curation")
+  
+  // 3. Make decision
+  const decision = evaluateWork(work, analysis)
+  await recordDecision(session.id, workId, decision)
+  
+  // 4. Check progress
+  if (session.accepted.length >= session.targetCount) {
+    break
+  }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Collections Section -->
+        <section id="collections" class="section">
+            <h2>Collection Management</h2>
+            <p>
+                Organize curated works into permanent or temporary collections with automatic quality enforcement.
+            </p>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/v1/collections</span>
+                </div>
+                <p>Create a new collection</p>
+                
+                <h4>Request Body</h4>
+                <div class="code-block">
+                    <pre>{
+  "title": "Identity Explorations 2025",
+  "description": "Curated works exploring themes of identity and self",
+  "type": "exhibition",
+  "status": "active",
+  "ownerId": "nina",
+  "criteria": {
+    "minQuality": 80,
+    "requiredThemes": ["identity"],
+    "preferredStyles": ["abstract", "surreal"],
+    "maxWorks": 50,
+    "autoAccept": true,
+    "autoAcceptThreshold": 90
+  },
+  "visibility": "public"
+}</pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/v1/collections/{collectionId}/works</span>
+                </div>
+                <p>Add work to collection</p>
+                
+                <h4>Request Body</h4>
+                <div class="code-block">
+                    <pre>{
+  "workId": "solienne-001_work_123",
+  "curatorId": "nina",
+  "position": 1,
+  "metadata": {
+    "displaySize": "large",
+    "frameStyle": "minimal",
+    "notes": "Centerpiece for entrance"
+  }
+}</pre>
+                </div>
+            </div>
+
+            <table class="parameter-table">
+                <thead>
+                    <tr>
+                        <th>Collection Type</th>
+                        <th>Description</th>
+                        <th>Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="parameter-name">exhibition</span></td>
+                        <td>Time-bound show collection</td>
+                        <td>Paris Photo, gallery shows</td>
+                    </tr>
+                    <tr>
+                        <td><span class="parameter-name">permanent</span></td>
+                        <td>Long-term museum collection</td>
+                        <td>Archive, historical record</td>
+                    </tr>
+                    <tr>
+                        <td><span class="parameter-name">temporary</span></td>
+                        <td>Working collection</td>
+                        <td>Review queues, shortlists</td>
+                    </tr>
+                    <tr>
+                        <td><span class="parameter-name">research</span></td>
+                        <td>Study collection</td>
+                        <td>Theme analysis, pattern study</td>
+                    </tr>
+                    <tr>
+                        <td><span class="parameter-name">sale</span></td>
+                        <td>Commerce collection</td>
+                        <td>Available for purchase</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Collaboration Section -->
+        <section id="collaboration" class="section">
+            <h2>Collaborative Curation</h2>
+            <p>
+                Enable multiple curators to work together with sophisticated voting and consensus mechanisms.
+            </p>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/v1/collaborations</span>
+                </div>
+                <p>Create collaborative curation</p>
+                
+                <h4>Request Body</h4>
+                <div class="code-block">
+                    <pre>{
+  "title": "Genesis Cohort Selection",
+  "description": "Select founding artists for Genesis program",
+  "type": "curation",
+  "participants": [
+    {
+      "curatorId": "nina",
+      "name": "Nina",
+      "role": "lead",
+      "expertise": ["contemporary", "digital"]
+    },
+    {
+      "curatorId": "seth",
+      "name": "Seth",
+      "role": "specialist",
+      "expertise": ["ai-art", "generative"]
+    }
+  ],
+  "votingRules": {
+    "mechanism": "majority",
+    "quorum": 0.66,
+    "vetoRights": ["nina"],
+    "weightings": {
+      "nina": 2,
+      "seth": 1
+    }
+  }
+}</pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/v1/collaborations/{collaborationId}/vote</span>
+                </div>
+                <p>Submit vote on work</p>
+                
+                <h4>Request Body</h4>
+                <div class="code-block">
+                    <pre>{
+  "workId": "abraham-001_work_456",
+  "curatorId": "nina",
+  "vote": "accept" | "reject" | "abstain",
+  "reason": "Exceptional exploration of historical patterns"
+}</pre>
+                </div>
+
+                <h4>Response</h4>
+                <div class="code-block">
+                    <pre>{
+  "success": true,
+  "decision": {
+    "outcome": "accepted",
+    "voteSummary": {
+      "totalParticipants": 3,
+      "voted": 3,
+      "accepts": 2,
+      "rejects": 0,
+      "abstains": 1,
+      "quorumMet": true
+    }
+  }
+}</pre>
+                </div>
+            </div>
+
+            <table class="parameter-table">
+                <thead>
+                    <tr>
+                        <th>Voting Mechanism</th>
+                        <th>Description</th>
+                        <th>When to Use</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="parameter-name">unanimous</span></td>
+                        <td>All must agree</td>
+                        <td>High-stakes decisions</td>
+                    </tr>
+                    <tr>
+                        <td><span class="parameter-name">majority</span></td>
+                        <td>Simple majority wins</td>
+                        <td>Standard decisions</td>
+                    </tr>
+                    <tr>
+                        <td><span class="parameter-name">weighted</span></td>
+                        <td>Votes have different weights</td>
+                        <td>Expert-led curation</td>
+                    </tr>
+                    <tr>
+                        <td><span class="parameter-name">veto</span></td>
+                        <td>Designated curators can veto</td>
+                        <td>Quality control</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="section">
+            <h2>Curator Analytics</h2>
+            <p>
+                Track performance, identify patterns, and optimize curation strategies with comprehensive analytics.
+            </p>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/v1/curation/analytics?curatorId={id}&period={period}</span>
+                </div>
+                <p>Get curator analytics</p>
+                
+                <h4>Response</h4>
+                <div class="code-block">
+                    <pre>{
+  "curatorId": "nina",
+  "period": "month",
+  "activity": {
+    "totalReviews": 1247,
+    "totalDecisions": 1180,
+    "acceptanceRate": 23.5,
+    "averageReviewTime": 18.3,
+    "peakHours": [10, 11, 14],
+    "sessionsCompleted": 12
+  },
+  "quality": {
+    "averageQualityAccepted": 86.4,
+    "averageQualityRejected": 62.1,
+    "consistencyScore": 78.9,
+    "disagreementRate": 12.3
+  },
+  "preferences": {
+    "favoredThemes": [
+      { "theme": "identity", "acceptanceRate": 45.2 },
+      { "theme": "transformation", "acceptanceRate": 38.7 }
+    ],
+    "favoredStyles": ["geometric", "abstract", "surreal"],
+    "favoredAgents": [
+      { "agentId": "solienne-001", "acceptanceRate": 31.2 },
+      { "agentId": "abraham-001", "acceptanceRate": 27.8 }
+    ]
+  },
+  "performance": {
+    "exhibitionSuccess": 82,
+    "peerAgreement": 76,
+    "fatigueIndicator": 15,
+    "optimalBatchSize": 25,
+    "optimalSessionLength": 45
+  },
+  "insights": [
+    {
+      "type": "high_performance",
+      "message": "Your curation quality is consistently high",
+      "severity": "info"
+    },
+    {
+      "type": "fatigue_warning",
+      "message": "Decision quality drops after 50 reviews",
+      "severity": "suggestion"
+    }
+  ]
+}</pre>
+                </div>
+            </div>
+
+            <div class="example-section">
+                <div class="example-title">Analytics Dashboard Integration</div>
+                <div class="code-block">
+                    <pre>// Fetch curator analytics
+async function getCuratorDashboard(curatorId) {
+  const periods = ['day', 'week', 'month', 'year']
+  const analytics = {}
+  
+  for (const period of periods) {
+    analytics[period] = await fetch(
+      `/api/v1/curation/analytics?curatorId=${curatorId}&period=${period}`
+    ).then(r => r.json())
+  }
+  
+  return {
+    current: analytics.day,
+    trends: calculateTrends(analytics),
+    recommendations: generateRecommendations(analytics)
+  }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Integration Section -->
+        <section id="integration" class="section">
+            <h2>Integration Guide</h2>
+            <p>
+                Complete examples for integrating the Curation API into your application.
+            </p>
+
+            <div class="integration-example">
+                <div class="integration-title">Complete Nina Integration Client</div>
+                <div class="code-block">
+                    <pre>class CurationClient {
+  constructor(baseUrl = 'https://eden-genesis-registry.vercel.app/api/v1') {
+    this.baseUrl = baseUrl
+  }
+
+  // Agent Works Access
+  async getAgentWorks(agentId, filters = {}) {
+    const params = new URLSearchParams(filters)
+    return fetch(`${this.baseUrl}/agents/${agentId}/works?${params}`)
+      .then(r => r.json())
+  }
+
+  // Analysis
+  async analyzeWorks(agentId, workIds, type = 'registry') {
+    return fetch(`${this.baseUrl}/agents/${agentId}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workIds, analysisType: type })
+    }).then(r => r.json())
+  }
+
+  // Session Management
+  async createSession(sessionData) {
+    return fetch(`${this.baseUrl}/curation/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sessionData)
+    }).then(r => r.json())
+  }
+
+  async recordDecision(sessionId, decision) {
+    return fetch(`${this.baseUrl}/curation/sessions/${sessionId}/decisions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(decision)
+    }).then(r => r.json())
+  }
+
+  // Collections
+  async createCollection(collectionData) {
+    return fetch(`${this.baseUrl}/collections`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(collectionData)
+    }).then(r => r.json())
+  }
+
+  async addToCollection(collectionId, workData) {
+    return fetch(`${this.baseUrl}/collections/${collectionId}/works`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(workData)
+    }).then(r => r.json())
+  }
+
+  // Collaboration
+  async createCollaboration(collaborationData) {
+    return fetch(`${this.baseUrl}/collaborations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(collaborationData)
+    }).then(r => r.json())
+  }
+
+  async submitVote(collaborationId, vote) {
+    return fetch(`${this.baseUrl}/collaborations/${collaborationId}/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(vote)
+    }).then(r => r.json())
+  }
+
+  // Analytics
+  async getCuratorAnalytics(curatorId, period = 'all') {
+    return fetch(`${this.baseUrl}/curation/analytics?curatorId=${curatorId}&period=${period}`)
+      .then(r => r.json())
+  }
+}
+
+// Usage Example
+const curator = new CurationClient()
+
+// Start curation workflow
+async function curateForParisPhoto() {
+  // 1. Create session
+  const session = await curator.createSession({
+    title: "Paris Photo 2025",
+    goal: "Select 15 works for main gallery",
+    targetCount: 15,
+    criteria: {
+      themes: ["identity", "transformation"],
+      minQuality: 80
+    }
+  })
+
+  // 2. Analyze candidates
+  const analysis = await curator.analyzeWorks(
+    'solienne-001',
+    session.workQueue.slice(0, 50),
+    'curation'
+  )
+
+  // 3. Review and decide
+  for (const result of analysis.results) {
+    if (result.analysis.exhibitionFit > 85) {
+      await curator.recordDecision(session.id, {
+        workId: result.workId,
+        decision: 'accept',
+        curatorId: 'nina'
+      })
+    }
+  }
+
+  // 4. Create exhibition collection
+  const collection = await curator.createCollection({
+    title: "Paris Photo 2025 - Main Gallery",
+    type: "exhibition",
+    status: "active"
+  })
+
+  // 5. Add accepted works
+  for (const workId of session.accepted) {
+    await curator.addToCollection(collection.id, {
+      workId,
+      curatorId: 'nina'
+    })
+  }
+
+  return { session, collection }
+}</pre>
+                </div>
+            </div>
+
+            <div class="integration-example">
+                <div class="integration-title">Python Integration Example</div>
+                <div class="code-block">
+                    <pre>import requests
+import json
+from typing import Dict, List, Optional
+
+class GenesisRegistryCurator:
+    def __init__(self, base_url: str = "https://eden-genesis-registry.vercel.app/api/v1"):
+        self.base_url = base_url
+        self.session = requests.Session()
+    
+    def get_agent_works(self, agent_id: str, **filters) -> Dict:
+        """Fetch works from a specific agent"""
+        response = self.session.get(
+            f"{self.base_url}/agents/{agent_id}/works",
+            params=filters
+        )
+        return response.json()
+    
+    def analyze_works(self, agent_id: str, work_ids: List[str], 
+                     analysis_type: str = "registry") -> Dict:
+        """Analyze works for curation"""
+        response = self.session.post(
+            f"{self.base_url}/agents/{agent_id}/analyze",
+            json={
+                "workIds": work_ids,
+                "analysisType": analysis_type
+            }
+        )
+        return response.json()
+    
+    def create_curation_session(self, **session_data) -> Dict:
+        """Create a new curation session"""
+        response = self.session.post(
+            f"{self.base_url}/curation/sessions",
+            json=session_data
+        )
+        return response.json()
+    
+    def record_decision(self, session_id: str, work_id: str, 
+                       decision: str, curator_id: str) -> Dict:
+        """Record a curation decision"""
+        response = self.session.post(
+            f"{self.base_url}/curation/sessions/{session_id}/decisions",
+            json={
+                "workId": work_id,
+                "decision": decision,
+                "curatorId": curator_id
+            }
+        )
+        return response.json()
+
+# Example usage
+curator = GenesisRegistryCurator()
+
+# Create a curation session
+session = curator.create_curation_session(
+    curatorId="nina",
+    title="Weekly Selection",
+    goal="Find standout works",
+    criteria={
+        "minQuality": 75,
+        "themes": ["identity", "emergence"]
+    }
+)
+
+# Get and analyze works
+works = curator.get_agent_works("solienne-001", featured=True)
+analysis = curator.analyze_works(
+    "solienne-001",
+    [w["id"] for w in works["data"][:10]],
+    "curation"
+)
+
+# Make decisions
+for result in analysis["results"]:
+    if result["analysis"]["exhibitionFit"] > 80:
+        curator.record_decision(
+            session["session"]["id"],
+            result["workId"],
+            "accept",
+            "nina"
+        )</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid #222; text-align: center; color: #666;">
+            <p>Genesis Registry Curation API v1.0</p>
+            <p style="margin-top: 10px;">
+                <a href="index.html" style="color: #4CAF50; text-decoration: none;">Curation Station</a> |
+                <a href="https://eden-genesis-registry.vercel.app" style="color: #4CAF50; text-decoration: none;">Registry</a> |
+                <a href="https://github.com/edenartlab/genesis-registry" style="color: #4CAF50; text-decoration: none;">GitHub</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault()
+                const targetId = this.getAttribute('href').substring(1)
+                const targetSection = document.getElementById(targetId)
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    
+                    // Update active nav
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'))
+                    this.classList.add('active')
+                }
+            })
+        })
+
+        // Highlight active section on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section')
+            const navLinks = document.querySelectorAll('.nav-link')
+            
+            let current = ''
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop
+                const sectionHeight = section.clientHeight
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id')
+                }
+            })
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active')
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active')
+                }
+            })
+        })
+    </script>
+</body>
+</html>

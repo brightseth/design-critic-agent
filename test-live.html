@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CRIT - Registry Connection Test</title>
+    <style>
+        body { 
+            background: black; 
+            color: white; 
+            font-family: Helvetica, Arial, sans-serif;
+            padding: 40px;
+        }
+        h1 { 
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .status {
+            padding: 20px;
+            border: 1px solid white;
+            margin: 20px 0;
+        }
+        .online { border-color: #4CAF50; color: #4CAF50; }
+        .offline { border-color: #f44336; color: #f44336; }
+        pre {
+            background: #111;
+            padding: 20px;
+            overflow: auto;
+            border: 1px solid #333;
+        }
+        button {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: white;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <h1>CRIT REGISTRY CONNECTION TEST</h1>
+    
+    <div id="status" class="status">Testing...</div>
+    
+    <button onclick="testDirect()">TEST DIRECT API</button>
+    <button onclick="testWithClient()">TEST WITH CLIENT</button>
+    <button onclick="testCORS()">TEST CORS</button>
+    
+    <pre id="results">No tests run yet</pre>
+
+    <script>
+        const REGISTRY_URL = 'https://eden-genesis-registry.vercel.app/api/v1';
+        
+        function log(message, data = null) {
+            const resultsEl = document.getElementById('results');
+            const timestamp = new Date().toISOString();
+            resultsEl.textContent = `[${timestamp}] ${message}\n${data ? JSON.stringify(data, null, 2) : ''}\n\n${resultsEl.textContent}`;
+        }
+        
+        async function testDirect() {
+            log('Testing direct API call to Registry...');
+            try {
+                const response = await fetch(`${REGISTRY_URL}/agents`);
+                const data = await response.json();
+                
+                const statusEl = document.getElementById('status');
+                if (response.ok && data.agents) {
+                    statusEl.className = 'status online';
+                    statusEl.textContent = `✅ REGISTRY ONLINE - ${data.agents.length} agents found`;
+                    log('Success!', { 
+                        status: response.status,
+                        agentCount: data.agents.length,
+                        agents: data.agents.map(a => a.handle)
+                    });
+                } else {
+                    statusEl.className = 'status offline';
+                    statusEl.textContent = '❌ REGISTRY ERROR';
+                    log('Failed', { status: response.status });
+                }
+            } catch (error) {
+                const statusEl = document.getElementById('status');
+                statusEl.className = 'status offline';
+                statusEl.textContent = '❌ CONNECTION FAILED';
+                log('Error', { error: error.message });
+            }
+        }
+        
+        async function testWithClient() {
+            log('Loading registry-client.js...');
+            
+            // Dynamically load the client
+            const script = document.createElement('script');
+            script.src = '/registry-client.js?v=2';
+            script.onload = async () => {
+                log('Client loaded, testing connection...');
+                
+                const client = new GenesisRegistryClient();
+                log('Client base URL:', { baseUrl: client.baseUrl });
+                
+                const result = await client.testConnection();
+                log('Connection test result:', result);
+                
+                const works = await client.getAgentWorks('solienne');
+                log('Solienne works:', { 
+                    total: works.total || works.works?.length,
+                    titles: works.works?.map(w => w.title)
+                });
+            };
+            document.head.appendChild(script);
+        }
+        
+        async function testCORS() {
+            log('Testing CORS headers...');
+            try {
+                const response = await fetch(`${REGISTRY_URL}/agents`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('CORS Response', {
+                    status: response.status,
+                    headers: {
+                        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+                        'access-control-allow-credentials': response.headers.get('access-control-allow-credentials')
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('Data received', { agentCount: data.agents?.length });
+                }
+            } catch (error) {
+                log('CORS Error', { error: error.message });
+            }
+        }
+        
+        // Auto test on load
+        testDirect();
+    </script>
+</body>
+</html>

@@ -2564,7 +2564,7 @@
             document.getElementById('videoResults').style.display = 'block';
 
             // Overall score
-            document.getElementById('videoScore').textContent = evaluation.weighted_total || '75';
+            document.getElementById('videoScore').textContent = Math.round((evaluation.weighted_total || 0.75) * 100) + '%';
             document.getElementById('videoRecommendation').textContent = evaluation.recommendation || 'INCLUDE - Good candidate for exhibition';
             document.getElementById('videoExhibitionFormat').textContent = evaluation.exhibition_format || 'SINGLE CHANNEL - Individual viewing station';
 

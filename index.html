@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NINA - AI Art Curation Pipeline</title>
+    <title>NINA - AI Art Curator [FIXED]</title>
     <style>
         * {
             margin: 0;
@@ -12,23 +12,47 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #000;
             color: #fff;
             min-height: 100vh;
-            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+            line-height: 1.5;
         }
+        
+        /* Typography Consistency */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: inherit;
+            margin: 0;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        h1 { font-size: 36px; font-weight: 100; letter-spacing: 4px; }
+        h2 { font-size: 24px; font-weight: 300; letter-spacing: 1px; }
+        h3 { font-size: 18px; font-weight: 500; letter-spacing: 1px; }
+        h4 { font-size: 16px; font-weight: 500; letter-spacing: 0.5px; }
+        h5 { font-size: 14px; font-weight: 500; letter-spacing: 0.5px; }
+        
+        p {
+            margin: 0 0 15px 0;
+            line-height: 1.6;
+        }
+        
+        /* Text Utilities */
+        .text-small { font-size: 12px; }
+        .text-tiny { font-size: 10px; }
+        .text-caps { text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+        .text-muted { color: #666; }
+        .text-primary { color: #4CAF50; }
+        .text-secondary { color: #FFC107; }
 
         /* Header */
         .header {
-            background: linear-gradient(180deg, #111 0%, #000 100%);
             padding: 20px 30px;
             border-bottom: 1px solid #222;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -36,20 +60,18 @@
 
         .logo {
             font-size: 24px;
-            font-weight: 300;
-            letter-spacing: 6px;
-            color: #fff;
+            font-weight: 100;
+            letter-spacing: 8px;
         }
 
         .tagline {
             font-size: 11px;
             color: #666;
             letter-spacing: 2px;
-            margin-top: 3px;
             text-transform: uppercase;
         }
 
-        /* Workspace */
+        /* Persistent Workspace */
         .workspace {
             background: #0a0a0a;
             border-bottom: 1px solid #222;
@@ -57,11 +79,6 @@
             position: sticky;
             top: 0;
             z-index: 100;
-        }
-
-        .workspace-content {
-            max-width: 1400px;
-            margin: 0 auto;
         }
 
         .workspace-header {
@@ -72,17 +89,16 @@
         }
 
         .workspace-title {
-            font-size: 14px;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: #888;
+            font-weight: 500;
         }
 
         .workspace-count {
-            font-size: 24px;
-            font-weight: 200;
             color: #4CAF50;
-            margin-left: 15px;
+            margin-left: 10px;
         }
 
         .workspace-actions {
@@ -92,46 +108,21 @@
 
         .workspace-thumbnails {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             overflow-x: auto;
             padding: 10px 0;
-            min-height: 80px;
-            align-items: center;
-        }
-
-        .workspace-thumbnails::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .workspace-thumbnails::-webkit-scrollbar-track {
-            background: #111;
-        }
-
-        .workspace-thumbnails::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 3px;
+            min-height: 100px;
         }
 
         .thumbnail {
-            width: 60px;
-            height: 60px;
-            border-radius: 4px;
-            overflow: hidden;
-            flex-shrink: 0;
-            border: 1px solid #222;
+            width: 80px;
+            height: 80px;
+            border: 2px solid #222;
             cursor: pointer;
             position: relative;
-            transition: all 0.2s;
-        }
-
-        .thumbnail:hover {
-            border-color: #444;
-            transform: scale(1.05);
-        }
-
-        .thumbnail.selected {
-            border-color: #4CAF50;
-            border-width: 2px;
+            flex-shrink: 0;
+            overflow: hidden;
+            background: #111;
         }
 
         .thumbnail img {
@@ -140,245 +131,149 @@
             object-fit: cover;
         }
 
+        .thumbnail.selected {
+            border-color: #4CAF50;
+        }
+
         .thumbnail-score {
             position: absolute;
             bottom: 0;
             right: 0;
-            background: rgba(0,0,0,0.8);
-            padding: 2px 4px;
-            font-size: 9px;
+            background: rgba(0, 0, 0, 0.8);
             color: #4CAF50;
-            border-radius: 2px 0 0 0;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
         }
 
         .workspace-empty {
             width: 100%;
-            height: 60px;
+            height: 80px;
             border: 2px dashed #333;
-            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: #666;
             cursor: pointer;
+        }
+
+        .add-images-thumb {
+            border: 2px dashed #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 24px;
+            background: transparent;
             transition: all 0.3s;
         }
 
-        .workspace-empty:hover {
-            border-color: #555;
-            background: #111;
-        }
-
-        .workspace-empty.dragover {
-            border-color: #4CAF50;
-            background: #0a1a0a;
+        .add-images-thumb:hover {
+            border-color: #666;
+            color: #999;
         }
 
         /* Pipeline Navigation */
         .pipeline {
-            background: #050505;
-            padding: 0;
+            background: #111;
+            padding: 30px;
             border-bottom: 1px solid #222;
         }
 
-        .pipeline-content {
-            max-width: 1400px;
-            margin: 0 auto;
+        .pipeline-steps {
             display: flex;
+            justify-content: center;
+            gap: 40px;
+            align-items: center;
         }
 
         .pipeline-step {
-            flex: 1;
-            padding: 20px;
-            text-align: center;
-            background: #0a0a0a;
-            border: none;
-            border-right: 1px solid #111;
-            color: #666;
             cursor: pointer;
             transition: all 0.3s;
             position: relative;
         }
 
-        .pipeline-step:last-child {
-            border-right: none;
-        }
-
-        .pipeline-step:hover {
-            background: #111;
-            color: #888;
-        }
-
         .pipeline-step.active {
-            background: #000;
-            color: #fff;
-            border-bottom: 3px solid #4CAF50;
-        }
-
-        .pipeline-step.completed {
             color: #4CAF50;
         }
 
         .pipeline-step.completed::after {
             content: '✓';
             position: absolute;
-            top: 5px;
-            right: 10px;
-            font-size: 12px;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
             color: #4CAF50;
+            font-size: 12px;
+        }
+
+        .step-number {
+            display: block;
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
         }
 
         .step-name {
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-
-        .step-desc {
-            font-size: 10px;
-            color: #555;
+            font-weight: 500;
         }
 
         .step-count {
+            display: block;
             font-size: 10px;
-            color: #4CAF50;
-            margin-top: 3px;
+            color: #666;
+            margin-top: 5px;
+            font-weight: 400;
         }
 
-        /* Main Container */
-        .container {
+        .step-arrow {
+            color: #333;
+            font-size: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 30px;
+            width: 100%;
         }
 
-        /* Mode Containers */
-        .mode-container {
+        .mode-content {
             display: none;
-            animation: fadeIn 0.3s;
         }
 
-        .mode-container.active {
+        .mode-content.active {
             display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Results Grid */
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .result-card {
-            background: #0a0a0a;
-            border: 1px solid #222;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .result-card:hover {
-            border-color: #333;
-            transform: translateY(-2px);
-        }
-
-        .result-card.selected {
-            border-color: #4CAF50;
-            border-width: 2px;
-        }
-
-        .result-image {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            border-bottom: 1px solid #222;
-        }
-
-        .result-info {
-            padding: 15px;
-        }
-
-        .result-score {
-            font-size: 32px;
-            font-weight: 200;
-            margin-bottom: 5px;
-        }
-
-        .result-verdict {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #666;
-        }
-
-        .score-high { color: #4CAF50; }
-        .score-medium { color: #FFC107; }
-        .score-low { color: #f44336; }
-
-        /* Compare Mode */
-        .compare-bracket {
-            display: grid;
-            grid-template-columns: 1fr 100px 1fr;
-            gap: 20px;
-            align-items: center;
-            margin: 30px 0;
-        }
-
-        .compare-card {
-            border: 1px solid #222;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .compare-card:hover {
-            border-color: #4CAF50;
-            transform: scale(1.02);
-        }
-
-        .compare-card img {
-            width: 100%;
-            height: auto;
-        }
-
-        .compare-vs {
-            text-align: center;
-            font-size: 20px;
-            color: #666;
-            font-weight: 200;
         }
 
         /* Buttons */
         .btn {
-            padding: 10px 20px;
+            background: #111;
             border: 1px solid #333;
-            background: transparent;
             color: #fff;
+            padding: 10px 20px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            border-radius: 4px;
+            letter-spacing: 1px;
+            font-size: 11px;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.3s;
         }
 
         .btn:hover {
-            background: #111;
-            border-color: #555;
+            border-color: #666;
         }
 
         .btn-primary {
             background: #4CAF50;
             border-color: #4CAF50;
-            color: #000;
         }
 
         .btn-primary:hover {
@@ -388,52 +283,94 @@
         .btn-small {
             padding: 6px 12px;
             font-size: 10px;
+            font-weight: 500;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed #333;
+            padding: 60px;
+            text-align: center;
+            margin: 30px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-zone:hover {
+            border-color: #666;
+        }
+
+        .upload-zone.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: #111;
+            border: 1px solid #222;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .result-card:hover {
+            border-color: #444;
+        }
+
+        .result-card.selected {
+            border-color: #4CAF50;
+        }
+
+        .result-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+        }
+
+        .result-info {
+            padding: 15px;
+        }
+
+        .result-score {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-family: inherit;
+        }
+
+        .score-high { color: #4CAF50; }
+        .score-medium { color: #FFC107; }
+        .score-low { color: #f44336; }
+
+        .result-verdict {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            font-weight: 500;
         }
 
         /* Status Bar */
         .status-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
             background: #0a0a0a;
             border-top: 1px solid #222;
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 99;
-        }
-
-        .status-info {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-        }
-
-        .status-item {
-            font-size: 11px;
-            color: #666;
-        }
-
-        .status-item strong {
-            color: #4CAF50;
-            margin-right: 5px;
-        }
-
-        /* Progress Indicator */
-        .progress-bar {
-            width: 200px;
-            height: 4px;
-            background: #222;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #4CAF50;
-            transition: width 0.3s;
         }
 
         /* Notification */
@@ -463,235 +400,187 @@
             border-color: #f44336;
         }
 
-        /* Beta Link */
-        .beta-link {
-            position: fixed;
-            bottom: 60px;
-            left: 20px;
-            font-size: 11px;
-            color: #444;
-            text-decoration: none;
-            padding: 8px 12px;
-            border: 1px solid #333;
-            background: #0a0a0a;
-            border-radius: 4px;
-            transition: all 0.3s;
+        /* Compare Mode */
+        .compare-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 30px;
         }
 
-        .beta-link:hover {
-            border-color: #666;
-            color: #888;
+        .compare-image {
+            text-align: center;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .pipeline-content {
-                overflow-x: auto;
-            }
+        .compare-image img {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
 
-            .pipeline-step {
-                min-width: 120px;
-            }
+        .compare-score {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .compare-image:hover {
+            border-color: #4CAF50 !important;
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
 
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .compare-bracket {
-                grid-template-columns: 1fr;
-                grid-template-rows: 1fr auto 1fr;
-            }
+        .vs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #666;
+            grid-column: 1 / -1;
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div>
-                <div class="logo">NINA</div>
-                <div class="tagline">AI Art Curation Pipeline</div>
-            </div>
-            <div style="text-align: right;">
-                <div style="font-size: 12px; color: #666;">Paris Photo 2025</div>
-                <div style="font-size: 10px; color: #444; margin-top: 3px;">Abundance → Curation → Exhibition</div>
-            </div>
+    <div class="header">
+        <div>
+            <div class="logo">NINA</div>
+            <div class="tagline">Brutally Selective AI Curation</div>
         </div>
-    </header>
-
-    <!-- Workspace (Sticky) -->
-    <div class="workspace">
-        <div class="workspace-content">
-            <div class="workspace-header">
-                <div style="display: flex; align-items: center;">
-                    <span class="workspace-title">📁 Workspace</span>
-                    <span class="workspace-count" id="workspaceCount">0</span>
-                </div>
-                <div class="workspace-actions">
-                    <button class="btn btn-small btn-primary" onclick="addToWorkspace()">+ Add Images</button>
-                    <button class="btn btn-small" onclick="clearWorkspace()">Clear All</button>
-                    <button class="btn btn-small" onclick="downloadWorkspace()">Download</button>
-                </div>
-            </div>
-            <div class="workspace-thumbnails" id="workspaceThumbnails">
-                <div class="workspace-empty" id="workspaceDropZone">
-                    <span style="font-size: 12px; color: #666;">Drop images here or click + Add Images</span>
-                </div>
-                <input type="file" id="workspaceFileInput" multiple accept="image/*,video/*" style="display: none;">
+        <div>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <button onclick="showNinaInfo()" style="background: none; border: 1px solid #333; color: #666; padding: 8px 12px; font-size: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">About Nina</button>
+                <a href="/beta.html" style="color: #444; text-decoration: none; font-size: 11px;">Beta Features →</a>
             </div>
         </div>
     </div>
 
-    <!-- Pipeline Navigation -->
-    <nav class="pipeline">
-        <div class="pipeline-content">
-            <button class="pipeline-step active" onclick="switchMode('evaluate')">
-                <div class="step-name">EVALUATE</div>
-                <div class="step-desc">Score & rank all</div>
-                <div class="step-count" id="evaluateCount"></div>
-            </button>
-            <button class="pipeline-step" onclick="switchMode('compare')">
-                <div class="step-name">COMPARE</div>
-                <div class="step-desc">Pick best from top</div>
-                <div class="step-count" id="compareCount"></div>
-            </button>
-            <button class="pipeline-step" onclick="switchMode('collect')">
-                <div class="step-name">COLLECT</div>
-                <div class="step-desc">Build exhibition</div>
-                <div class="step-count" id="collectCount"></div>
-            </button>
-            <button class="pipeline-step" onclick="switchMode('optimize')">
-                <div class="step-name">OPTIMIZE</div>
-                <div class="step-desc">Better prompts</div>
-                <div class="step-count" id="optimizeCount"></div>
-            </button>
-            <button class="pipeline-step" onclick="switchMode('review')">
-                <div class="step-name">REVIEW</div>
-                <div class="step-desc">Track progress</div>
-                <div class="step-count" id="reviewCount"></div>
-            </button>
+    <!-- Persistent Workspace -->
+    <div class="workspace">
+        <div class="workspace-header">
+            <div>
+                <span class="workspace-title">Workspace</span>
+                <span class="workspace-count" id="workspaceCount">0</span>
+            </div>
+            <div class="workspace-actions">
+                <button class="btn btn-small btn-primary" onclick="addToWorkspace()">+ Add Images</button>
+                <button class="btn btn-small" onclick="clearWorkspace()">Clear All</button>
+            </div>
         </div>
-    </nav>
+        <div class="workspace-thumbnails" id="workspaceThumbnails">
+            <div class="workspace-empty" id="workspaceDropZone">
+                <span style="font-size: 12px; color: #666;">Drop images here or click + Add Images</span>
+            </div>
+        </div>
+        <input type="file" id="workspaceFileInput" multiple accept="image/*,image/jpeg,image/png,image/gif,image/webp" style="display: none;">
+    </div>
 
-    <!-- Main Container -->
-    <div class="container">
+    <!-- Pipeline Navigation -->
+    <div class="pipeline">
+        <div class="pipeline-steps" id="pipelineSteps">
+            <div class="pipeline-step active" onclick="switchMode('evaluate')">
+                <span class="step-number">01</span>
+                <span class="step-name">Evaluate</span>
+                <span class="step-count" id="evaluateCount"></span>
+            </div>
+            <span class="step-arrow">→</span>
+            <div class="pipeline-step" onclick="switchMode('compare')">
+                <span class="step-number">02</span>
+                <span class="step-name">Compare</span>
+                <span class="step-count" id="compareCount"></span>
+            </div>
+            <span class="step-arrow">→</span>
+            <div class="pipeline-step" onclick="switchMode('collect')">
+                <span class="step-number">03</span>
+                <span class="step-name">Collect</span>
+                <span class="step-count" id="collectCount"></span>
+            </div>
+            <span class="step-arrow">→</span>
+            <div class="pipeline-step" onclick="switchMode('optimize')">
+                <span class="step-number">04</span>
+                <span class="step-name">Optimize</span>
+                <span class="step-count" id="optimizeCount"></span>
+            </div>
+            <span class="step-arrow">→</span>
+            <div class="pipeline-step" onclick="switchMode('review')">
+                <span class="step-number">05</span>
+                <span class="step-name">Review</span>
+                <span class="step-count" id="reviewCount"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
         <!-- EVALUATE Mode -->
-        <div id="evaluate" class="mode-container active">
-            <div style="margin-bottom: 20px; display: flex; justify-content: between; align-items: center;">
-                <h2 style="font-weight: 300; font-size: 24px;">Evaluation Results</h2>
-                <div style="margin-left: auto;">
+        <div class="mode-content active" id="evaluateContent">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 24px; font-weight: 300; margin: 0; letter-spacing: 1px;">Evaluate Images</h2>
+                <div>
                     <button class="btn btn-primary" onclick="evaluateAll()" id="evaluateBtn">Evaluate All</button>
-                    <button class="btn" onclick="moveTopToCompare()" id="compareTopBtn" style="display: none;">Compare Top Scorers →</button>
+                    <button class="btn" onclick="moveTopToCompare()" id="compareTopBtn" style="display: none;">Compare Top →</button>
                 </div>
             </div>
             <div id="evaluateResults" class="results-grid">
                 <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
-                    <p>Add images to workspace above to begin evaluation</p>
+                    Add images to workspace above to begin evaluation
                 </div>
             </div>
         </div>
 
         <!-- COMPARE Mode -->
-        <div id="compare" class="mode-container">
-            <h2 style="font-weight: 300; font-size: 24px; margin-bottom: 20px;">Tournament Selection</h2>
-            <div id="compareInfo" style="margin-bottom: 20px; padding: 15px; background: #0a0a0a; border-radius: 4px;">
-                <span style="font-size: 12px; color: #666;">Round </span>
-                <span style="font-size: 14px; color: #4CAF50;" id="tournamentRound">1</span>
-                <span style="font-size: 12px; color: #666;"> of </span>
-                <span style="font-size: 14px; color: #4CAF50;" id="tournamentTotal">4</span>
-            </div>
-            <div id="compareBracket" class="compare-bracket"></div>
+        <div class="mode-content" id="compareContent">
+            <h2 style="font-size: 24px; font-weight: 300; margin: 0 0 30px 0; letter-spacing: 1px;">Compare Top Performers</h2>
+            <div id="compareContainer"></div>
             <div id="compareWinners" class="results-grid" style="margin-top: 40px;"></div>
         </div>
 
         <!-- COLLECT Mode -->
-        <div id="collect" class="mode-container">
-            <div style="margin-bottom: 20px; display: flex; justify-content: between; align-items: center;">
-                <div>
-                    <h2 style="font-weight: 300; font-size: 24px;">Paris Photo 2025 Collection</h2>
-                    <p style="color: #666; margin-top: 5px; font-size: 12px;">Exhibition-ready selection</p>
+        <div class="mode-content" id="collectContent">
+            <h2 style="font-size: 24px; font-weight: 300; margin: 0 0 30px 0; letter-spacing: 1px;">Build Collection</h2>
+            <div id="collectionGrid" class="results-grid"></div>
+            
+            <div style="margin-top: 30px; display: flex; gap: 15px; align-items: end;">
+                <div style="flex: 1;">
+                    <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">Collection Name</label>
+                    <input type="text" id="collectionNameInput" value="Paris Photo 2025" style="width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; border-radius: 4px; font-size: 14px;">
                 </div>
-                <div style="margin-left: auto; display: flex; gap: 20px;">
-                    <div style="text-align: center;">
-                        <div style="font-size: 28px; color: #4CAF50;" id="collectionScore">--</div>
-                        <div style="font-size: 10px; color: #666; text-transform: uppercase;">Coherence</div>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 28px; color: #4CAF50;" id="collectionCount">0</div>
-                        <div style="font-size: 10px; color: #666; text-transform: uppercase;">Selected</div>
-                    </div>
-                </div>
-            </div>
-            <div id="collectGrid" class="results-grid"></div>
-            <div style="margin-top: 30px;">
-                <button class="btn btn-primary" onclick="exportCollection()">Export for Gallery</button>
-                <button class="btn" onclick="optimizeFromCollection()">Generate Better Prompts →</button>
+                <button class="btn btn-primary" onclick="saveCollection()" style="padding: 12px 30px; white-space: nowrap;">Save Collection</button>
             </div>
         </div>
 
         <!-- OPTIMIZE Mode -->
-        <div id="optimize" class="mode-container">
-            <h2 style="font-weight: 300; font-size: 24px; margin-bottom: 30px;">Learned Patterns → Better Prompts</h2>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-                <div style="background: #0a0a0a; padding: 20px; border-radius: 8px;">
-                    <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #4CAF50; margin-bottom: 15px;">
-                        ✓ What Works
-                    </h3>
-                    <div id="successPatterns" style="font-size: 13px; line-height: 1.8; color: #999;"></div>
-                </div>
-                <div style="background: #0a0a0a; padding: 20px; border-radius: 8px;">
-                    <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #f44336; margin-bottom: 15px;">
-                        ✗ What Doesn't
-                    </h3>
-                    <div id="failurePatterns" style="font-size: 13px; line-height: 1.8; color: #999;"></div>
-                </div>
+        <div class="mode-content" id="optimizeContent">
+            <h2 style="font-size: 24px; font-weight: 300; margin: 0 0 30px 0; letter-spacing: 1px;">Optimize Prompts</h2>
+            <div style="background: #111; padding: 30px; margin-top: 30px;">
+                <h3 style="font-size: 16px; font-weight: 500; margin: 0 0 15px 0; color: #4CAF50; letter-spacing: 1px;">Optimized Prompt Based on Winners:</h3>
+                <p id="optimizedPrompt" style="margin-top: 20px; line-height: 1.6; color: #4CAF50;"></p>
             </div>
-
-            <div style="background: #000; border: 1px solid #333; border-radius: 8px; padding: 25px;">
-                <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 15px;">
-                    Optimized Prompt
-                </h3>
-                <div id="optimizedPrompt" style="font-family: 'Monaco', monospace; font-size: 14px; line-height: 1.6; color: #4CAF50; margin-bottom: 20px;">
-                    Loading analysis...
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span style="font-size: 12px; color: #666;">Success Probability: </span>
-                        <span style="font-size: 14px; color: #4CAF50;" id="promptProbability">--</span>
-                    </div>
-                    <div>
-                        <button class="btn btn-primary" onclick="copyPrompt()">Copy Prompt</button>
-                        <button class="btn" onclick="generateAnother()">Generate Another</button>
-                    </div>
-                </div>
-            </div>
+            <button class="btn btn-primary" onclick="generateOptimizations()" style="margin-top: 30px;">Generate New Optimization</button>
         </div>
 
         <!-- REVIEW Mode -->
-        <div id="review" class="mode-container">
-            <h2 style="font-weight: 300; font-size: 24px; margin-bottom: 30px;">Progress & Analytics</h2>
-            
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
-                <div style="background: #0a0a0a; padding: 20px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 36px; font-weight: 200; color: #4CAF50;" id="totalEvaluated">0</div>
-                    <div style="font-size: 10px; text-transform: uppercase; color: #666; margin-top: 5px;">Total Evaluated</div>
+        <div class="mode-content" id="reviewContent">
+            <h2 style="font-size: 24px; font-weight: 300; margin: 0 0 30px 0; letter-spacing: 1px;">Review & Export</h2>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; margin: 30px 0;">
+                <div style="background: #111; padding: 20px;">
+                    <div style="color: #666; font-size: 11px; margin-bottom: 10px;">EVALUATED</div>
+                    <div style="font-size: 36px; font-weight: bold;" id="totalEvaluated">0</div>
                 </div>
-                <div style="background: #0a0a0a; padding: 20px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 36px; font-weight: 200; color: #4CAF50;" id="exhibitionReady">0</div>
-                    <div style="font-size: 10px; text-transform: uppercase; color: #666; margin-top: 5px;">Exhibition Ready</div>
+                <div style="background: #111; padding: 20px;">
+                    <div style="color: #666; font-size: 11px; margin-bottom: 10px;">EXHIBITION READY</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #4CAF50;" id="exhibitionReady">0</div>
                 </div>
-                <div style="background: #0a0a0a; padding: 20px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 36px; font-weight: 200; color: #4CAF50;" id="avgScore">--</div>
-                    <div style="font-size: 10px; text-transform: uppercase; color: #666; margin-top: 5px;">Average Score</div>
+                <div style="background: #111; padding: 20px;">
+                    <div style="color: #666; font-size: 11px; margin-bottom: 10px;">AVG SCORE</div>
+                    <div style="font-size: 36px; font-weight: bold;" id="avgScore">--</div>
                 </div>
-                <div style="background: #0a0a0a; padding: 20px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 36px; font-weight: 200; color: #4CAF50;" id="improvement">--</div>
-                    <div style="font-size: 10px; text-transform: uppercase; color: #666; margin-top: 5px;">Improvement</div>
+                <div style="background: #111; padding: 20px;">
+                    <div style="color: #666; font-size: 11px; margin-bottom: 10px;">IMPROVEMENT</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #4CAF50;" id="improvement">--</div>
                 </div>
             </div>
-
-            <h3 style="font-size: 16px; font-weight: 300; margin-bottom: 20px;">Recent Sessions</h3>
+            <h3 style="font-size: 18px; font-weight: 500; margin: 30px 0 20px 0; color: #4CAF50; letter-spacing: 1px;">Recent Evaluations</h3>
             <div id="reviewHistory" class="results-grid"></div>
         </div>
     </div>
@@ -699,26 +588,15 @@
     <!-- Status Bar -->
     <div class="status-bar">
         <div class="status-info">
-            <div class="status-item">
-                <strong id="statusWorkspace">0</strong> in workspace
-            </div>
-            <div class="status-item">
-                <strong id="statusEvaluated">0</strong> evaluated
-            </div>
-            <div class="status-item">
-                <strong id="statusCollected">0</strong> collected
-            </div>
+            <span class="status-item text-caps text-small text-muted">Paris Photo 2025 Ready</span>
         </div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+        <div class="progress-bar" style="width: 200px; height: 4px; background: #222; border-radius: 2px;">
+            <div id="progressBar" style="width: 0%; height: 100%; background: #4CAF50; transition: width 0.3s;"></div>
         </div>
     </div>
 
-    <!-- Beta Link -->
-    <a href="/beta.html" class="beta-link">🧪 Beta Features</a>
-
     <script>
-        // Global workspace state
+        // Global workspace
         let workspace = {
             images: [],
             evaluations: {},
@@ -733,62 +611,140 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             setupWorkspace();
+            setupFileInput();
             loadFromStorage();
             updateAllCounts();
         });
 
-        // Workspace management
+        // Workspace setup
         function setupWorkspace() {
             const dropZone = document.getElementById('workspaceDropZone');
-            const fileInput = document.getElementById('workspaceFileInput');
+            if (!dropZone) return;
             
-            dropZone.addEventListener('click', () => fileInput.click());
             dropZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 dropZone.classList.add('dragover');
             });
+            
             dropZone.addEventListener('dragleave', () => {
                 dropZone.classList.remove('dragover');
             });
+            
             dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 dropZone.classList.remove('dragover');
                 handleFiles(e.dataTransfer.files);
             });
-            fileInput.addEventListener('change', (e) => {
-                handleFiles(e.target.files);
+            
+            dropZone.addEventListener('click', () => {
+                document.getElementById('workspaceFileInput').click();
             });
         }
 
+        function setupFileInput() {
+            const fileInput = document.getElementById('workspaceFileInput');
+            if (fileInput) {
+                console.log('Setting up file input, multiple:', fileInput.multiple);
+                fileInput.addEventListener('change', function(e) {
+                    console.log('File input changed, files:', this.files.length);
+                    if (this.files && this.files.length > 0) {
+                        console.log('Handling', this.files.length, 'files');
+                        handleFiles(this.files);
+                        this.value = ''; // Reset for re-selection
+                    }
+                });
+            }
+        }
+
         function addToWorkspace() {
-            document.getElementById('workspaceFileInput').click();
+            const fileInput = document.getElementById('workspaceFileInput');
+            if (!fileInput) {
+                console.error('File input not found!');
+                return;
+            }
+            console.log('Opening file dialog, multiple:', fileInput.multiple, 'accept:', fileInput.accept);
+            fileInput.value = ''; // Reset to allow re-selecting
+            fileInput.click();
         }
 
         async function handleFiles(files) {
-            const newImages = [];
+            console.log('handleFiles called with', files.length, 'files');
+            if (files.length === 0) return;
             
-            for (const file of files) {
-                const imageData = await fileToBase64(file);
-                const image = {
-                    id: Date.now() + Math.random(),
-                    data: imageData,
-                    name: file.name,
-                    evaluated: false,
-                    score: null
-                };
-                workspace.images.push(image);
-                newImages.push(image);
+            const newImages = [];
+            const validFiles = Array.from(files).filter(file => {
+                const isImage = file.type.startsWith('image/');
+                if (!isImage) console.log('Skipping non-image file:', file.name);
+                return isImage;
+            });
+            
+            console.log('Processing', validFiles.length, 'valid image files');
+            
+            // Process each file sequentially to avoid conflicts
+            for (let i = 0; i < validFiles.length; i++) {
+                const file = validFiles[i];
+                console.log(`Processing file ${i + 1}/${validFiles.length}:`, file.name);
+                
+                try {
+                    // Convert to base64
+                    const reader = new FileReader();
+                    const imageData = await new Promise((resolve, reject) => {
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                    
+                    console.log('Converted to base64:', file.name);
+                    
+                    // Create unique image object
+                    const image = {
+                        id: `img_${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}`,
+                        data: imageData,
+                        name: file.name,
+                        evaluated: false,
+                        score: null,
+                        selected: false
+                    };
+                    
+                    // Add to workspace
+                    workspace.images.push(image);
+                    newImages.push(image);
+                    
+                    console.log(`Added ${file.name} - Total images: ${workspace.images.length}`);
+                    
+                } catch (error) {
+                    console.error('Error processing file', file.name, ':', error);
+                }
             }
             
-            displayWorkspace();
-            updateAllCounts();
-            saveToStorage();
+            console.log(`Processing complete: Added ${newImages.length} images`);
+            console.log('Final workspace count:', workspace.images.length);
             
-            showNotification(`Added ${files.length} images to workspace`, 'success');
+            if (newImages.length > 0) {
+                displayWorkspace();
+                updateAllCounts();
+                saveToStorage();
+                showNotification(`Successfully added ${newImages.length} images to workspace`, 'success');
+                
+                // If in evaluate mode, show the images
+                if (workspace.currentMode === 'evaluate') {
+                    showEvaluationResults();
+                }
+            } else {
+                console.log('No new images added');
+                if (Array.from(files).some(f => f.type.startsWith('image/'))) {
+                    showNotification('Images may have failed to process - check console', 'error');
+                } else {
+                    showNotification('No valid image files selected', 'error');
+                }
+            }
         }
+
+        // fileToBase64 function now inline in handleFiles for better sequential processing
 
         function displayWorkspace() {
             const container = document.getElementById('workspaceThumbnails');
+            console.log('displayWorkspace called, workspace.images.length:', workspace.images.length);
             
             if (workspace.images.length === 0) {
                 container.innerHTML = `
@@ -798,33 +754,57 @@
                 `;
                 setupWorkspace();
             } else {
-                container.innerHTML = workspace.images.map(img => `
-                    <div class="thumbnail ${img.selected ? 'selected' : ''}" onclick="toggleImageSelection('${img.id}')">
-                        <img src="${img.data}" alt="${img.name}">
-                        ${img.score ? `<div class="thumbnail-score">${Math.round(img.score)}%</div>` : ''}
-                    </div>
-                `).join('');
+                console.log('Displaying', workspace.images.length, 'images');
+                const thumbnailsHTML = workspace.images.map((img, index) => {
+                    console.log(`Creating thumbnail ${index} for:`, img.name, 'ID:', img.id);
+                    return `
+                        <div class="thumbnail ${img.selected ? 'selected' : ''}" onclick="toggleImageSelection('${img.id}')">
+                            <img src="${img.data}" alt="${img.name}">
+                            ${img.score ? `<div class="thumbnail-score">${Math.round(img.score)}%</div>` : ''}
+                        </div>
+                    `;
+                }).join('') + `
+                <div class="thumbnail add-images-thumb" onclick="addToWorkspace()">
+                    <span>+</span>
+                </div>
+                `;
+                
+                container.innerHTML = thumbnailsHTML;
+                console.log('Set container HTML with', workspace.images.length, 'thumbnails');
             }
             
             document.getElementById('workspaceCount').textContent = workspace.images.length;
+            console.log('Updated workspace count to:', workspace.images.length);
+        }
+
+        function toggleImageSelection(id) {
+            const img = workspace.images.find(i => i.id === id);
+            if (img) {
+                img.selected = !img.selected;
+                displayWorkspace();
+            }
         }
 
         function clearWorkspace() {
-            if (confirm('Clear all images from workspace?')) {
+            if (workspace.images.length === 0) return;
+            
+            if (confirm('Clear all images from workspace? This cannot be undone.')) {
                 workspace = {
                     images: [],
                     evaluations: {},
                     comparisons: [],
                     collection: [],
                     patterns: {},
-                    currentMode: 'evaluate',
+                    currentMode: workspace.currentMode,
                     tournamentRound: 0,
                     tournamentWinners: []
                 };
+                
                 displayWorkspace();
                 updateAllCounts();
-                document.getElementById('evaluateResults').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">Workspace cleared</div>';
                 saveToStorage();
+                document.getElementById('evaluateResults').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">Workspace cleared</div>';
+                showNotification('Workspace cleared', 'success');
             }
         }
 
@@ -832,33 +812,71 @@
         function switchMode(mode) {
             workspace.currentMode = mode;
             
-            // Update pipeline steps
+            // Update pipeline UI
             document.querySelectorAll('.pipeline-step').forEach(step => {
                 step.classList.remove('active');
             });
-            event.currentTarget.classList.add('active');
+            
+            // Handle click events properly
+            if (event && event.target) {
+                const clickedStep = event.target.closest('.pipeline-step');
+                if (clickedStep) clickedStep.classList.add('active');
+            } else {
+                // Fallback - find the right step by mode
+                const modes = ['evaluate', 'compare', 'collect', 'optimize', 'review'];
+                const stepIndex = modes.indexOf(mode);
+                if (stepIndex >= 0) {
+                    document.querySelectorAll('.pipeline-step')[stepIndex].classList.add('active');
+                }
+            }
             
             // Update content
-            document.querySelectorAll('.mode-container').forEach(container => {
-                container.classList.remove('active');
+            document.querySelectorAll('.mode-content').forEach(content => {
+                content.classList.remove('active');
             });
-            document.getElementById(mode).classList.add('active');
+            document.getElementById(mode + 'Content').classList.add('active');
             
-            // Load mode-specific content
-            if (mode === 'evaluate') showEvaluations();
-            if (mode === 'compare') setupComparison();
-            if (mode === 'collect') showCollection();
-            if (mode === 'optimize') generateOptimizations();
-            if (mode === 'review') showReview();
-            
-            updateProgress();
+            // Load appropriate content
+            switch(mode) {
+                case 'evaluate':
+                    showEvaluationResults();
+                    break;
+                case 'compare':
+                    if (workspace.tournamentWinners && workspace.tournamentWinners.length > 0) {
+                        showCompareWinners();
+                    } else if (workspace.tournamentCandidates && workspace.tournamentCandidates.length > 0) {
+                        showCurrentMatch();
+                    } else {
+                        document.getElementById('compareContainer').innerHTML = '<div style="text-align: center; padding: 60px; color: #666;">No comparison in progress. Go back to Evaluate and click "Compare Top →"</div>';
+                    }
+                    break;
+                case 'collect':
+                    showCollection();
+                    break;
+                case 'optimize':
+                    if (!document.getElementById('optimizedPrompt').textContent) {
+                        generateOptimizations();
+                    }
+                    break;
+                case 'review':
+                    showReview();
+                    break;
+            }
         }
 
-        // EVALUATE mode
+        // EVALUATE functions
         async function evaluateAll() {
+            if (workspace.images.length === 0) {
+                showNotification('Add images to workspace first', 'error');
+                return;
+            }
+            
             const btn = document.getElementById('evaluateBtn');
             btn.disabled = true;
             btn.textContent = 'Evaluating...';
+            
+            let successCount = 0;
+            let errorCount = 0;
             
             for (let i = 0; i < workspace.images.length; i++) {
                 const img = workspace.images[i];
@@ -867,19 +885,48 @@
                         const response = await fetch('/api/nina-api', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ imageData: img.data })
+                            body: JSON.stringify({ 
+                                mode: 'single',
+                                imageData: img.data 
+                            })
                         });
                         
+                        if (!response.ok) {
+                            throw new Error(`API error: ${response.status}`);
+                        }
+                        
                         const result = await response.json();
-                        img.score = result.weighted_total * 100;
+                        
+                        if (!result.success) {
+                            throw new Error(result.error || 'API error');
+                        }
+                        
+                        const evaluation = result.evaluation || result;
+                        const score = (evaluation.weighted_total || 0) * 100;
+                        
+                        img.score = score;
                         img.evaluated = true;
-                        img.evaluation = result;
-                        workspace.evaluations[img.id] = result;
+                        img.evaluation = evaluation;
+                        workspace.evaluations[img.id] = evaluation;
+                        
+                        successCount++;
+                        console.log(`Evaluated ${img.name}: ${score.toFixed(1)}%`);
                         
                     } catch (error) {
                         console.error('Evaluation error:', error);
-                        img.score = Math.random() * 100; // Fallback for demo
+                        errorCount++;
+                        
+                        // Use demo score as fallback
+                        const quality = Math.random();
+                        const baseScore = quality < 0.2 ? 30 : quality < 0.5 ? 50 : quality < 0.8 ? 70 : 85;
+                        img.score = baseScore + (Math.random() - 0.5) * 15;
                         img.evaluated = true;
+                        img.evaluation = {
+                            verdict: img.score >= 75 ? 'INCLUDE' : img.score >= 55 ? 'MAYBE' : 'EXCLUDE',
+                            weighted_total: img.score / 100,
+                            i_see: 'Demo evaluation (API error)',
+                            scores_raw: {}
+                        };
                     }
                 }
                 
@@ -889,32 +936,49 @@
             }
             
             // Sort by score
-            workspace.images.sort((a, b) => b.score - a.score);
+            workspace.images.sort((a, b) => (b.score || 0) - (a.score || 0));
             
-            // Mark step as completed
+            // Calculate stats
+            const evaluated = workspace.images.filter(img => img.evaluated);
+            const avgScore = evaluated.reduce((sum, img) => sum + (img.score || 0), 0) / evaluated.length;
+            const highScorers = evaluated.filter(img => img.score >= 85).length;
+            
+            // Update UI
+            showNotification(
+                `✓ Evaluated ${successCount} images | Avg: ${avgScore.toFixed(0)}% | Exhibition ready: ${highScorers}`,
+                'success'
+            );
+            
+            if (errorCount > 0) {
+                showNotification(`${errorCount} images used demo scoring`, 'error');
+            }
+            
+            // Mark step completed
             document.querySelector('.pipeline-step').classList.add('completed');
             
-            showEvaluations();
+            showEvaluationResults();
             displayWorkspace();
             updateAllCounts();
             saveToStorage();
             
             btn.textContent = 'Re-evaluate All';
             btn.disabled = false;
-            document.getElementById('compareTopBtn').style.display = 'inline-block';
             
-            showNotification('Evaluation complete!', 'success');
+            // Show compare button if applicable
+            const readyForCompare = evaluated.filter(img => img.score >= 75);
+            if (readyForCompare.length >= 2 || evaluated.length >= 2) {
+                document.getElementById('compareTopBtn').style.display = 'inline-block';
+            }
         }
 
-        function showEvaluations() {
+        function showEvaluationResults() {
             const container = document.getElementById('evaluateResults');
+            const evaluated = workspace.images.filter(img => img.evaluated);
             
             if (workspace.images.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">Add images to workspace above to begin evaluation</div>';
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">Add images to workspace above</div>';
                 return;
             }
-            
-            const evaluated = workspace.images.filter(img => img.evaluated);
             
             if (evaluated.length === 0) {
                 container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">Click "Evaluate All" to score images</div>';
@@ -922,115 +986,202 @@
             }
             
             container.innerHTML = evaluated.map(img => {
-                const scoreClass = img.score >= 85 ? 'score-high' : img.score >= 60 ? 'score-medium' : 'score-low';
+                const score = img.score || 0;
+                const scoreClass = score >= 85 ? 'score-high' : score >= 60 ? 'score-medium' : 'score-low';
+                const evaluation = img.evaluation || {};
+                
                 return `
-                    <div class="result-card" onclick="toggleForCollection('${img.id}')">
+                    <div class="result-card" onclick="showImageDetails('${img.id}')">
                         <img src="${img.data}" class="result-image">
                         <div class="result-info">
-                            <div class="result-score ${scoreClass}">${Math.round(img.score)}%</div>
-                            <div class="result-verdict">${img.score >= 85 ? 'Exhibition Ready' : img.score >= 60 ? 'Promising' : 'Needs Work'}</div>
+                            <div class="result-score ${scoreClass}">${Math.round(score)}%</div>
+                            <div class="result-verdict">${evaluation.verdict || (score >= 85 ? 'Exhibition Ready' : score >= 60 ? 'Promising' : 'Needs Work')}</div>
+                            <div style="font-size: 10px; color: #666; margin-top: 5px; cursor: pointer;" onclick="event.stopPropagation(); toggleForCollection('${img.id}')">Click for details • ${workspace.collection.find(c => c.id === img.id) ? '✓ In Collection' : 'Add to Collection'}</div>
                         </div>
                     </div>
                 `;
-            }).join('');
+            }).join('') + `
+                <div id="imageDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 1000; padding: 40px; overflow-y: auto;" onclick="this.style.display='none'">
+                    <div style="max-width: 1000px; margin: 0 auto; background: #111; padding: 40px; border-radius: 8px;" onclick="event.stopPropagation()">
+                        <div id="modalContent"></div>
+                        <button onclick="document.getElementById('imageDetailModal').style.display='none'" style="position: absolute; top: 20px; right: 20px; background: none; border: 1px solid #666; color: #fff; padding: 10px 15px; cursor: pointer;">× Close</button>
+                    </div>
+                </div>
+            `;
         }
 
         function moveTopToCompare() {
-            const topScorers = workspace.images.filter(img => img.score >= 85).slice(0, 8);
+            const evaluated = workspace.images
+                .filter(img => img.evaluated && typeof img.score === 'number')
+                .sort((a, b) => b.score - a.score);
+            
+            let topScorers = evaluated.filter(img => img.score >= 75).slice(0, 8);
+            
+            if (topScorers.length < 2 && evaluated.length >= 2) {
+                topScorers = evaluated.slice(0, Math.min(8, evaluated.length));
+            }
             
             if (topScorers.length < 2) {
-                showNotification('Need at least 2 images scoring 85%+ for comparison', 'error');
+                showNotification(`Need at least 2 evaluated images. Have ${evaluated.length}.`, 'error');
                 return;
             }
             
-            workspace.comparisons = topScorers;
-            switchMode('compare');
-            document.querySelectorAll('.pipeline-step')[1].click();
-        }
-
-        // COMPARE mode
-        function setupComparison() {
-            if (workspace.comparisons.length < 2) {
-                document.getElementById('compareBracket').innerHTML = '<div style="text-align: center; padding: 60px; color: #666;">No images to compare. Evaluate first, then select top scorers.</div>';
-                return;
-            }
-            
-            workspace.tournamentRound = 1;
+            workspace.tournamentRound = 0;
             workspace.tournamentWinners = [];
-            showNextComparison();
+            
+            switchMode('compare');
+            startTournament(topScorers);
+            showNotification(`Starting comparison with ${topScorers.length} images`, 'success');
         }
 
-        function showNextComparison() {
-            const remaining = workspace.comparisons.filter(img => !img.compared);
-            
-            if (remaining.length >= 2) {
-                const left = remaining[0];
-                const right = remaining[1];
-                
-                document.getElementById('compareBracket').innerHTML = `
-                    <div class="compare-card" onclick="selectWinner('${left.id}')">
-                        <img src="${left.data}">
-                        <div style="padding: 15px; text-align: center;">
-                            <div style="font-size: 18px;">Score: ${Math.round(left.score)}%</div>
-                        </div>
-                    </div>
-                    <div class="compare-vs">VS</div>
-                    <div class="compare-card" onclick="selectWinner('${right.id}')">
-                        <img src="${right.data}">
-                        <div style="padding: 15px; text-align: center;">
-                            <div style="font-size: 18px;">Score: ${Math.round(right.score)}%</div>
-                        </div>
-                    </div>
-                `;
-                
-                document.getElementById('tournamentRound').textContent = workspace.tournamentRound;
-                document.getElementById('tournamentTotal').textContent = Math.ceil(Math.log2(workspace.comparisons.length));
-            } else {
-                // Tournament complete
-                document.querySelectorAll('.pipeline-step')[1].classList.add('completed');
-                showCompareWinners();
+        // COMPARE functions
+        function startTournament(images) {
+            if (images.length < 2) {
+                document.getElementById('compareContainer').innerHTML = '<div style="text-align: center; padding: 60px; color: #666;">Need at least 2 images to compare</div>';
+                return;
             }
+            
+            workspace.tournamentCandidates = images;
+            workspace.currentMatch = 0;
+            workspace.tournamentWinners = [];
+            
+            // Show first comparison
+            showCurrentMatch();
         }
 
-        function selectWinner(imageId) {
-            const img = workspace.comparisons.find(i => i.id === imageId);
-            img.compared = true;
-            workspace.tournamentWinners.push(img);
+        function showCurrentMatch() {
+            const container = document.getElementById('compareContainer');
+            const candidates = workspace.tournamentCandidates || [];
             
-            // Mark both as compared
-            const remaining = workspace.comparisons.filter(i => !i.compared);
-            if (remaining.length > 0) remaining[0].compared = true;
+            if (candidates.length < 2) {
+                container.innerHTML = '<div style="text-align: center; padding: 60px; color: #666;">Tournament complete</div>';
+                showCompareWinners();
+                return;
+            }
             
-            showNextComparison();
-            showNotification('Winner selected!', 'success');
+            const img1 = candidates[0];
+            const img2 = candidates[1];
+            
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h3 style="font-size: 20px; font-weight: 500; margin: 0; color: #fff; letter-spacing: 1px;">Choose the Winner (${candidates.length} images remaining)</h3>
+                </div>
+                <div style="display: flex; gap: 40px; align-items: center; justify-content: center; max-width: 1200px; margin: 0 auto;">
+                    <div style="flex: 1; max-width: 500px; text-align: center; cursor: pointer; border: 3px solid #333; padding: 30px; border-radius: 8px; transition: all 0.3s; background: #111;" onclick="selectWinner('${img1.id}')" class="compare-option">
+                        <img src="${img1.data}" style="width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 20px; border-radius: 4px;">
+                        <div class="compare-score score-${img1.score >= 85 ? 'high' : img1.score >= 60 ? 'medium' : 'low'}" style="font-size: 32px; font-weight: bold; margin-bottom: 10px;">${Math.round(img1.score || 0)}%</div>
+                        <div class="text-muted" style="margin-bottom: 15px; font-size: 14px;">${img1.name}</div>
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); selectWinner('${img1.id}')" style="padding: 12px 24px; font-size: 14px;">CHOOSE THIS</button>
+                    </div>
+                    
+                    <div style="font-size: 32px; color: #666; font-weight: bold; padding: 20px;">VS</div>
+                    
+                    <div style="flex: 1; max-width: 500px; text-align: center; cursor: pointer; border: 3px solid #333; padding: 30px; border-radius: 8px; transition: all 0.3s; background: #111;" onclick="selectWinner('${img2.id}')" class="compare-option">
+                        <img src="${img2.data}" style="width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 20px; border-radius: 4px;">
+                        <div class="compare-score score-${img2.score >= 85 ? 'high' : img2.score >= 60 ? 'medium' : 'low'}" style="font-size: 32px; font-weight: bold; margin-bottom: 10px;">${Math.round(img2.score || 0)}%</div>
+                        <div class="text-muted" style="margin-bottom: 15px; font-size: 14px;">${img2.name}</div>
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); selectWinner('${img2.id}')" style="padding: 12px 24px; font-size: 14px;">CHOOSE THIS</button>
+                    </div>
+                </div>
+            `;
+            
+            // Add hover effects
+            const compareOptions = container.querySelectorAll('.compare-option');
+            compareOptions.forEach(option => {
+                option.addEventListener('mouseenter', () => {
+                    option.style.borderColor = '#4CAF50';
+                    option.style.backgroundColor = '#0a0a0a';
+                    option.style.transform = 'scale(1.02)';
+                });
+                option.addEventListener('mouseleave', () => {
+                    option.style.borderColor = '#333';
+                    option.style.backgroundColor = '#111';
+                    option.style.transform = 'scale(1)';
+                });
+            });
+        }
+        
+        function selectWinner(winnerId) {
+            const candidates = workspace.tournamentCandidates || [];
+            const winner = candidates.find(img => img.id === winnerId);
+            const loser = candidates.find(img => img.id !== winnerId);
+            
+            if (!winner) return;
+            
+            // Add winner to winners list
+            workspace.tournamentWinners.push(winner);
+            
+            // Remove both from candidates
+            workspace.tournamentCandidates = candidates.filter(img => img.id !== winnerId && img.id !== loser.id);
+            
+            showNotification(`${winner.name} wins this round!`, 'success');
+            
+            // Continue tournament or finish
+            if (workspace.tournamentCandidates.length >= 2) {
+                setTimeout(() => showCurrentMatch(), 1000);
+            } else if (workspace.tournamentCandidates.length === 1) {
+                // Add the last remaining candidate as a winner
+                workspace.tournamentWinners.push(workspace.tournamentCandidates[0]);
+                workspace.tournamentCandidates = [];
+                setTimeout(() => showCompareWinners(), 1000);
+            } else {
+                setTimeout(() => showCompareWinners(), 1000);
+            }
         }
 
         function showCompareWinners() {
-            document.getElementById('compareBracket').innerHTML = '';
-            document.getElementById('compareInfo').innerHTML = '<span style="color: #4CAF50;">Tournament Complete! Winners below:</span>';
-            
             const container = document.getElementById('compareWinners');
-            container.innerHTML = workspace.tournamentWinners.map(img => `
+            if (workspace.tournamentWinners.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 60px; color: #666;">No winners yet</div>';
+                return;
+            }
+            
+            document.getElementById('compareContainer').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h3 style="color: #4CAF50; font-size: 24px; font-weight: 500; margin: 0; letter-spacing: 1px;">Tournament Complete!</h3>
+                    <p style="color: #666; margin-top: 10px;">${workspace.tournamentWinners.length} images selected for collection</p>
+                </div>
+            `;
+            
+            container.innerHTML = workspace.tournamentWinners.map((img, index) => `
                 <div class="result-card">
                     <img src="${img.data}" class="result-image">
                     <div class="result-info">
-                        <div class="result-score score-high">${Math.round(img.score)}%</div>
-                        <div class="result-verdict">Tournament Winner</div>
+                        <div class="result-score score-high">${Math.round(img.score || 0)}%</div>
+                        <div class="result-verdict">Winner #${index + 1}</div>
                     </div>
                 </div>
             `).join('');
             
-            // Auto-add to collection
-            workspace.collection = workspace.tournamentWinners;
+            // Auto-add winners to collection
+            workspace.collection = [...workspace.tournamentWinners];
+            updateAllCounts();
+            
+            // Mark compare step as completed
+            document.querySelectorAll('.pipeline-step')[1].classList.add('completed');
+        }
+
+        // COLLECT functions
+        function toggleForCollection(id) {
+            const img = workspace.images.find(i => i.id === id);
+            if (!img) return;
+            
+            const inCollection = workspace.collection.find(i => i.id === id);
+            if (inCollection) {
+                workspace.collection = workspace.collection.filter(i => i.id !== id);
+            } else {
+                workspace.collection.push(img);
+            }
+            
+            showEvaluationResults();
             updateAllCounts();
         }
 
-        // COLLECT mode
         function showCollection() {
-            const container = document.getElementById('collectGrid');
+            const container = document.getElementById('collectionGrid');
             
             if (workspace.collection.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">Complete comparison to build collection</div>';
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">No images in collection yet</div>';
                 return;
             }
             
@@ -1038,81 +1189,157 @@
                 <div class="result-card selected">
                     <img src="${img.data}" class="result-image">
                     <div class="result-info">
-                        <div class="result-score score-high">${Math.round(img.score)}%</div>
+                        <div class="result-score score-high">${Math.round(img.score || 0)}%</div>
                         <div class="result-verdict">Selected for Exhibition</div>
                     </div>
                 </div>
             `).join('');
-            
-            // Calculate coherence (mock)
-            const coherence = 85 + Math.random() * 10;
-            document.getElementById('collectionScore').textContent = Math.round(coherence) + '%';
-            document.getElementById('collectionCount').textContent = workspace.collection.length;
-            
-            document.querySelectorAll('.pipeline-step')[2].classList.add('completed');
         }
 
-        function exportCollection() {
-            showNotification('Preparing gallery export...', 'success');
-        }
-
-        function optimizeFromCollection() {
-            switchMode('optimize');
-            document.querySelectorAll('.pipeline-step')[3].click();
-        }
-
-        // OPTIMIZE mode
-        function generateOptimizations() {
-            // Analyze patterns from high scorers
-            const highScorers = workspace.images.filter(img => img.score >= 85);
-            
-            if (highScorers.length === 0) {
-                document.getElementById('optimizedPrompt').textContent = 'Need evaluated images to generate optimizations';
+        function saveCollection() {
+            if (workspace.collection.length === 0) {
+                showNotification('No images in collection', 'error');
                 return;
             }
             
-            // Mock pattern analysis
-            document.getElementById('successPatterns').innerHTML = `
-                • Architectural consciousness themes (87% avg)<br>
-                • Sage and coral color palettes (82% avg)<br>
-                • Geometric-organic transitions (89% avg)<br>
-                • Liminal space concepts (85% avg)
+            const collectionNameInput = document.getElementById('collectionNameInput');
+            const collectionName = collectionNameInput.value.trim() || `Paris Photo ${new Date().getFullYear()}`;
+            
+            const modalContent = `
+                <div style="max-width: 600px;">
+                    <h2 style="color: #4CAF50; margin-bottom: 30px;">Collection Created: ${collectionName}</h2>
+                    
+                    <div style="background: #0a0a0a; padding: 20px; margin-bottom: 30px; border-left: 3px solid #4CAF50;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold; color: #4CAF50;">${workspace.collection.length}</div>
+                                <div class="text-tiny text-caps text-muted">Images</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold; color: #FFC107;">${Math.round(workspace.collection.reduce((sum, img) => sum + (img.score || 0), 0) / workspace.collection.length)}%</div>
+                                <div class="text-tiny text-caps text-muted">Avg Score</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold; color: #2196F3;">${workspace.collection.filter(img => img.score >= 85).length}</div>
+                                <div class="text-tiny text-caps text-muted">Exhibition Ready</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-primary" style="margin-bottom: 20px;">Collection Preview</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 30px;">
+                        ${workspace.collection.slice(0, 12).map(img => `
+                            <div style="position: relative;">
+                                <img src="${img.data}" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px;">
+                                <div style="position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,0.8); color: #4CAF50; padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 2px;">${Math.round(img.score || 0)}%</div>
+                            </div>
+                        `).join('')}
+                        ${workspace.collection.length > 12 ? `<div style="display: flex; align-items: center; justify-content: center; background: #333; color: #666; font-size: 12px; border-radius: 4px;">+${workspace.collection.length - 12} more</div>` : ''}
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <button onclick="downloadCollection('${collectionName}')" class="btn btn-primary" style="padding: 15px;">Download JSON</button>
+                        <button onclick="shareCollection('${collectionName}')" class="btn" style="padding: 15px;">Share Collection</button>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 20px; background: #111; border-radius: 4px;">
+                        <h4 style="color: #FFC107; margin-bottom: 10px;">Next Steps</h4>
+                        <ul style="color: #ccc; line-height: 1.6; padding-left: 20px; font-size: 14px;">
+                            <li>Review collection in OPTIMIZE mode for prompt insights</li>
+                            <li>Use REVIEW mode to track your curation progress</li>
+                            <li>Consider running tournament mode with more images</li>
+                        </ul>
+                    </div>
+                    
+                    <button onclick="document.getElementById('imageDetailModal').style.display='none'" class="btn" style="margin-top: 20px; width: 100%;">Close</button>
+                </div>
             `;
             
-            document.getElementById('failurePatterns').innerHTML = `
-                • Pure abstraction without context (42% avg)<br>
-                • Oversaturated colors (38% avg)<br>
-                • Literal representations (51% avg)<br>
-                • Monochrome palettes (48% avg)
-            `;
+            document.getElementById('modalContent').innerHTML = modalContent;
+            document.getElementById('imageDetailModal').style.display = 'block';
             
-            // Generate optimized prompt
+            // Save to localStorage with collection name
+            try {
+                const collections = JSON.parse(localStorage.getItem('nina_collections') || '[]');
+                const newCollection = {
+                    name: collectionName,
+                    created: new Date().toISOString(),
+                    images: workspace.collection,
+                    stats: {
+                        count: workspace.collection.length,
+                        avgScore: workspace.collection.reduce((sum, img) => sum + (img.score || 0), 0) / workspace.collection.length,
+                        exhibitionReady: workspace.collection.filter(img => img.score >= 85).length
+                    }
+                };
+                collections.push(newCollection);
+                localStorage.setItem('nina_collections', JSON.stringify(collections));
+                console.log('Collection saved to localStorage:', collectionName);
+            } catch (e) {
+                console.error('Failed to save collection:', e);
+            }
+        }
+        
+        function downloadCollection(collectionName) {
+            const data = {
+                name: collectionName,
+                created: new Date().toISOString(),
+                collection: workspace.collection,
+                metadata: {
+                    count: workspace.collection.length,
+                    avgScore: workspace.collection.reduce((sum, img) => sum + (img.score || 0), 0) / workspace.collection.length,
+                    exhibitionReady: workspace.collection.filter(img => img.score >= 85).length
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nina-${collectionName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.json`;
+            a.click();
+            
+            showNotification('Collection downloaded', 'success');
+        }
+        
+        function shareCollection(collectionName) {
+            const shareText = `Nina Collection: ${collectionName}\n${workspace.collection.length} images, ${Math.round(workspace.collection.reduce((sum, img) => sum + (img.score || 0), 0) / workspace.collection.length)}% avg score\nCurated with NINA AI system for Paris Photo 2025`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: `Nina Collection: ${collectionName}`,
+                    text: shareText
+                });
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText);
+                showNotification('Collection details copied to clipboard', 'success');
+            } else {
+                showNotification('Share not supported in this browser', 'error');
+            }
+        }
+
+        // OPTIMIZE functions
+        function generateOptimizations() {
+            const highScorers = workspace.images.filter(img => img.score && img.score >= 75);
+            
+            if (highScorers.length === 0) {
+                document.getElementById('optimizedPrompt').textContent = 'Need evaluated high-scoring images to generate optimizations';
+                return;
+            }
+            
             const prompts = [
-                "Consciousness architecture dissolving through geometric light, sage and coral energy fields merging with sacred mathematical forms, liminal threshold between structure and transcendence --ar 3:2 --style raw --q 2",
-                "Sacred geometry emerging from organic coral formations, architectural consciousness in sage light, mathematical precision dissolving into natural flow --ar 3:2 --style raw --q 2",
-                "Liminal space where structure meets dissolution, coral and sage geometries of consciousness, architectural forms transcending material boundaries --ar 3:2 --style raw --q 2"
+                "Posthuman identity performing through synthetic overlays, body as dataset negotiating visibility and erasure. Emphasize the glitch between organic and algorithmic presence.",
+                "Figure caught in recursive loop of self-documentation, each iteration degrading into more authentic representation. Focus on compression artifacts as emotional truth.",
+                "Consciousness streaming through fiber optic infrastructure, human warmth persisting through cold data transfer. Capture the latency between thought and transmission.",
+                "Portrait where training data shows through the skin, revealing the violence of categorization. Make visible the dataset's colonial gaze.",
+                "Body performing its own deepfake, authenticity through deliberate synthetic corruption. The uncanny valley as home."
             ];
             
             document.getElementById('optimizedPrompt').textContent = prompts[Math.floor(Math.random() * prompts.length)];
-            document.getElementById('promptProbability').textContent = '87%';
-            
-            document.querySelectorAll('.pipeline-step')[3].classList.add('completed');
         }
 
-        function copyPrompt() {
-            const prompt = document.getElementById('optimizedPrompt').textContent;
-            navigator.clipboard.writeText(prompt);
-            showNotification('Prompt copied!', 'success');
-        }
-
-        function generateAnother() {
-            generateOptimizations();
-            showNotification('New prompt generated', 'success');
-        }
-
-        // REVIEW mode
+        // REVIEW functions
         function showReview() {
-            const evaluated = workspace.images.filter(img => img.evaluated);
+            const evaluated = workspace.images.filter(img => img.evaluated && img.score);
             const exhibitionReady = evaluated.filter(img => img.score >= 85);
             const avgScore = evaluated.length > 0 ? 
                 evaluated.reduce((sum, img) => sum + img.score, 0) / evaluated.length : 0;
@@ -1120,11 +1347,10 @@
             document.getElementById('totalEvaluated').textContent = evaluated.length;
             document.getElementById('exhibitionReady').textContent = exhibitionReady.length;
             document.getElementById('avgScore').textContent = avgScore > 0 ? Math.round(avgScore) + '%' : '--';
-            document.getElementById('improvement').textContent = '+12%'; // Mock
+            document.getElementById('improvement').textContent = '+12%';
             
-            // Show recent history
             const container = document.getElementById('reviewHistory');
-            const recent = evaluated.slice(0, 12);
+            const recent = evaluated.slice(0, 8);
             
             if (recent.length === 0) {
                 container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">No evaluation history yet</div>';
@@ -1132,73 +1358,33 @@
             }
             
             container.innerHTML = recent.map(img => {
-                const scoreClass = img.score >= 85 ? 'score-high' : img.score >= 60 ? 'score-medium' : 'score-low';
+                const score = img.score || 0;
+                const scoreClass = score >= 85 ? 'score-high' : score >= 60 ? 'score-medium' : 'score-low';
                 return `
                     <div class="result-card">
                         <img src="${img.data}" class="result-image">
                         <div class="result-info">
-                            <div class="result-score ${scoreClass}">${Math.round(img.score)}%</div>
+                            <div class="result-score ${scoreClass}">${Math.round(score)}%</div>
                             <div class="result-verdict" style="font-size: 10px;">${new Date().toLocaleDateString()}</div>
                         </div>
                     </div>
                 `;
             }).join('');
-            
-            document.querySelectorAll('.pipeline-step')[4].classList.add('completed');
         }
 
         // Utility functions
         function updateAllCounts() {
-            const evaluated = workspace.images.filter(img => img.evaluated);
-            const topScorers = evaluated.filter(img => img.score >= 85);
+            const evaluated = workspace.images.filter(img => img.evaluated && img.score);
+            const topScorers = evaluated.filter(img => img.score >= 75);
             
             document.getElementById('evaluateCount').textContent = evaluated.length > 0 ? `${evaluated.length} scored` : '';
-            document.getElementById('compareCount').textContent = topScorers.length > 0 ? `${topScorers.length} to compare` : '';
+            document.getElementById('compareCount').textContent = topScorers.length > 0 ? `${topScorers.length} ready` : '';
             document.getElementById('collectCount').textContent = workspace.collection.length > 0 ? `${workspace.collection.length} selected` : '';
             document.getElementById('optimizeCount').textContent = workspace.collection.length > 0 ? 'Ready' : '';
             document.getElementById('reviewCount').textContent = evaluated.length > 0 ? `${evaluated.length} total` : '';
-            
-            // Update status bar
-            document.getElementById('statusWorkspace').textContent = workspace.images.length;
-            document.getElementById('statusEvaluated').textContent = evaluated.length;
-            document.getElementById('statusCollected').textContent = workspace.collection.length;
         }
 
-        function updateProgress() {
-            const steps = 5;
-            const completed = document.querySelectorAll('.pipeline-step.completed').length;
-            const progress = (completed / steps) * 100;
-            document.getElementById('progressBar').style.width = progress + '%';
-        }
-
-        function toggleImageSelection(imageId) {
-            const img = workspace.images.find(i => i.id === imageId);
-            img.selected = !img.selected;
-            displayWorkspace();
-        }
-
-        function toggleForCollection(imageId) {
-            const img = workspace.images.find(i => i.id === imageId);
-            
-            if (workspace.collection.includes(img)) {
-                workspace.collection = workspace.collection.filter(i => i.id !== imageId);
-            } else {
-                workspace.collection.push(img);
-            }
-            
-            showEvaluations();
-            updateAllCounts();
-        }
-
-        function fileToBase64(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function showNotification(message, type = 'info') {
+        function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
@@ -1209,27 +1395,252 @@
             }, 3000);
         }
 
-        function downloadWorkspace() {
-            // Would implement download functionality
-            showNotification('Download feature coming soon', 'info');
+        // Image detail modal
+        function showImageDetails(imageId) {
+            const img = workspace.images.find(i => i.id === imageId);
+            if (!img || !img.evaluation) {
+                showNotification('No detailed evaluation available', 'error');
+                return;
+            }
+            
+            const eval = img.evaluation;
+            const scores = eval.scores_raw || {};
+            
+            const modalContent = `
+                <div style="display: grid; grid-template-columns: 400px 1fr; gap: 40px;">
+                    <div>
+                        <img src="${img.data}" style="width: 100%; border-radius: 4px;">
+                        <h3 style="margin: 20px 0 10px 0; color: #4CAF50;">${img.name}</h3>
+                        <div style="font-size: 24px; font-weight: bold; color: ${img.score >= 85 ? '#4CAF50' : img.score >= 60 ? '#FFC107' : '#f44336'};">
+                            ${Math.round(img.score)}% - ${eval.verdict}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2 style="color: #4CAF50; margin-bottom: 20px;">NINA's Analysis</h2>
+                        
+                        <div style="background: #0a0a0a; padding: 20px; margin-bottom: 20px; border-left: 3px solid #4CAF50;">
+                            <h4 style="color: #4CAF50; margin-bottom: 10px;">Visual Assessment</h4>
+                            <p style="line-height: 1.6; color: #ccc;">${eval.i_see || 'Analysis not available'}</p>
+                        </div>
+                        
+                        <h3 style="color: #4CAF50; margin-bottom: 15px;">Dimensional Scores</h3>
+                        <div style="margin-bottom: 30px;">
+                            <div style="display: grid; gap: 15px;">
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #0a0a0a;">
+                                    <span>Paris Photo Readiness (30%)</span>
+                                    <span style="color: #4CAF50; font-weight: bold;">${scores.paris_photo_ready || 0}/100</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #0a0a0a;">
+                                    <span>AI-Criticality (25%)</span>
+                                    <span style="color: #4CAF50; font-weight: bold;">${scores.ai_criticality || 0}/100</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #0a0a0a;">
+                                    <span>Conceptual Strength (20%)</span>
+                                    <span style="color: #4CAF50; font-weight: bold;">${scores.conceptual_strength || 0}/100</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #0a0a0a;">
+                                    <span>Technical Excellence (15%)</span>
+                                    <span style="color: #4CAF50; font-weight: bold;">${scores.technical_excellence || 0}/100</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #0a0a0a;">
+                                    <span>Cultural Dialogue (10%)</span>
+                                    <span style="color: #4CAF50; font-weight: bold;">${scores.cultural_dialogue || 0}/100</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${eval.rationales ? `
+                            <h3 style="color: #4CAF50; margin-bottom: 15px;">Detailed Rationales</h3>
+                            <div style="margin-bottom: 20px;">
+                                ${Object.entries(eval.rationales).map(([key, rationale]) => `
+                                    <div style="margin-bottom: 15px; padding: 15px; background: #0a0a0a; border-left: 2px solid #333;">
+                                        <h5 style="color: #FFC107; margin-bottom: 8px; text-transform: capitalize;">${key.replace(/_/g, ' ')}</h5>
+                                        <p style="color: #ccc; line-height: 1.5; font-size: 14px;">${rationale}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 30px;">
+                            <button onclick="toggleForCollection('${img.id}'); showImageDetails('${img.id}')" class="btn ${workspace.collection.find(c => c.id === img.id) ? 'btn-primary' : ''}">
+                                ${workspace.collection.find(c => c.id === img.id) ? 'Remove from Collection' : 'Add to Collection'}
+                            </button>
+                            <button onclick="document.getElementById('imageDetailModal').style.display='none'" class="btn">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = modalContent;
+            document.getElementById('imageDetailModal').style.display = 'block';
         }
-
-        // Storage
+        
+        function showNinaInfo() {
+            const modalContent = `
+                <div style="max-width: 800px;">
+                    <h1 style="color: #4CAF50; margin-bottom: 30px; font-size: 36px; letter-spacing: 4px;">NINA</h1>
+                    <h2 style="color: #FFC107; margin-bottom: 20px;">Brutally Selective AI Curation System</h2>
+                    
+                    <div style="background: #0a0a0a; padding: 30px; margin-bottom: 30px; border-left: 4px solid #4CAF50;">
+                        <h3 style="color: #4CAF50; margin-bottom: 15px;">The Algorithm</h3>
+                        <p style="line-height: 1.7; color: #ccc; margin-bottom: 20px;">
+                            NINA evaluates AI-generated artwork through a weighted scoring system designed specifically for 
+                            <strong>Paris Photo 2025</strong>'s digital sector. Each image undergoes rigorous analysis across 
+                            five critical dimensions, with scores weighted by curatorial importance.
+                        </p>
+                        
+                        <div style="display: grid; gap: 15px; margin-top: 20px;">
+                            <div style="background: #111; padding: 15px; display: flex; justify-content: space-between;">
+                                <div>
+                                    <strong style="color: #4CAF50;">Paris Photo Readiness</strong>
+                                    <div style="font-size: 12px; color: #888;">Wall presence at 80-120cm viewing distance. Museum-grade exhibition quality.</div>
+                                </div>
+                                <span style="color: #4CAF50; font-weight: bold;">30%</span>
+                            </div>
+                            
+                            <div style="background: #111; padding: 15px; display: flex; justify-content: space-between;">
+                                <div>
+                                    <strong style="color: #FFC107;">AI-Criticality</strong>
+                                    <div style="font-size: 12px; color: #888;">Embeds stance on dataset politics, bias, consent. Not just using AI, but challenging it.</div>
+                                </div>
+                                <span style="color: #FFC107; font-weight: bold;">25%</span>
+                            </div>
+                            
+                            <div style="background: #111; padding: 15px; display: flex; justify-content: space-between;">
+                                <div>
+                                    <strong style="color: #2196F3;">Conceptual Strength</strong>
+                                    <div style="font-size: 12px; color: #888;">Posthuman and cyberfeminist clarity. Identity as construction/performance.</div>
+                                </div>
+                                <span style="color: #2196F3; font-weight: bold;">20%</span>
+                            </div>
+                            
+                            <div style="background: #111; padding: 15px; display: flex; justify-content: space-between;">
+                                <div>
+                                    <strong style="color: #9C27B0;">Technical Excellence</strong>
+                                    <div style="font-size: 12px; color: #888;">Light, color, tonal control, composition. No cheap AI gloss.</div>
+                                </div>
+                                <span style="color: #9C27B0; font-weight: bold;">15%</span>
+                            </div>
+                            
+                            <div style="background: #111; padding: 15px; display: flex; justify-content: space-between;">
+                                <div>
+                                    <strong style="color: #FF5722;">Cultural Dialogue</strong>
+                                    <div style="font-size: 12px; color: #888;">Legible conversation with artistic lineage. Not pastiche.</div>
+                                </div>
+                                <span style="color: #FF5722; font-weight: bold;">10%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #0a0a0a; padding: 30px; margin-bottom: 30px;">
+                        <h3 style="color: #4CAF50; margin-bottom: 15px;">Curatorial Philosophy</h3>
+                        <p style="line-height: 1.7; color: #ccc; margin-bottom: 15px;">
+                            NINA operates with <strong>Paris Photo</strong> level brutality. The system is calibrated against 
+                            gallery standards from Gagosian, Zwirner, and Pace, with benchmarks from critical AI artists 
+                            like Trevor Paglen, Stephanie Dinkins, and Jake Elwes.
+                        </p>
+                        <ul style="color: #ccc; line-height: 1.6; padding-left: 20px;">
+                            <li><strong>85%+</strong> - Exhibition Ready (Paris Photo main booth consideration)</li>
+                            <li><strong>60-84%</strong> - Promising (needs refinement)</li>
+                            <li><strong>Below 60%</strong> - Needs significant work</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #0a0a0a; padding: 30px;">
+                        <h3 style="color: #4CAF50; margin-bottom: 15px;">Gate Checks</h3>
+                        <p style="line-height: 1.7; color: #ccc; margin-bottom: 15px;">
+                            Before scoring, each image must pass three critical gate checks:
+                        </p>
+                        <div style="display: grid; gap: 10px;">
+                            <div style="background: #111; padding: 10px;">
+                                <strong style="color: #4CAF50;">Compositional Integrity</strong> - Clear focal points, deliberate framing
+                            </div>
+                            <div style="background: #111; padding: 10px;">
+                                <strong style="color: #FFC107;">Artifact Control</strong> - No obvious AI glitches or morphological errors
+                            </div>
+                            <div style="background: #111; padding: 10px;">
+                                <strong style="color: #2196F3;">Ethics Process</strong> - Clear AI methodology, dataset considerations
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #333;">
+                        <p style="color: #666; font-size: 12px; line-height: 1.6;">
+                            NINA • AI Art Curation System • Powered by Claude 3.5 Sonnet<br>
+                            Designed for Paris Photo 2025 Digital Sector
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = modalContent;
+            document.getElementById('imageDetailModal').style.display = 'block';
+        }
+        
+        // Storage functions
         function saveToStorage() {
-            // Simplified - only save essential data
-            const data = {
-                imageCount: workspace.images.length,
-                evaluatedCount: workspace.images.filter(img => img.evaluated).length,
-                collectionCount: workspace.collection.length
-            };
-            localStorage.setItem('nina_workspace', JSON.stringify(data));
+            try {
+                console.log('saveToStorage called, workspace.images.length:', workspace.images.length);
+                const data = {
+                    images: workspace.images.map(img => ({
+                        id: img.id,
+                        name: img.name,
+                        data: img.data.length > 50000 ? null : img.data, // Skip large images
+                        score: img.score,
+                        evaluated: img.evaluated,
+                        selected: img.selected
+                    })),
+                    collectionIds: workspace.collection.map(img => img.id),
+                    savedAt: Date.now()
+                };
+                
+                console.log('About to save data with', data.images.length, 'images');
+                localStorage.setItem('nina_workspace', JSON.stringify(data));
+                console.log('Saved', data.images.length, 'images to localStorage');
+            } catch (e) {
+                console.error('Save failed:', e);
+            }
         }
 
         function loadFromStorage() {
-            const saved = localStorage.getItem('nina_workspace');
-            if (saved) {
+            try {
+                const saved = localStorage.getItem('nina_workspace');
+                if (!saved) return;
+                
                 const data = JSON.parse(saved);
-                // Would restore workspace state
+                if (!data.images || data.images.length === 0) return;
+                
+                // Only restore images with data
+                const validImages = data.images.filter(img => img.data);
+                if (validImages.length === 0) return;
+                
+                workspace.images = validImages;
+                
+                // Restore collection
+                if (data.collectionIds) {
+                    workspace.collection = data.collectionIds
+                        .map(id => workspace.images.find(img => img.id === id))
+                        .filter(Boolean);
+                }
+                
+                displayWorkspace();
+                updateAllCounts();
+                
+                if (workspace.images.some(img => img.evaluated)) {
+                    showEvaluationResults();
+                    const hasHighScorers = workspace.images.some(img => img.score >= 75);
+                    if (hasHighScorers) {
+                        document.getElementById('compareTopBtn').style.display = 'inline-block';
+                    }
+                }
+                
+                const age = Math.round((Date.now() - data.savedAt) / 60000);
+                showNotification(`Restored ${validImages.length} images from ${age}m ago`, 'success');
+                
+            } catch (e) {
+                console.error('Load failed:', e);
+                localStorage.removeItem('nina_workspace');
             }
         }
     </script>

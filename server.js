@@ -66,12 +66,14 @@ app.get('/', (req, res) => {
 const ninaCuratorV2 = require('./api/nina-curator-v2');
 const ninaCurator = require('./api/nina-curator');
 const analyzeSimple = require('./api/analyze-simple');
+const ninaStudioApi = require('./api/nina-studio-api');
 
 // API routes
 app.post('/api/nina-curator-v2', ninaCuratorV2);
 app.post('/api/nina-curator', ninaCurator);
 app.post('/api/analyze-simple', analyzeSimple);
 app.post('/api/analyze', analyzeSimple);
+app.post('/api/nina-studio-api', ninaStudioApi);
 
 // API endpoint for design analysis
 app.post('/api/analyze', upload.single('design'), async (req, res) => {

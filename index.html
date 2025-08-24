@@ -532,6 +532,7 @@
                 <div style="display: flex; gap: 8px;">
                     <button class="btn btn-small" id="imageMode" onclick="setMediaMode('image')" style="background: #4CAF50; color: #000;">Images</button>
                     <button class="btn btn-small" id="videoMode" onclick="setMediaMode('video')">Videos</button>
+                    <button class="btn btn-small" id="browseRegistry" onclick="showRegistryBrowser()">Browse Registry</button>
                 </div>
                 <button class="btn btn-small btn-primary" onclick="addToWorkspace()" id="addMediaBtn">+ Add Works</button>
                 <button class="btn btn-small" onclick="clearWorkspace()">Clear Queue</button>
@@ -682,6 +683,7 @@
     <!-- Load curator and venue configurations -->
     <script src="curator-personas.js"></script>
     <script src="venue-profiles.js"></script>
+    <script src="registry-client.js"></script>
     
     <!-- Load registry integration -->
     <script src="js/registry-integration.js"></script>
@@ -835,6 +837,111 @@
                     clearWorkspace();
                     showNotification(`Switched to ${mode} mode - curation queue cleared`, 'info');
                 }
+            }
+        }
+
+        // Registry Integration Functions
+        async function showRegistryBrowser() {
+            try {
+                // Test connection first
+                const connected = await registryClient.testConnection()
+                if (!connected) {
+                    showNotification('Could not connect to Genesis Registry', 'error')
+                    return
+                }
+                
+                // Load Solienne's works
+                showNotification('Loading Solienne\'s works from Registry...', 'info')
+                
+                const response = await registryClient.getAgentWorks('solienne-001', {
+                    type: 'image',
+                    featured: 'true',
+                    limit: 20,
+                    format: 'full'
+                })
+                
+                if (response.success && response.data.length > 0) {
+                    // Convert Registry works to CURATION STATION format
+                    const registryWorks = response.data.map(work => ({
+                        id: work.id,
+                        name: work.title || `Work ${work.id.split('_').pop()}`,
+                        url: work.files?.[0]?.url || work.imageUrl || work.url,
+                        file: null, // From Registry, not local file
+                        themes: work.themes || [],
+                        description: work.description || work.prompt,
+                        source: 'registry',
+                        agent: 'solienne-001',
+                        registryData: work
+                    }))
+                    
+                    // Add to workspace
+                    const validWorks = registryWorks.filter(work => work.url)
+                    workspace.images = [...workspace.images, ...validWorks]
+                    
+                    displayWorkspace()
+                    updateAllCounts()
+                    saveToStorage()
+                    
+                    showNotification(`Added ${validWorks.length} works from Solienne`, 'success')
+                } else {
+                    showNotification('No featured works found for Solienne', 'warning')
+                }
+                
+            } catch (error) {
+                console.error('Registry browser error:', error)
+                showNotification('Failed to load from Registry: ' + error.message, 'error')
+            }
+        }
+        
+        async function analyzeWithRegistry() {
+            try {
+                // Get current context
+                const curatorId = workspace.currentCurator
+                const venueId = workspace.currentVenue
+                const currentVenue = VENUE_PROFILES[venueId]
+                
+                // Get work IDs from workspace
+                const registryWorks = workspace.images.filter(img => img.source === 'registry')
+                if (registryWorks.length === 0) {
+                    showNotification('No Registry works to analyze', 'warning')
+                    return
+                }
+                
+                const workIds = registryWorks.map(img => img.id)
+                
+                showNotification('Analyzing with Registry AI...', 'info')
+                
+                // Use Registry's sophisticated analysis
+                const analysis = await registryClient.analyzeWorks(
+                    'solienne-001',
+                    workIds,
+                    curatorId,
+                    currentVenue
+                )
+                
+                if (analysis.success) {
+                    // Apply analysis results to workspace
+                    analysis.results.forEach(result => {
+                        const img = workspace.images.find(i => i.id === result.workId)
+                        if (img) {
+                            img.score = Math.round(result.analysis.exhibitionFit || 50)
+                            img.registryAnalysis = result.analysis
+                            img.evaluated = true
+                        }
+                    })
+                    
+                    showEvaluationResults()
+                    displayWorkspace()
+                    updateAllCounts()
+                    
+                    showNotification(`Analyzed ${analysis.results.length} works with ${currentCurator.name} + ${currentVenue.name}`, 'success')
+                } else {
+                    showNotification('Registry analysis failed', 'error')
+                }
+                
+            } catch (error) {
+                console.error('Registry analysis error:', error)
+                showNotification('Analysis failed: ' + error.message, 'error')
             }
         }
 
@@ -1310,6 +1417,55 @@
                     <div style="max-width: 1000px; margin: 0 auto; background: #111; padding: 40px; border-radius: 8px;" onclick="event.stopPropagation()">
                         <div id="modalContent"></div>
                         <button onclick="document.getElementById('imageDetailModal').style.display='none'" style="position: absolute; top: 20px; right: 20px; background: none; border: 1px solid #666; color: #fff; padding: 10px 15px; cursor: pointer;">× Close</button>
+                    </div>
+                </div>
+
+                <!-- Registry Browser Modal -->
+                <div id="registryBrowserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 1001; padding: 20px; overflow-y: auto;" onclick="this.style.display='none'">
+                    <div style="max-width: 1400px; margin: 0 auto; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; padding: 30px;" onclick="event.stopPropagation()">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 30px;">
+                            <h2 style="color: #4CAF50; margin: 0;">Browse Genesis Registry</h2>
+                            <button onclick="document.getElementById('registryBrowserModal').style.display='none'" style="background: none; border: 1px solid #666; color: #fff; padding: 10px 15px; cursor: pointer; border-radius: 4px;">× Close</button>
+                        </div>
+                        
+                        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                            <select id="agentSelect" onchange="loadAgentWorks()" style="background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px;">
+                                <option value="">Select Agent...</option>
+                                <option value="solienne">Solienne - Consciousness Explorer</option>
+                                <option value="abraham">Abraham - Narrative Weaver</option>
+                                <option value="miyomi">Miyomi - Market Analyst</option>
+                                <option value="nina">Nina - Art Curator</option>
+                                <option value="marcus">Marcus - Gallery Director</option>
+                            </select>
+                            
+                            <select id="workTypeFilter" onchange="loadAgentWorks()" style="background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px;">
+                                <option value="">All Types</option>
+                                <option value="image">Images</option>
+                                <option value="video">Videos</option>
+                                <option value="audio">Audio</option>
+                                <option value="text">Text</option>
+                                <option value="3d">3D Models</option>
+                            </select>
+                            
+                            <select id="qualityFilter" onchange="loadAgentWorks()" style="background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px;">
+                                <option value="">Any Quality</option>
+                                <option value="80">80%+ Quality</option>
+                                <option value="70">70%+ Quality</option>
+                                <option value="60">60%+ Quality</option>
+                            </select>
+                            
+                            <button onclick="loadAgentWorks()" class="btn btn-small" style="margin-left: auto;">Refresh</button>
+                        </div>
+                        
+                        <div id="registryWorksGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; min-height: 200px;">
+                            <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
+                                Select an agent to browse their works from the Genesis Registry
+                            </div>
+                        </div>
+                        
+                        <div id="registryLoadingSpinner" style="display: none; text-align: center; padding: 40px; color: #666;">
+                            Loading works from Genesis Registry...
+                        </div>
                     </div>
                 </div>
             `;

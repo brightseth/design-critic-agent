@@ -76,6 +76,28 @@ class RegistryClient {
         }
     }
     
+    // Get detailed work information
+    async getWorkDetails(workId, agentId) {
+        const url = this.buildUrl(`/agents/${agentId}/works/${workId}`);
+        
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: this.getHeaders(),
+                timeout: this.timeout
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Registry API error: ${response.status} ${response.statusText}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('Failed to fetch work details:', error);
+            throw error;
+        }
+    }
+    
     // ==========================================
     // CURATION API - The key integration!
     // ==========================================

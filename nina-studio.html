@@ -1778,22 +1778,30 @@
                             const addResult = await addResponse.json();
                             
                             if (addResult.success) {
-                                showNotification(`Added ${file.name} to collection (Score: ${evalResult.evaluation.weighted_total})`, 'success');
+                                const score = evalResult.evaluation.weighted_total;
+                                showNotification(`Added ${file.name} to collection (Score: ${score})`, 'success');
                                 
                                 // Add the evaluation to the current collection's images array
                                 if (!currentCollection.collection_images) {
                                     currentCollection.collection_images = [];
                                 }
+                                
+                                // Store the image with all necessary data
                                 currentCollection.collection_images.push({
                                     evaluation_id: evalResult.evaluation.id,
-                                    role: evalResult.evaluation.weighted_total >= 85 ? 'hero' : 'supporting',
+                                    role: score >= 85 ? 'hero' : 'supporting',
+                                    weighted_total: score,
+                                    imageData: imageData,  // Store the base64 image
                                     evaluations: {
                                         ...evalResult.evaluation,
-                                        image_url: imageData
+                                        image_url: imageData,
+                                        imageData: imageData
                                     }
                                 });
                                 
-                                // Refresh collection display
+                                console.log('Added image to collection, total images:', currentCollection.collection_images.length);
+                                
+                                // Refresh collection display immediately
                                 displayCollectionImages();
                             }
                         } else {
@@ -1821,22 +1829,39 @@
                 return;
             }
             
+            console.log('Displaying collection:', currentCollection);
+            console.log('Collection images:', currentCollection.collection_images);
+            
             if (currentCollection.collection_images && currentCollection.collection_images.length > 0) {
                 grid.innerHTML = currentCollection.collection_images.map(item => {
                     const eval = item.evaluations || item;
+                    // Try multiple possible image sources
+                    const imageUrl = eval.image_url || eval.imageData || item.image_url || item.imageData;
+                    const score = eval.weighted_total !== undefined ? eval.weighted_total : (item.weighted_total || 0);
+                    const displayScore = score > 1 ? Math.round(score) : Math.round(score * 100);
+                    
+                    console.log('Displaying image:', {imageUrl: imageUrl ? 'has image' : 'no image', score, role: item.role});
+                    
                     return `
                         <div class="image-item">
-                            <img src="${eval.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='}" 
+                            <img src="${imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='}" 
                                  alt="Collection image">
                             <div class="image-overlay">
-                                <div class="image-score">${eval.weighted_total > 1 ? Math.round(eval.weighted_total) : Math.round((eval.weighted_total || 0) * 100)}/100</div>
+                                <div class="image-score">${displayScore}/100</div>
                                 <div class="image-verdict">${item.role || eval.verdict || 'Supporting'}</div>
                             </div>
                         </div>
                     `;
                 }).join('');
+                showNotification(`Showing ${currentCollection.collection_images.length} images in collection`, 'info');
             } else {
                 grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">
+                        <p>No images in this collection yet</p>
+                        <p style="margin-top: 10px;">Click "+ Add Images" to upload images</p>
+                    </div>
+                `;
+                /*grid.innerHTML = `
                     <div style="grid-column: 1/-1;">
                         <h4 style="margin-bottom: 15px;">Add Images to Collection</h4>
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">

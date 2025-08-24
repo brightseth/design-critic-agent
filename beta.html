@@ -1193,7 +1193,7 @@
                         <line x1="9" y1="14" x2="15" y2="14"></line>
                     </svg>
                     <p>DRAG VIDEO HERE OR CLICK TO UPLOAD</p>
-                    <span class="file-hint">MP4, MOV, WEBM • MAX 500MB • 15s-5min</span>
+                    <span class="file-hint">MP4, MOV, WEBM • MAX 4MB • 15s-5min</span>
                     <input type="file" id="videoInput" accept="video/*" style="display: none;">
                 </div>
 
@@ -2460,8 +2460,9 @@
         }
 
         function handleVideoUpload(file) {
-            if (file.size > 500 * 1024 * 1024) {
-                showNotification('Video file too large. Maximum size is 500MB.', 'error');
+            // Vercel has 4.5MB limit for serverless functions
+            if (file.size > 4 * 1024 * 1024) {
+                showNotification('Video file too large. Maximum size is 4MB for web analysis.', 'error');
                 return;
             }
 
@@ -2547,6 +2548,16 @@
                     });
 
                     console.log('Response status:', response.status);
+                    
+                    if (response.status === 413) {
+                        showNotification('Video file too large for server processing. Try a smaller file (under 4MB).', 'error');
+                        return;
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
                     const result = await response.json();
                     console.log('API response:', result);
                     

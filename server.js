@@ -101,6 +101,9 @@ app.post('/api/v2/curation/compare', curationApiV2);
 app.post('/api/v2/curation/register', curationApiV2);
 app.get('/api/v2/curation/status', curationApiV2);
 
+// Genesis Registry API endpoints
+app.use('/api/v1', registryEndpoints);
+
 // API endpoint for design analysis
 app.post('/api/analyze', upload.single('design'), async (req, res) => {
     try {

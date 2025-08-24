@@ -3,7 +3,8 @@
 
 class RegistryClient {
     constructor(options = {}) {
-        this.baseUrl = options.baseUrl || 'https://eden-genesis-registry.vercel.app/api/v1';
+        // Use local API endpoints since external registry API isn't ready
+        this.baseUrl = options.baseUrl || '/api/v1';
         this.apiKey = options.apiKey || null;
         this.bypassToken = options.bypassToken || null;
         this.timeout = options.timeout || 10000;

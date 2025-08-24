@@ -1732,10 +1732,11 @@
             
             showNotification(`Evaluating ${validFiles.length} images for collection...`, 'info');
             
-            // Process each image
+            // Process each image sequentially
             for (const file of validFiles) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
+                await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
                     const imageData = e.target.result;
                     
                     // Evaluate the image first
@@ -1778,6 +1779,20 @@
                             
                             if (addResult.success) {
                                 showNotification(`Added ${file.name} to collection (Score: ${evalResult.evaluation.weighted_total})`, 'success');
+                                
+                                // Add the evaluation to the current collection's images array
+                                if (!currentCollection.collection_images) {
+                                    currentCollection.collection_images = [];
+                                }
+                                currentCollection.collection_images.push({
+                                    evaluation_id: evalResult.evaluation.id,
+                                    role: evalResult.evaluation.weighted_total >= 85 ? 'hero' : 'supporting',
+                                    evaluations: {
+                                        ...evalResult.evaluation,
+                                        image_url: imageData
+                                    }
+                                });
+                                
                                 // Refresh collection display
                                 displayCollectionImages();
                             }
@@ -1788,8 +1803,10 @@
                         console.error('Error processing image:', error);
                         showNotification(`Error processing ${file.name}`, 'error');
                     }
+                    resolve();
                 };
                 reader.readAsDataURL(file);
+                });
             }
             
             // Hide upload area after processing
@@ -1812,8 +1829,8 @@
                             <img src="${eval.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='}" 
                                  alt="Collection image">
                             <div class="image-overlay">
-                                <div class="image-score">${Math.round((eval.weighted_total || 0) * 100)}/100</div>
-                                <div class="image-verdict">${item.role || eval.verdict}</div>
+                                <div class="image-score">${eval.weighted_total > 1 ? Math.round(eval.weighted_total) : Math.round((eval.weighted_total || 0) * 100)}/100</div>
+                                <div class="image-verdict">${item.role || eval.verdict || 'Supporting'}</div>
                             </div>
                         </div>
                     `;

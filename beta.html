@@ -2518,14 +2518,18 @@
                 return;
             }
 
+            console.log('Starting video analysis for file:', currentVideo.name, 'Size:', currentVideo.size, 'Type:', currentVideo.type);
             showNotification('Analyzing video...', 'info');
 
             // Convert video to base64 for API (simplified - in production would extract frames)
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const videoData = e.target.result;
+                console.log('Video data prepared, size:', videoData.length, 'characters');
+                console.log('Metadata:', videoMetadata);
 
                 try {
+                    console.log('Sending API request to:', API_URL);
                     const response = await fetch(API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -2542,17 +2546,23 @@
                         })
                     });
 
+                    console.log('Response status:', response.status);
                     const result = await response.json();
+                    console.log('API response:', result);
                     
                     if (result.success) {
+                        console.log('Video analysis successful, displaying results');
                         displayVideoResults(result.evaluation);
                         showNotification('Video analysis complete', 'success');
                     } else {
+                        console.error('Video analysis failed:', result.error);
                         showNotification('Video analysis failed: ' + result.error, 'error');
                     }
                 } catch (error) {
                     console.error('Video analysis error:', error);
-                    showNotification('Failed to analyze video', 'error');
+                    console.error('Error details:', error.message);
+                    console.error('Response status:', error.status);
+                    showNotification('Failed to analyze video: ' + error.message, 'error');
                 }
             };
 

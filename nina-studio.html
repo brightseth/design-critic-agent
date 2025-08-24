@@ -568,6 +568,54 @@
             margin-top: 15px;
         }
 
+        /* Upload Area Styles */
+        .upload-area {
+            border: 2px dashed #666;
+            border-radius: 8px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.02);
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area:hover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-area svg {
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .upload-area p {
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .upload-area .file-hint {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .upload-area.small {
             padding: 30px;
             min-height: 200px;
@@ -1257,6 +1305,7 @@
             if (tabName === 'collections') loadCollections();
             if (tabName === 'fingerprint') loadFingerprint();
             if (tabName === 'video') initVideoTab();
+            if (tabName === 'series') initSeriesUpload();
         }
 
         // Learning & Feedback Functions
@@ -1979,11 +2028,17 @@
         let videoMetadata = {};
         let videoIsLoop = false;
 
+        let videoInitialized = false;
         function initVideoTab() {
+            if (videoInitialized) return;
+            videoInitialized = true;
+            
             const uploadArea = document.getElementById('videoUploadArea');
             const videoInput = document.getElementById('videoInput');
             const videoBUpload = document.getElementById('videoBUpload');
             const videoBInput = document.getElementById('videoBInput');
+
+            if (!uploadArea || !videoInput) return;
 
             // Main video upload
             uploadArea.addEventListener('click', () => videoInput.click());
@@ -2010,7 +2065,7 @@
             });
 
             // Video B upload for comparison
-            if (videoBUpload) {
+            if (videoBUpload && videoBInput) {
                 videoBUpload.addEventListener('click', () => videoBInput.click());
                 videoBInput.addEventListener('change', (e) => {
                     if (e.target.files.length > 0) {
@@ -2209,8 +2264,12 @@
 
         // Series Analysis Functions
         let seriesImages = [];
+        let seriesInitialized = false;
         
         function initSeriesUpload() {
+            if (seriesInitialized) return;
+            seriesInitialized = true;
+            
             const uploadArea = document.getElementById('seriesUploadArea');
             const seriesInput = document.getElementById('seriesInput');
             
@@ -2231,7 +2290,9 @@
             });
             
             seriesInput.addEventListener('change', (e) => {
-                handleSeriesFiles(e.target.files);
+                if (e.target.files.length > 0) {
+                    handleSeriesFiles(e.target.files);
+                }
             });
         }
         
@@ -2440,11 +2501,6 @@
         
         // Initialize
         loadRecentEvaluations();
-        
-        // Initialize series upload when switching to that tab
-        document.addEventListener('DOMContentLoaded', () => {
-            initSeriesUpload();
-        });
     </script>
 </body>
 </html>

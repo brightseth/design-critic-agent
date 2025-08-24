@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRIT - Curation Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: #111;
+            border-bottom: 1px solid #333;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-group select {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .control-group select:hover {
+            border-color: #555;
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 180px);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #111;
+            border-right: 1px solid #333;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .curator-info {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .curator-info h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #4a9eff;
+        }
+
+        .curator-info .bio {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .criteria-weights {
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .weight-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .weight-bar {
+            width: 100px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .weight-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a9eff, #00ff88);
+            transition: width 0.3s;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .creations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .creation-card {
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .creation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(74, 158, 255, 0.2);
+        }
+
+        .creation-image {
+            width: 100%;
+            height: 200px;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            font-size: 12px;
+        }
+
+        .creation-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .creation-info {
+            padding: 15px;
+        }
+
+        .creation-title {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+        }
+
+        .creation-agent {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4a9eff;
+        }
+
+        .score-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0a0a0a;
+            border-top: 1px solid #333;
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #222;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        .filter-btn.active {
+            background: #4a9eff;
+            color: #fff;
+            border-color: #4a9eff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CRIT</h1>
+        <div class="subtitle">Multi-Agent Curation Platform</div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Select Agent</label>
+            <select id="agentSelector">
+                <option value="">Loading agents...</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Curator Lens</label>
+            <select id="curatorSelector">
+                <option value="nina">Nina Roehrs</option>
+                <option value="minimalist">Minimalist Curator</option>
+                <option value="conceptual">Conceptual Curator</option>
+                <option value="technical">Technical Excellence</option>
+                <option value="custom">Your Own Criteria</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Time Range</label>
+            <select id="timeRange">
+                <option value="all">All Time</option>
+                <option value="week">Past Week</option>
+                <option value="month">Past Month</option>
+                <option value="today">Today</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="filter-controls">
+        <button class="filter-btn active" data-score="all">All Scores</button>
+        <button class="filter-btn" data-score="excellent">Excellent (85+)</button>
+        <button class="filter-btn" data-score="good">Good (70-84)</button>
+        <button class="filter-btn" data-score="developing">Developing (50-69)</button>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="curator-info">
+                <h3>Current Curator</h3>
+                <div class="bio" id="curatorBio">Loading curator information...</div>
+                <div class="criteria-weights" id="criteriaWeights">
+                    <!-- Weights will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div id="creationsContainer" class="creations-grid">
+                <div class="loading">Select an agent to view their creations</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div id="statusLeft">Ready</div>
+        <div id="statusRight">0 creations loaded</div>
+    </div>
+
+    <script>
+        // Curator profiles
+        const curators = {
+            nina: {
+                name: "Nina Roehrs",
+                bio: "Gallery director and AI art curator. Focuses on conceptual strength, cultural relevance, and exhibition readiness for Paris Photo 2025.",
+                weights: {
+                    "Conceptual Strength": 30,
+                    "Technical Excellence": 25,
+                    "Cultural Dialogue": 20,
+                    "Aesthetic Impact": 15,
+                    "Innovation": 10
+                },
+                algorithm: "nina-curator-v2"
+            },
+            minimalist: {
+                name: "Minimalist Curator",
+                bio: "Values simplicity, negative space, and essential forms. Less is more.",
+                weights: {
+                    "Simplicity": 40,
+                    "Composition": 30,
+                    "Color Harmony": 15,
+                    "Negative Space": 15
+                },
+                algorithm: "minimalist"
+            },
+            conceptual: {
+                name: "Conceptual Curator",
+                bio: "Prioritizes ideas, meaning, and intellectual depth over aesthetic concerns.",
+                weights: {
+                    "Concept": 50,
+                    "Originality": 20,
+                    "Context": 20,
+                    "Execution": 10
+                },
+                algorithm: "conceptual"
+            },
+            technical: {
+                name: "Technical Excellence",
+                bio: "Focuses on craft, precision, and mastery of medium.",
+                weights: {
+                    "Technical Skill": 40,
+                    "Detail Quality": 30,
+                    "Consistency": 20,
+                    "Innovation": 10
+                },
+                algorithm: "technical"
+            },
+            custom: {
+                name: "Your Criteria",
+                bio: "Apply your own evaluation criteria and weights.",
+                weights: {
+                    "Personal Taste": 100
+                },
+                algorithm: "custom"
+            }
+        };
+
+        // Mock Genesis Registry data (replace with real API)
+        const mockAgents = [
+            { id: "abraham", name: "Abraham", handle: "abraham" },
+            { id: "solienne", name: "Solienne", handle: "solienne" },
+            { id: "nina", name: "Nina", handle: "nina" },
+            { id: "osiris", name: "Osiris", handle: "osiris" },
+            { id: "luna", name: "Luna", handle: "luna" }
+        ];
+
+        // State
+        let currentAgent = null;
+        let currentCurator = 'nina';
+        let creations = [];
+
+        // Initialize
+        async function init() {
+            loadAgents();
+            loadCurator('nina');
+            setupEventListeners();
+        }
+
+        function loadAgents() {
+            const selector = document.getElementById('agentSelector');
+            selector.innerHTML = '<option value="">Select an agent...</option>';
+            
+            mockAgents.forEach(agent => {
+                const option = document.createElement('option');
+                option.value = agent.id;
+                option.textContent = agent.name;
+                selector.appendChild(option);
+            });
+        }
+
+        function loadCurator(curatorId) {
+            currentCurator = curatorId;
+            const curator = curators[curatorId];
+            
+            document.getElementById('curatorBio').textContent = curator.bio;
+            
+            const weightsContainer = document.getElementById('criteriaWeights');
+            weightsContainer.innerHTML = '<div style="font-size: 11px; color: #666; margin-bottom: 10px;">EVALUATION WEIGHTS</div>';
+            
+            Object.entries(curator.weights).forEach(([criterion, weight]) => {
+                const item = document.createElement('div');
+                item.className = 'weight-item';
+                item.innerHTML = `
+                    <span>${criterion}</span>
+                    <div class="weight-bar">
+                        <div class="weight-fill" style="width: ${weight}%"></div>
+                    </div>
+                    <span>${weight}%</span>
+                `;
+                weightsContainer.appendChild(item);
+            });
+            
+            // Re-evaluate current creations if any
+            if (creations.length > 0) {
+                evaluateCreations();
+            }
+        }
+
+        async function loadAgentCreations(agentId) {
+            if (!agentId) return;
+            
+            currentAgent = agentId;
+            updateStatus('Loading creations...');
+            
+            // Mock creations (replace with real Genesis Registry API call)
+            creations = generateMockCreations(agentId);
+            
+            evaluateCreations();
+        }
+
+        function generateMockCreations(agentId) {
+            const count = Math.floor(Math.random() * 12) + 8;
+            const mockCreations = [];
+            
+            for (let i = 0; i < count; i++) {
+                mockCreations.push({
+                    id: `${agentId}-creation-${i}`,
+                    title: `Creation ${i + 1}`,
+                    agent: agentId,
+                    timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+                    imageUrl: `https://picsum.photos/400/400?random=${agentId}-${i}`,
+                    metadata: {}
+                });
+            }
+            
+            return mockCreations;
+        }
+
+        async function evaluateCreations() {
+            const container = document.getElementById('creationsContainer');
+            container.innerHTML = '';
+            
+            for (const creation of creations) {
+                // Apply curator's evaluation
+                const score = evaluateWithCurator(creation, currentCurator);
+                creation.score = score;
+                
+                const card = createCreationCard(creation);
+                container.appendChild(card);
+            }
+            
+            updateStatus('Ready', `${creations.length} creations loaded`);
+        }
+
+        function evaluateWithCurator(creation, curatorId) {
+            // Simulate evaluation (replace with real curator algorithm)
+            return 60 + Math.random() * 40;
+        }
+
+        function createCreationCard(creation) {
+            const card = document.createElement('div');
+            card.className = 'creation-card';
+            card.innerHTML = `
+                <div class="creation-image">
+                    <img src="${creation.imageUrl}" alt="${creation.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='[Image]';">
+                </div>
+                <div class="creation-info">
+                    <div class="creation-title">${creation.title}</div>
+                    <div class="creation-agent">by ${creation.agent}</div>
+                    <div class="score-display">
+                        <div class="score-value">${Math.round(creation.score)}</div>
+                        <div class="score-label">Score</div>
+                    </div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => showCreationDetail(creation));
+            
+            return card;
+        }
+
+        function showCreationDetail(creation) {
+            console.log('Show detail for:', creation);
+            // Implement detailed view
+        }
+
+        function updateStatus(left, right = '') {
+            document.getElementById('statusLeft').textContent = left;
+            if (right) document.getElementById('statusRight').textContent = right;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('agentSelector').addEventListener('change', (e) => {
+                loadAgentCreations(e.target.value);
+            });
+            
+            document.getElementById('curatorSelector').addEventListener('change', (e) => {
+                loadCurator(e.target.value);
+            });
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    filterByScore(e.target.dataset.score);
+                });
+            });
+        }
+
+        function filterByScore(scoreRange) {
+            const cards = document.querySelectorAll('.creation-card');
+            cards.forEach(card => {
+                const score = parseInt(card.querySelector('.score-value').textContent);
+                let show = true;
+                
+                switch(scoreRange) {
+                    case 'excellent': show = score >= 85; break;
+                    case 'good': show = score >= 70 && score < 85; break;
+                    case 'developing': show = score >= 50 && score < 70; break;
+                }
+                
+                card.style.display = show ? '' : 'none';
+            });
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

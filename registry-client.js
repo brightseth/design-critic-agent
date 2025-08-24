@@ -5,7 +5,9 @@
 
 class GenesisRegistryClient {
     constructor() {
+        // Always use deployed Registry for now (until we have prod database)
         this.baseUrl = 'https://eden-genesis-registry.vercel.app/api/v1'
+        console.log('Registry URL:', this.baseUrl)
     }
 
     // Get works from any agent

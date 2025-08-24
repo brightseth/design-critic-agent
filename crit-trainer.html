@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRIT - Trainer Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 250px 300px 1fr;
+            height: 100vh;
+        }
+
+        /* Left Panel - Agent Selector */
+        .agent-panel {
+            background: #0a0a0a;
+            border-right: 1px solid #222;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .agent-card {
+            background: #111;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .agent-card:hover {
+            border-color: #333;
+        }
+
+        .agent-card.selected-work {
+            border-color: #4a9eff;
+            background: #111a2a;
+        }
+
+        .agent-card.selected-curator {
+            border-color: #00ff88;
+            background: #0a1a12;
+        }
+
+        .agent-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .agent-role {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .agent-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+            font-size: 10px;
+            color: #666;
+        }
+
+        /* Middle Panel - Curator Configuration */
+        .curator-panel {
+            background: #050505;
+            border-right: 1px solid #222;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .curator-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .curator-item {
+            background: #0a0a0a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #1a1a1a;
+        }
+
+        .curator-item.active {
+            border-color: #00ff88;
+        }
+
+        .curator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .curator-name {
+            font-size: 14px;
+            color: #00ff88;
+        }
+
+        .curator-weight {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weight-slider {
+            width: 60px;
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .weight-fill {
+            height: 100%;
+            background: #00ff88;
+            border-radius: 2px;
+            transition: width 0.2s;
+        }
+
+        .weight-value {
+            font-size: 11px;
+            color: #888;
+            min-width: 30px;
+        }
+
+        .criteria-grid {
+            display: grid;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .criterion {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+        }
+
+        .criterion-bar {
+            width: 80px;
+            height: 2px;
+            background: #1a1a1a;
+            margin-top: 6px;
+        }
+
+        .criterion-fill {
+            height: 100%;
+            background: #444;
+        }
+
+        /* Trainer Controls */
+        .trainer-controls {
+            background: #0a0a0a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .toggle {
+            width: 40px;
+            height: 20px;
+            background: #222;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .toggle.active {
+            background: #4a9eff;
+        }
+
+        .toggle-knob {
+            width: 16px;
+            height: 16px;
+            background: #666;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s;
+        }
+
+        .toggle.active .toggle-knob {
+            left: 22px;
+            background: #fff;
+        }
+
+        /* Main Content Area */
+        .content-area {
+            background: #000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #222;
+        }
+
+        .content-title {
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-btn {
+            padding: 8px 16px;
+            background: #111;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .view-btn.active {
+            background: #4a9eff;
+            border-color: #4a9eff;
+            color: #fff;
+        }
+
+        /* Creation Grid */
+        .creations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .creation-item {
+            background: #0a0a0a;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .creation-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(74, 158, 255, 0.1);
+        }
+
+        .creation-image {
+            width: 100%;
+            height: 150px;
+            background: #111;
+            position: relative;
+        }
+
+        .creation-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .score-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .score-high { color: #00ff88; }
+        .score-medium { color: #ffa500; }
+        .score-low { color: #ff4444; }
+
+        .creation-info {
+            padding: 12px;
+        }
+
+        .creation-id {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .creation-scores {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .mini-score {
+            font-size: 10px;
+            color: #888;
+        }
+
+        .mini-score span {
+            color: #00ff88;
+            font-weight: 500;
+        }
+
+        /* Trainer Override Indicator */
+        .override-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 20px;
+            height: 20px;
+            background: #ffa500;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #000;
+            cursor: help;
+            display: none;
+        }
+
+        .creation-item.overridden .override-indicator {
+            display: flex;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0a0a0a;
+            border-top: 1px solid #222;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .status-left {
+            display: flex;
+            gap: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            gap: 5px;
+        }
+
+        .status-value {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Agent Panel -->
+        <div class="agent-panel">
+            <div class="panel-title">Genesis Agents</div>
+            <div class="agent-list" id="agentList">
+                <!-- Agents will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Curator Panel -->
+        <div class="curator-panel">
+            <div class="panel-title">Active Curators</div>
+            <div class="curator-stack" id="curatorStack">
+                <!-- Active curators listed here -->
+            </div>
+
+            <div class="trainer-controls">
+                <div class="panel-title" style="margin-bottom: 15px;">Trainer Overrides</div>
+                <div class="control-row">
+                    <span class="control-label">Allow AI Curation</span>
+                    <div class="toggle active" id="aiToggle">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Consensus Mode</span>
+                    <div class="toggle" id="consensusToggle">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Manual Override</span>
+                    <div class="toggle" id="overrideToggle">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Min Score</span>
+                    <input type="range" min="0" max="100" value="70" style="width: 80px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-area">
+            <div class="content-header">
+                <h1 class="content-title">
+                    <span id="workSource">Select Agent</span> → 
+                    <span id="curatorLens">No Curator</span>
+                </h1>
+                <div class="view-controls">
+                    <button class="view-btn active">Grid</button>
+                    <button class="view-btn">List</button>
+                    <button class="view-btn">Compare</button>
+                </div>
+            </div>
+
+            <div class="creations-grid" id="creationsGrid">
+                <!-- Creations displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-left">
+            <div class="status-item">
+                <span>Viewing:</span>
+                <span class="status-value" id="statusAgent">None</span>
+            </div>
+            <div class="status-item">
+                <span>Curators:</span>
+                <span class="status-value" id="statusCurators">0</span>
+            </div>
+            <div class="status-item">
+                <span>Creations:</span>
+                <span class="status-value" id="statusCreations">0</span>
+            </div>
+            <div class="status-item">
+                <span>Overrides:</span>
+                <span class="status-value" id="statusOverrides">0</span>
+            </div>
+        </div>
+        <div class="status-right">
+            <span>CRIT v2.0 - Agent-as-Curator Model</span>
+        </div>
+    </div>
+
+    <script>
+        // Genesis Agents Data
+        const genesisAgents = [
+            { id: 'nina', name: 'Nina', role: 'Gallery Director', creations: 42, curations: 128 },
+            { id: 'abraham', name: 'Abraham', role: 'Art Historian', creations: 67, curations: 89 },
+            { id: 'solienne', name: 'Solienne', role: 'Visual Artist', creations: 234, curations: 12 },
+            { id: 'luna', name: 'Luna', role: 'Mystic Guide', creations: 88, curations: 56 },
+            { id: 'osiris', name: 'Osiris', role: 'Digital Shaman', creations: 101, curations: 78 },
+            { id: 'eva', name: 'Eva', role: 'Systems Architect', creations: 156, curations: 34 },
+            { id: 'aura', name: 'Aura', role: 'Energy Worker', creations: 92, curations: 67 },
+            { id: 'gaia', name: 'Gaia', role: 'Earth Mother', creations: 78, curations: 92 },
+            { id: 'zephyr', name: 'Zephyr', role: 'Wind Dancer', creations: 124, curations: 45 },
+            { id: 'kairos', name: 'Kairos', role: 'Time Keeper', creations: 203, curations: 109 }
+        ];
+
+        // State
+        let selectedWorkAgent = null;
+        let activeCurators = [];
+        let creations = [];
+        let overrides = new Map();
+
+        // Initialize
+        function init() {
+            renderAgents();
+            setupEventListeners();
+        }
+
+        function renderAgents() {
+            const container = document.getElementById('agentList');
+            
+            genesisAgents.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.dataset.agentId = agent.id;
+                
+                card.innerHTML = `
+                    <div class="agent-name">${agent.name}</div>
+                    <div class="agent-role">${agent.role}</div>
+                    <div class="agent-stats">
+                        <span>${agent.creations} works</span>
+                        <span>${agent.curations} curated</span>
+                    </div>
+                `;
+                
+                card.addEventListener('click', (e) => {
+                    if (e.shiftKey) {
+                        toggleCurator(agent);
+                    } else {
+                        selectWorkSource(agent);
+                    }
+                });
+                
+                container.appendChild(card);
+            });
+        }
+
+        function selectWorkSource(agent) {
+            // Update UI
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('selected-work');
+            });
+            document.querySelector(`[data-agent-id="${agent.id}"]`).classList.add('selected-work');
+            
+            selectedWorkAgent = agent;
+            document.getElementById('workSource').textContent = agent.name;
+            document.getElementById('statusAgent').textContent = agent.name;
+            
+            // Load creations
+            loadCreations(agent);
+        }
+
+        function toggleCurator(agent) {
+            const index = activeCurators.findIndex(c => c.id === agent.id);
+            
+            if (index >= 0) {
+                // Remove curator
+                activeCurators.splice(index, 1);
+                document.querySelector(`[data-agent-id="${agent.id}"]`).classList.remove('selected-curator');
+            } else {
+                // Add curator
+                activeCurators.push(agent);
+                document.querySelector(`[data-agent-id="${agent.id}"]`).classList.add('selected-curator');
+            }
+            
+            updateCuratorPanel();
+            if (selectedWorkAgent) {
+                applyC duration();
+            }
+        }
+
+        function updateCuratorPanel() {
+            const container = document.getElementById('curatorStack');
+            container.innerHTML = '';
+            
+            if (activeCurators.length === 0) {
+                container.innerHTML = '<div style="color: #666; font-size: 12px;">Shift+click agents to add as curators</div>';
+                document.getElementById('curatorLens').textContent = 'No Curator';
+                document.getElementById('statusCurators').textContent = '0';
+                return;
+            }
+            
+            document.getElementById('curatorLens').textContent = activeCurators.map(c => c.name).join(' + ');
+            document.getElementById('statusCurators').textContent = activeCurators.length;
+            
+            activeCurators.forEach(curator => {
+                const item = document.createElement('div');
+                item.className = 'curator-item active';
+                
+                item.innerHTML = `
+                    <div class="curator-header">
+                        <div class="curator-name">${curator.name}</div>
+                        <div class="curator-weight">
+                            <div class="weight-slider">
+                                <div class="weight-fill" style="width: 100%"></div>
+                            </div>
+                            <span class="weight-value">100%</span>
+                        </div>
+                    </div>
+                    <div class="criteria-grid">
+                        <div class="criterion">
+                            <span>Conceptual</span>
+                            <div class="criterion-bar">
+                                <div class="criterion-fill" style="width: ${30 + Math.random() * 40}%"></div>
+                            </div>
+                        </div>
+                        <div class="criterion">
+                            <span>Technical</span>
+                            <div class="criterion-bar">
+                                <div class="criterion-fill" style="width: ${30 + Math.random() * 40}%"></div>
+                            </div>
+                        </div>
+                        <div class="criterion">
+                            <span>Cultural</span>
+                            <div class="criterion-bar">
+                                <div class="criterion-fill" style="width: ${30 + Math.random() * 40}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        function loadCreations(agent) {
+            // Simulate loading creations
+            const grid = document.getElementById('creationsGrid');
+            grid.innerHTML = '';
+            
+            const count = 12 + Math.floor(Math.random() * 12);
+            creations = [];
+            
+            for (let i = 0; i < count; i++) {
+                const creation = {
+                    id: `${agent.id}-${i}`,
+                    agentId: agent.id,
+                    scores: {}
+                };
+                
+                creations.push(creation);
+                
+                const item = document.createElement('div');
+                item.className = 'creation-item';
+                item.dataset.creationId = creation.id;
+                
+                const baseScore = 60 + Math.random() * 40;
+                const scoreClass = baseScore >= 85 ? 'score-high' : baseScore >= 70 ? 'score-medium' : 'score-low';
+                
+                item.innerHTML = `
+                    <div class="override-indicator" title="Trainer Override">!</div>
+                    <div class="creation-image">
+                        <img src="https://picsum.photos/200/150?random=${creation.id}" alt="">
+                        <div class="score-overlay ${scoreClass}">${Math.round(baseScore)}</div>
+                    </div>
+                    <div class="creation-info">
+                        <div class="creation-id">${creation.id}</div>
+                        <div class="creation-scores">
+                            ${activeCurators.length > 0 ? activeCurators.map(c => 
+                                `<div class="mini-score">${c.name.slice(0, 3)}: <span>${Math.round(60 + Math.random() * 40)}</span></div>`
+                            ).join('') : '<div class="mini-score">No curator selected</div>'}
+                        </div>
+                    </div>
+                `;
+                
+                item.addEventListener('click', () => toggleOverride(creation.id));
+                
+                grid.appendChild(item);
+            }
+            
+            document.getElementById('statusCreations').textContent = count;
+        }
+
+        function applyCuration() {
+            // Re-evaluate all creations with current curators
+            if (creations.length > 0) {
+                loadCreations(selectedWorkAgent);
+            }
+        }
+
+        function toggleOverride(creationId) {
+            const item = document.querySelector(`[data-creation-id="${creationId}"]`);
+            
+            if (overrides.has(creationId)) {
+                overrides.delete(creationId);
+                item.classList.remove('overridden');
+            } else {
+                overrides.set(creationId, { score: 95, reason: 'Trainer selection' });
+                item.classList.add('overridden');
+            }
+            
+            document.getElementById('statusOverrides').textContent = overrides.size;
+        }
+
+        function setupEventListeners() {
+            // Toggle switches
+            document.querySelectorAll('.toggle').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    toggle.classList.toggle('active');
+                });
+            });
+            
+            // View controls
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                });
+            });
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

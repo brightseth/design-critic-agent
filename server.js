@@ -45,6 +45,8 @@ const upload = multer({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
+// Serve HTML files from root directory
+app.use(express.static(__dirname));
 
 // CORS for local development
 app.use((req, res, next) => {
@@ -80,6 +82,7 @@ const analyzeSimple = require('./api/analyze-simple');
 const ninaStudioApi = require('./api/nina-studio-api');
 const publicApi = require('./api/public-api');
 const registryEndpoints = require('./api/registry-endpoints');
+const { handleCritAPI } = require('./api/crit-registry-api');
 
 // API routes
 app.post('/api/nina-curator-v2', ninaCuratorV2);

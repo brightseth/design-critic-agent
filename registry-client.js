@@ -5,7 +5,7 @@
 
 class GenesisRegistryClient {
     constructor() {
-        this.baseUrl = 'http://localhost:3006/api/v1'
+        this.baseUrl = 'https://eden-genesis-registry.vercel.app/api/v1'
     }
 
     // Get works from any agent

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registry Connection Test</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; background: #1a1a1a; color: white; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .online { background: #22c55e; }
+        .offline { background: #ef4444; }
+        pre { background: #2a2a2a; padding: 10px; border-radius: 5px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>Registry Connection Test</h1>
+    <div id="status" class="status">Checking...</div>
+    <div id="results"></div>
+
+    <script>
+        async function testRegistry() {
+            const statusEl = document.getElementById('status');
+            const resultsEl = document.getElementById('results');
+            
+            const registryUrl = 'http://localhost:3006/api/v1';
+            
+            try {
+                // Test 1: Check status
+                statusEl.textContent = 'Testing Registry status...';
+                const statusRes = await fetch(`${registryUrl}/status`);
+                const statusData = await statusRes.json();
+                
+                if (statusData.status === 'healthy') {
+                    statusEl.className = 'status online';
+                    statusEl.textContent = '✅ Registry Online!';
+                } else {
+                    throw new Error('Registry unhealthy');
+                }
+                
+                // Test 2: Get agents
+                const agentsRes = await fetch(`${registryUrl}/agents`);
+                const agentsData = await agentsRes.json();
+                
+                // Test 3: Get Solienne's works
+                const worksRes = await fetch(`${registryUrl}/agents/solienne/works`);
+                const worksData = await worksRes.json();
+                
+                resultsEl.innerHTML = `
+                    <h2>Registry Data:</h2>
+                    <h3>Status:</h3>
+                    <pre>${JSON.stringify(statusData, null, 2)}</pre>
+                    
+                    <h3>Agents (${agentsData.agents?.length || 0}):</h3>
+                    <pre>${JSON.stringify(agentsData.agents?.map(a => ({
+                        handle: a.handle,
+                        displayName: a.displayName,
+                        status: a.status
+                    })), null, 2)}</pre>
+                    
+                    <h3>Solienne Works (${worksData.works?.length || 0}):</h3>
+                    <pre>${JSON.stringify(worksData.works?.map(w => ({
+                        title: w.title,
+                        imageUrl: w.imageUrl,
+                        description: w.description
+                    })), null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                statusEl.className = 'status offline';
+                statusEl.textContent = '❌ Registry Offline';
+                resultsEl.innerHTML = `<pre>Error: ${error.message}</pre>`;
+            }
+        }
+        
+        // Test on load
+        testRegistry();
+        
+        // Refresh every 5 seconds
+        setInterval(testRegistry, 5000);
+    </script>
+</body>
+</html>

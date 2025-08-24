@@ -83,6 +83,7 @@ const ninaStudioApi = require('./api/nina-studio-api');
 const publicApi = require('./api/public-api');
 const registryEndpoints = require('./api/registry-endpoints');
 const { handleCritAPI } = require('./api/crit-registry-api');
+const registryConnector = require('./api/registry-connector');
 
 // API routes
 app.post('/api/nina-curator-v2', ninaCuratorV2);
@@ -94,6 +95,11 @@ app.post('/api/nina-studio-api', ninaStudioApi);
 // Public API endpoint
 app.post('/api/v1/curate', publicApi);
 app.get('/api/v1/status', publicApi);
+
+// Genesis Registry Connection
+app.get('/api/v1/agents', registryConnector.getAgents);
+app.get('/api/v1/agents/:agentId/creations', registryConnector.getAgentCreations);
+app.get('/api/v1/registry/status', registryConnector.testRegistryConnection);
 
 // Curation Station API v2 - Multi-curator support
 const curationApiV2 = require('./api/curation-api-v2');

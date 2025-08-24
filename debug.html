@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CRIT Debug - Registry Connection</title>
+    <style>
+        body { 
+            font-family: system-ui; 
+            padding: 20px; 
+            background: #0a0a0a; 
+            color: #e0e0e0; 
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .status-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .online { color: #4CAF50; }
+        .offline { color: #f44336; }
+        .warning { color: #FFC107; }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1976D2; }
+        pre {
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+            border: 1px solid #333;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .work-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .work-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 CRIT Debug Console</h1>
+        
+        <div class="status-card">
+            <h2>Registry Connection Status</h2>
+            <div id="connection-status">Checking...</div>
+            <div id="registry-url"></div>
+            <button onclick="testConnection()">Test Connection</button>
+            <button onclick="testCORS()">Test CORS</button>
+            <button onclick="loadAgents()">Load Agents</button>
+            <button onclick="loadWorks()">Load Solienne Works</button>
+        </div>
+
+        <div class="status-card">
+            <h2>Test Results</h2>
+            <pre id="results">No tests run yet</pre>
+        </div>
+
+        <div class="status-card">
+            <h2>Loaded Data</h2>
+            <div id="data-display"></div>
+        </div>
+    </div>
+
+    <script src="registry-client.js"></script>
+    <script>
+        const registryClient = new GenesisRegistryClient();
+        const resultsEl = document.getElementById('results');
+        const dataEl = document.getElementById('data-display');
+        
+        // Display Registry URL
+        document.getElementById('registry-url').innerHTML = 
+            `<small>Registry URL: ${registryClient.baseUrl}</small>`;
+        
+        function log(message, data = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const current = resultsEl.textContent;
+            resultsEl.textContent = `[${timestamp}] ${message}\n${data ? JSON.stringify(data, null, 2) + '\n' : ''}${current}`;
+        }
+        
+        async function testConnection() {
+            log('Testing Registry connection...');
+            try {
+                const result = await registryClient.testConnection();
+                const statusEl = document.getElementById('connection-status');
+                
+                if (result.connected) {
+                    statusEl.innerHTML = '<span class="online">✅ Registry Online</span>';
+                    log('Connection successful!', result);
+                } else {
+                    statusEl.innerHTML = '<span class="offline">❌ Registry Offline</span>';
+                    log('Connection failed', result);
+                }
+            } catch (error) {
+                log('Error testing connection', { error: error.message });
+            }
+        }
+        
+        async function testCORS() {
+            log('Testing CORS...');
+            try {
+                const response = await fetch(`${registryClient.baseUrl}/agents`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('CORS Response', {
+                    status: response.status,
+                    ok: response.ok,
+                    headers: {
+                        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+                        'access-control-allow-credentials': response.headers.get('access-control-allow-credentials')
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('Data received', { agentCount: data.agents?.length });
+                }
+            } catch (error) {
+                log('CORS Error', { error: error.message });
+            }
+        }
+        
+        async function loadAgents() {
+            log('Loading agents...');
+            try {
+                const response = await fetch(`${registryClient.baseUrl}/agents`);
+                const data = await response.json();
+                
+                if (data.agents) {
+                    log(`Loaded ${data.agents.length} agents`);
+                    
+                    dataEl.innerHTML = `
+                        <h3>Agents (${data.agents.length})</h3>
+                        <div class="grid">
+                            ${data.agents.map(agent => `
+                                <div class="work-card">
+                                    <strong>${agent.displayName}</strong><br>
+                                    <small>@${agent.handle}</small><br>
+                                    <small>Status: ${agent.status}</small>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                log('Error loading agents', { error: error.message });
+            }
+        }
+        
+        async function loadWorks() {
+            log('Loading Solienne works...');
+            try {
+                const data = await registryClient.getAgentWorks('solienne');
+                
+                if (data.works) {
+                    log(`Loaded ${data.works.length} works`);
+                    
+                    dataEl.innerHTML = `
+                        <h3>Solienne Works (${data.works.length})</h3>
+                        <div class="grid">
+                            ${data.works.map(work => `
+                                <div class="work-card">
+                                    <img src="${work.imageUrl}" alt="${work.title}">
+                                    <strong>${work.title}</strong><br>
+                                    <small>${work.description || ''}</small>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                log('Error loading works', { error: error.message });
+            }
+        }
+        
+        // Auto-test on load
+        testConnection();
+    </script>
+</body>
+</html>

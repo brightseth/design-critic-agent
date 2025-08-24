@@ -143,6 +143,12 @@ class GenesisRegistryClient {
 // Global Registry client instance
 const registryClient = new GenesisRegistryClient()
 
+// Make it available globally in browser
+if (typeof window !== 'undefined') {
+    window.registryClient = registryClient
+    window.GenesisRegistryClient = GenesisRegistryClient
+}
+
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { GenesisRegistryClient, registryClient }

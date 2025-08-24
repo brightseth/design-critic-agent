@@ -407,7 +407,16 @@ class RegistryClient {
 let registryClient = null;
 
 function initializeRegistry(options = {}) {
-    registryClient = new RegistryClient(options);
+    // Use the GenesisRegistryClient from registry-client.js
+    if (typeof GenesisRegistryClient !== 'undefined') {
+        registryClient = new GenesisRegistryClient();
+    } else if (window.registryClient) {
+        // Use existing global registryClient if available
+        registryClient = window.registryClient;
+    } else {
+        console.error('GenesisRegistryClient not found');
+        return;
+    }
     console.log('Registry client initialized');
     
     // Test connection
@@ -489,7 +498,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Export for use in main application
-window.RegistryClient = RegistryClient;
-window.registryClient = registryClient;
 window.evaluateWithRegistry = evaluateWithRegistry;
 window.initializeRegistry = initializeRegistry;
+// Don't override window.registryClient as it's already set by registry-client.js
